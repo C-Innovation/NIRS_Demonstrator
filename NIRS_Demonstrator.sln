@@ -1,17 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36429.23 d17.14
+VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRS_Demonstrator.Android", "NIRS_Demonstrator.Android\NIRS_Demonstrator.Android.csproj", "{3EA453D6-21BD-4D6E-291F-7F32866AA87C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRS_Demonstrator.Browser", "NIRS_Demonstrator.Browser\NIRS_Demonstrator.Browser.csproj", "{15057ED5-81C4-FCA0-E001-F62F594ABFDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRS_Demonstrator.Desktop", "NIRS_Demonstrator.Desktop\NIRS_Demonstrator.Desktop.csproj", "{DF616B20-18E1-ACAB-938C-59A2188308C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRS_Demonstrator.iOS", "NIRS_Demonstrator.iOS\NIRS_Demonstrator.iOS.csproj", "{A3CAD703-A027-71D1-F4A1-0F5BDF7726E1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRS_Demonstrator", "NIRS_Demonstrator\NIRS_Demonstrator.csproj", "{BE8C8637-7079-53CE-7992-04F74E2BA5D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NIRS_Demonstrator.Core", "NIRS_Demonstrator.Core\NIRS_Demonstrator.Core.csproj", "{5F94AAD1-A1B6-4BF3-99AA-961DA71B4F59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +25,6 @@ Global
 		{3EA453D6-21BD-4D6E-291F-7F32866AA87C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EA453D6-21BD-4D6E-291F-7F32866AA87C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EA453D6-21BD-4D6E-291F-7F32866AA87C}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{15057ED5-81C4-FCA0-E001-F62F594ABFDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15057ED5-81C4-FCA0-E001-F62F594ABFDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15057ED5-81C4-FCA0-E001-F62F594ABFDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15057ED5-81C4-FCA0-E001-F62F594ABFDF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF616B20-18E1-ACAB-938C-59A2188308C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF616B20-18E1-ACAB-938C-59A2188308C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF616B20-18E1-ACAB-938C-59A2188308C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -43,6 +39,10 @@ Global
 		{BE8C8637-7079-53CE-7992-04F74E2BA5D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE8C8637-7079-53CE-7992-04F74E2BA5D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE8C8637-7079-53CE-7992-04F74E2BA5D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F94AAD1-A1B6-4BF3-99AA-961DA71B4F59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F94AAD1-A1B6-4BF3-99AA-961DA71B4F59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F94AAD1-A1B6-4BF3-99AA-961DA71B4F59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F94AAD1-A1B6-4BF3-99AA-961DA71B4F59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,132 @@
+<local:BasePage x:TypeArguments="vm:TerminalPageViewModel"  xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:richtext="clr-namespace:Avalonia.Controls.Documents;assembly=Simplecto.Avalonia.RichTextBox"
+             xmlns:local="clr-namespace:NIRS_Demonstrator"
+		 	 xmlns:vm="clr-namespace:NIRS_Demonstrator.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.TerminalPage"
+			 x:DataType="vm:TerminalPageViewModel">
+	<local:BasePage.Styles>
+		<Style Selector="TextBox:focus-within /template/ Border">
+		  <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+		  <Setter Property="BorderBrush" Value="{DynamicResource Theme_ForegroudMainBrush}" />
+		  <!--<Setter Property="BorderThickness" Value="2"></Setter>-->              
+		</Style>
+
+		<Style Selector="TextBox:pointerover /template/ Border">
+		  <Setter Property="Background" Value="{DynamicResource TransparentBrush}" />
+		  <Setter Property="BorderBrush" Value="{DynamicResource Theme_ForegroudMainBrush}" />
+		  <!--<Setter Property="BorderThickness" Value="2"></Setter>-->
+		</Style>
+	</local:BasePage.Styles>
+  <Grid>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<!-- Header and back -->
+			<RowDefinition Height="Auto" />
+			<!-- Page content -->
+			<RowDefinition Height="*" />
+
+			<!-- Other (reserved) -->
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0"
+			  Grid.Column="0"
+			  Grid.ColumnSpan="2" >
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Button x:Name="BackToMainButton"
+					Classes="IconGrowButton"
+					Grid.Column="0"
+					Content="{StaticResource FA_LeftLongIcon}"
+					Margin="10 5 0 5"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource BackText}"
+					Command="{Binding ReturnToMainCommand}"/>
+
+			<!--Command="{Binding ShowHideGroupListCommand}"/>-->
+
+			<!-- Header -->
+			<TextBlock Grid.Row="0"
+					   Grid.Column="0"
+					   Grid.ColumnSpan="3"
+					   Margin="0 30 0 0"
+					   FontFamily="{StaticResource LatoBold}"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeXXLarge}"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Text="{DynamicResource TerminalText}"
+					   FontWeight="Bold"/>
+
+
+
+
+		</Grid>
+
+		<!--<local:SettingsElement Grid.Row="1" Icon="Images/usa.png">-->
+		<ScrollViewer VerticalScrollBarVisibility="Auto"
+					  Grid.Column="0"
+					  Grid.Row="1"
+					  Grid.ColumnSpan="2">
+			<Grid HorizontalAlignment="Center"
+					VerticalAlignment="Center">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				<TextBox x:Name="TerminalTextBox" 
+						 Grid.Row="0" 
+						 Width="{Binding TerminalWidth}" 
+						 Height="{Binding TerminalHeight}" 
+						 Text="{Binding TerminalContent}"
+						 Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						 FontSize="{StaticResource FontSizeLarge}"
+						 FontWeight="Bold"
+						 BorderThickness="2"
+						 BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+						 TextChanged="TextBox_TextChanged"
+						 IsReadOnly="True"
+						 AcceptsReturn="True" 
+						 TextWrapping="Wrap"/>
+				<Grid x:Name="ControlButtonsGrid"
+					  Grid.Row="1"
+					  ColumnDefinitions="Auto, *, Auto">
+					<Button x:Name="StartRecordButton"
+							Classes="IconGrowButton"
+							Grid.Column="0"
+							Content="{StaticResource FA_CircleIcon}"
+							Margin="10 5 0 5"
+							Opacity="{Binding RecordButtonOpacity}"
+							Foreground="{StaticResource WordRedBrush}"
+							FontSize="{StaticResource FontSizeXXLarge}"
+							ToolTip.Tip="{DynamicResource StartRecordText}"
+							Command="{Binding StartRecordCommand}"/>
+
+					<Button x:Name="ClearTerminalButton"
+							Classes="IconGrowButton"
+							Grid.Column="2"
+							Content="{StaticResource FA_EraserIcon}"
+							Margin="10 5 0 5"
+							FontSize="{StaticResource FontSizeXXLarge}"
+							ToolTip.Tip="{DynamicResource ClearTerminalText}"
+							Command="{Binding ClearTerminalCommand}"/>
+				</Grid>
+
+			</Grid>
+		</ScrollViewer>
+
+	</Grid>
+</local:BasePage>

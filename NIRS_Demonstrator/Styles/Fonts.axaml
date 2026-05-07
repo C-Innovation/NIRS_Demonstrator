@@ -1,0 +1,53 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:local="clr-namespace:NIRS_Demonstrator"
+					xmlns:system="clr-namespace:System;assembly=mscorlib">
+  <!-- Add Resources Here -->
+	<system:Double x:Key="FontSizeSmaler">10</system:Double>
+	<system:Double x:Key="FontSizeSmal">12</system:Double>
+	<system:Double x:Key="FontSizeRegular">14</system:Double>
+	<system:Double x:Key="FontSizeAverage">18</system:Double>
+	<system:Double x:Key="FontSizeLarge">20</system:Double>
+	<system:Double x:Key="FontSizeXLarge">24</system:Double>
+	<system:Double x:Key="FontSizeXXLarge">30</system:Double>
+	<system:Double x:Key="FontSizeXXXLarge">48</system:Double>
+	<system:Double x:Key="FontSizeXXXXLarge">72</system:Double>
+	<system:Double x:Key="FontSizeXXXXXLarge">96</system:Double>
+
+	<system:String x:Key="FA_CheckIcon">fa-solid fa-check</system:String>
+	<system:String x:Key="FA_CloseIcon">fa-solid fa-xmark</system:String>
+	<system:String x:Key="FA_GearIcon">fa-solid fa-gear</system:String>
+	<system:String x:Key="FA_PlusIcon">fa-solid fa-plus</system:String>
+	<system:String x:Key="FA_FloppyDiskRegularIcon">fa-regular fa-floppy-disk</system:String>
+	<system:String x:Key="FA_FloppyDiskSolidIcon">fa-solid fa-floppy-disk</system:String>
+	
+	<system:String x:Key="FA_SquareIcon">fa-regular fa-square</system:String>
+	<system:String x:Key="FA_SquareCheckIcon">fa-regular fa-square-check</system:String>
+	<system:String x:Key="FA_LeftLongIcon">fa-solid fa-left-long</system:String>
+
+	<system:String x:Key="FA_EyeIcon">fa-solid fa-eye</system:String>
+	<system:String x:Key="FA_EyeSlashIcon">fa-solid fa-eye-slash</system:String>
+	<system:String x:Key="FA_VolumeHighIcon">fa-solid fa-volume-high</system:String>
+	<system:String x:Key="FA_VolumeOffIcon">fa-solid fa-volume-off</system:String>
+	
+	<system:String x:Key="FA_AlgleLeftIcon">fa-solid fa-angle-left</system:String>
+	<system:String x:Key="FA_AlglesLeftIcon">fa-solid fa-angles-left</system:String>
+	<system:String x:Key="FA_AlgleRightIcon">fa-solid fa-angle-right</system:String>
+	<system:String x:Key="FA_AlglesRightIcon">fa-solid fa-angles-right</system:String>
+	<system:String x:Key="FA_AlgleDownIcon">fa-solid fa-angle-down</system:String>
+	<system:String x:Key="FA_AlglesDownIcon">fa-solid fa-angles-down</system:String>
+	
+	<system:String x:Key="FA_LanguageIcon">fa-solid fa-language</system:String>
+	<system:String x:Key="FA_FolderOpenIcon">fa-solid fa-folder-open</system:String>
+	<system:String x:Key="FA_RightLeftIcon">fa-solid fa-right-left</system:String>
+	<system:String x:Key="FA_ArrowRightToBracketIcon">fa-solid fa-arrow-right-to-bracket</system:String>
+	<system:String x:Key="FA_ArrowsTurnToDotsIcon">fa-solid fa-arrows-turn-to-dots</system:String>
+	
+	<system:String x:Key="FA_RefreshIcon">fa-solid fa-arrows-rotate</system:String>
+	<system:String x:Key="FA_BluetoothIcon">fa-brands fa-bluetooth-b</system:String>
+	<system:String x:Key="FA_CircleIcon">fa-solid fa-circle</system:String>
+	<system:String x:Key="FA_EraserIcon">fa-solid fa-eraser</system:String>
+	<system:String x:Key="FA_ChartIcon">fa-solid fa-chart-line</system:String>
+	
+
+</ResourceDictionary>

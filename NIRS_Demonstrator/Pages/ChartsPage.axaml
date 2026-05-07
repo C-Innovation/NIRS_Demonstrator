@@ -1,0 +1,127 @@
+<local:BasePage x:TypeArguments="vm:ChartsPageViewModel" xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:NIRS_Demonstrator"
+		 	 xmlns:vm="clr-namespace:NIRS_Demonstrator.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.ChartsPage"
+             x:DataType="vm:ChartsPageViewModel">
+  <Grid>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<!-- Header and back -->
+			<RowDefinition Height="Auto" />
+			<!-- Page content -->
+			<RowDefinition Height="*" />
+
+			<!-- Other (reserved) -->
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0"
+			  Grid.Column="0"
+			  Grid.ColumnSpan="2" >
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Button x:Name="BackToMainButton"
+					Classes="IconGrowButton"
+					Grid.Column="0"
+					Content="{StaticResource FA_LeftLongIcon}"
+					Margin="10 5 0 5"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource BackText}"
+					Command="{Binding ReturnToMainCommand}"/>
+
+			<!--Command="{Binding ShowHideGroupListCommand}"/>-->
+
+			<!-- Header -->
+			<TextBlock Grid.Row="0"
+					   Grid.Column="0"
+					   Grid.ColumnSpan="3"
+					   Margin="0 30 0 0"
+					   FontFamily="{StaticResource LatoBold}"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeXXLarge}"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Text="{DynamicResource ChartsText}"
+					   FontWeight="Bold"/>
+
+
+
+
+		</Grid>
+
+		<!--<local:SettingsElement Grid.Row="1" Icon="Images/usa.png">-->
+		<ScrollViewer VerticalScrollBarVisibility="Auto"
+					  Grid.Column="0"
+					  Grid.Row="1"
+					  Grid.ColumnSpan="2">
+			<Grid >
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				
+				<local:Chart2D x:Name="ChartChannel1"
+							   Grid.Row="0" 
+							   ChartBackground="Transparent" 
+							   BorderThickness="3"
+							   BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+							   CornerRadius="7"
+							   Margin="5">
+					<local:Chart2D.ChartSeries>
+						<local:Series Name="SeriesChannel1" Stroke="Red" StrokeThickness="4" />
+					</local:Chart2D.ChartSeries>
+				</local:Chart2D>
+				<local:Chart2D x:Name="ChartChannel2"
+							   Grid.Row="1" 
+							   ChartBackground="Transparent" 
+							   BorderThickness="3"
+							   BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+							   CornerRadius="7"
+							   Margin="5">
+					<local:Chart2D.ChartSeries>
+						<local:Series Name="SeriesChannel2" Stroke="Red" StrokeThickness="4" />
+					</local:Chart2D.ChartSeries>
+				</local:Chart2D>
+				<local:Chart2D x:Name="ChartChannel3"
+							   Grid.Row="2" 
+							   ChartBackground="Transparent" 
+							   BorderThickness="3"
+							   BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+							   CornerRadius="7"
+							   Margin="5">
+					<local:Chart2D.ChartSeries>
+						<local:Series Name="SeriesChannel3" Stroke="Red" StrokeThickness="4" />
+					</local:Chart2D.ChartSeries>
+				</local:Chart2D>
+				<local:Chart2D x:Name="ChartChannel4"
+							   Grid.Row="3" 
+							   ChartBackground="Transparent" 
+							   BorderThickness="3"
+							   BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+							   CornerRadius="7"
+							   Margin="5">
+					<local:Chart2D.ChartSeries>
+						<local:Series Name="SeriesChannel4" Stroke="Red" StrokeThickness="4" />
+					</local:Chart2D.ChartSeries>
+				</local:Chart2D>
+			</Grid>
+		</ScrollViewer>
+
+	</Grid>
+</local:BasePage>

@@ -1,0 +1,83 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:system="clr-namespace:System;assembly=mscorlib">
+  <!-- Main menu texts-->
+    <system:String x:Key="SettingsText">Settings</system:String>
+    <system:String x:Key="ConnectingText">Connecting...</system:String>
+    <system:String x:Key="ConnectedText">Connected</system:String>
+    <system:String x:Key="DisconnectedText">Disconnected</system:String>
+    <system:String x:Key="TerminalText">Terminal</system:String>
+    <system:String x:Key="ChartsText">Charts</system:String>
+
+
+    <!-- Interface texts -->
+    <system:String x:Key="BackText">Back</system:String>
+    <system:String x:Key="SaveText">Save</system:String>
+    <system:String x:Key="CancelText">Cancel</system:String>
+    <system:String x:Key="CreateText">Create</system:String>
+    <system:String x:Key="AddText">Add</system:String>
+    <system:String x:Key="RemoveText">Remove</system:String>
+    <system:String x:Key="ErrorText">Error</system:String>
+    <system:String x:Key="ReadyText">Ready</system:String>
+	<system:String x:Key="ShareText">Share</system:String>
+
+    <!-- Settings page texts -->
+    <system:String x:Key="DevicesText">Devices</system:String>
+    <system:String x:Key="DeviceText">Device</system:String>
+    <system:String x:Key="ScanDevicesText">Scan</system:String>
+    <system:String x:Key="ConnectOnStartText">Connect on startup</system:String>
+    <system:String x:Key="AdditionallyText">Additionally</system:String>
+    <system:String x:Key="InterfaceLanguageText">Interface language</system:String>
+    <system:String x:Key="SpeechLanguageText">Speech language</system:String>
+	<system:String x:Key="DictionaryLanguageText">Dictionary languages</system:String>
+    <system:String x:Key="ColorThemeText">Color theme</system:String>
+    <system:String x:Key="LightThemeText">Light</system:String>
+    <system:String x:Key="DarkThemeText">Dark</system:String>
+
+    <!-- Terminal page texts -->
+	<system:String x:Key="StartRecordText">Start record</system:String>
+	<system:String x:Key="ClearTerminalText">Clear terminal</system:String>
+
+    <!-- Charts page texts -->
+
+    <!-- Dictionary texts -->
+    <system:String x:Key="DictionaryGroupText">Group</system:String>
+    <system:String x:Key="DictionaryWordsText">Words</system:String>
+    <system:String x:Key="DictionaryEditText">Edit</system:String>
+    <system:String x:Key="HeaderRussianText">Russian</system:String>
+    <system:String x:Key="HeaderGreekText">Greek</system:String>
+    <system:String x:Key="HeaderEnglishText">English</system:String>
+    <system:String x:Key="HeaderSpeechText">Speech</system:String>
+
+    <!-- Dialogs texts -->
+    <system:String x:Key="DisconnectConfirmText">Perform a disconnection? </system:String>
+    <system:String x:Key="GroupRemoveMessageText">To confirm deletion, enter: </system:String>
+    <system:String x:Key="GroupRemoveErrorText">The names don't match!</system:String>
+    <system:String x:Key="CreateGroupErrorText">Name cannot be empty!</system:String>
+    <system:String x:Key="AddWordMessageText">Fill in the fields. (* - Required)</system:String>
+    <system:String x:Key="ConfirmText">Are you sure?</system:String>
+    <system:String x:Key="SuccessText">Success!</system:String>
+
+    <system:String x:Key="WarningText">Warning</system:String>
+    <system:String x:Key="SaveGroupQuestionText">Do you want to save the changes?</system:String>
+
+	
+    <!-- Learning texts -->
+    <system:String x:Key="PlaySpeechText">Listen</system:String>
+    <system:String x:Key="NextWordText">Next</system:String>
+    <system:String x:Key="PreviousText">Previous</system:String>
+
+    <!-- Exam selection texts -->
+    <system:String x:Key="ExamModeText">Mode</system:String>
+    <system:String x:Key="ExamModeVictorineText">Quiz</system:String>
+    <system:String x:Key="ExamModeMatchText">Comparison</system:String>
+    <system:String x:Key="ExamModeCompatText">Compilation</system:String>
+    <system:String x:Key="ExamDificultText">Difficulty</system:String>
+    <system:String x:Key="ExamLanguageModeText">Exam language</system:String>
+    <system:String x:Key="ExamWordsCountText">Number of words</system:String>
+    <system:String x:Key="ExamTimeText">Exam time</system:String>
+    <system:String x:Key="ExamDificultSimpleText">Easy</system:String>
+    <system:String x:Key="ExamDificultHatdText">Hard</system:String>
+	<system:String x:Key="ExamDificultHardcoreText">Hardcore</system:String>
+    <system:String x:Key="ExamStartText">Start</system:String>
+</ResourceDictionary>

@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.ConfirmDialog">
+	<Grid HorizontalAlignment="Center"
+		  VerticalAlignment="Center">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+
+		</Grid.RowDefinitions>
+
+		<TextBlock x:Name="MessageTextBlock"
+						   Grid.Row="0"
+						   Grid.Column="0"
+						   Grid.ColumnSpan="2"
+						   Padding="5"
+						   Margin="10"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   FontWeight="Bold"
+						   HorizontalAlignment="Center"/>
+
+
+
+		<Button x:Name="YesButton"
+				Classes="IconGrowButton"
+				Grid.Row="2"
+				Grid.Column="1"
+				Content="{StaticResource FA_CheckIcon}"
+				Margin="5"
+				FontSize="{StaticResource FontSizeXXLarge}"
+				Foreground="{StaticResource WordGreenBrush}"
+				Width="50"
+				HorizontalAlignment="Center"/>
+
+		<Button x:Name="NoButton"
+				Classes="IconGrowButton"
+				Grid.Row="2"
+				Grid.Column="0"
+				Content="{StaticResource FA_CloseIcon}"
+				Margin="5"
+				FontSize="{StaticResource FontSizeXXLarge}"
+				Foreground="{StaticResource WordRedBrush}"
+				Width="50"
+				HorizontalAlignment="Center"/>
+	</Grid>
+</UserControl>

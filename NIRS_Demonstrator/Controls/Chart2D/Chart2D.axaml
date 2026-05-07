@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.Chart2D">
+	<Grid x:Name="MainGrid">
+		
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		
+		<Canvas x:Name="ChartArea"
+				Background="Transparent"
+				Grid.Column="0"
+				Grid.Row="0"
+				/>
+		
+		<ScrollBar x:Name="HorizontalScroll"
+				   Grid.Column="0"
+				   Grid.Row="1"
+				   Orientation="Horizontal"
+				   Margin="0 3"/>
+
+		<ScrollBar x:Name="VerticalScroll"
+				   Grid.Column="1"
+				   Grid.Row="0"
+				   Orientation="Vertical"
+				   Margin="3 0"/>
+		
+	</Grid>
+</UserControl>

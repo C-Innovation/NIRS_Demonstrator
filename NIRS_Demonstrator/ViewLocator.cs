@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using NIRS_Demonstrator.Core;
 using NIRS_Demonstrator.ViewModels;
 
 namespace NIRS_Demonstrator;

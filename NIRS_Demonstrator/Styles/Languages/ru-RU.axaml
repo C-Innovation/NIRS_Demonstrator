@@ -1,0 +1,85 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:system="clr-namespace:System;assembly=mscorlib">
+	<!-- Main menu texts-->
+	<system:String x:Key="SettingsText">Параметры</system:String>
+	<system:String x:Key="ConnectingText">Подключение...</system:String>
+    <system:String x:Key="ConnectedText">Подключено</system:String>
+    <system:String x:Key="DisconnectedText">Не подключено</system:String>
+	<system:String x:Key="TerminalText">Терминал</system:String>
+	<system:String x:Key="ChartsText">Графики</system:String>
+
+	<!-- Interface texts -->
+	<system:String x:Key="BackText">Назад</system:String>
+	<system:String x:Key="SaveText">Сохранить</system:String>
+	<system:String x:Key="CancelText">Отмена</system:String>
+	<system:String x:Key="CreateText">Создать</system:String>
+	<system:String x:Key="AddText">Добавить</system:String>
+	<system:String x:Key="RemoveText">Удалить</system:String>
+	<system:String x:Key="ErrorText">Ошибка</system:String>
+	<system:String x:Key="ReadyText">Готово</system:String>
+	<system:String x:Key="ShareText">Поделиться</system:String>
+
+	<!-- Settings page texts -->
+
+	<system:String x:Key="InterfaceLanguageText">Язык интерфейса</system:String>
+	<system:String x:Key="DevicesText">Устройства</system:String>
+	<system:String x:Key="DeviceText">Устройство</system:String>
+	<system:String x:Key="ConnectOnStartText">Подкючаться при старте</system:String>
+	<system:String x:Key="AdditionallyText">Дополнительно</system:String>
+	<system:String x:Key="ScanDevicesText">Сканировать</system:String>
+	<system:String x:Key="SpeechLanguageText">Язык озвучки</system:String>
+	<system:String x:Key="DictionaryLanguageText">Языки словаря</system:String>
+	<system:String x:Key="ColorThemeText">Цветовая схема</system:String>
+	<system:String x:Key="LightThemeText">Светлая</system:String>
+	<system:String x:Key="DarkThemeText">Темная</system:String>
+
+	<!-- Terminal page texts -->
+	<system:String x:Key="StartRecordText">Начать запись</system:String>
+	<system:String x:Key="ClearTerminalText">Очистить терминал</system:String>
+
+	<!-- Charts page texts -->
+
+	<!-- Dictionary texts -->
+	<system:String x:Key="DictionaryGroupText">Группа</system:String>
+	<system:String x:Key="DictionaryWordsText">Слова</system:String>
+	<system:String x:Key="DictionaryEditText">Редактировать</system:String>
+	<system:String x:Key="HeaderRussianText">Русский</system:String>
+	<system:String x:Key="HeaderGreekText">Греческий</system:String>
+	<system:String x:Key="HeaderEnglishText">Английский</system:String>
+	<system:String x:Key="HeaderSpeechText">Звучание</system:String>
+
+	<!-- Dialogs texts -->
+	
+	<system:String x:Key="DisconnectConfirmText">Произвести разъединение? </system:String>
+	<system:String x:Key="GroupRemoveMessageText">Для подтверждения удаления введите: </system:String>
+	<system:String x:Key="GroupRemoveErrorText">Имена не совпадают!</system:String>
+	<system:String x:Key="CreateGroupErrorText">Имя не может быть пустым!</system:String>
+	<system:String x:Key="AddWordMessageText">Заполните поля. (* - Оязательно)</system:String>
+	<system:String x:Key="ConfirmText">Вы уверены?</system:String>
+	<system:String x:Key="SuccessText">Успешно!</system:String>
+
+	<system:String x:Key="WarningText">Предупреждение</system:String>
+	<system:String x:Key="SaveGroupQuestionText">Вы хотите сохранить изменения?</system:String>
+
+
+
+	<!-- Learning texts -->
+	<system:String x:Key="PlaySpeechText">Прослушать</system:String>
+	<system:String x:Key="NextWordText">Следующий</system:String>
+	<system:String x:Key="PreviousText">Предыдущий</system:String>
+
+	<!-- Exam selection texts -->
+	<system:String x:Key="ExamModeText">Режим</system:String>
+	<system:String x:Key="ExamModeVictorineText">Викторина</system:String>
+	<system:String x:Key="ExamModeMatchText">Сопоставление</system:String>
+	<system:String x:Key="ExamModeCompatText">Составление</system:String>
+	<system:String x:Key="ExamDificultText">Сложность</system:String>
+	<system:String x:Key="ExamLanguageModeText">Язык проверки</system:String>
+	<system:String x:Key="ExamWordsCountText">Количество слов</system:String>
+	<system:String x:Key="ExamTimeText">Время проверки</system:String>
+	<system:String x:Key="ExamDificultSimpleText">Легко</system:String>
+	<system:String x:Key="ExamDificultHardText">Сложно</system:String>
+	<system:String x:Key="ExamDificultHardcoreText">Очень сложно</system:String>
+	<system:String x:Key="ExamStartText">Старт</system:String>
+</ResourceDictionary>

@@ -1,0 +1,153 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Add Styles Here -->
+	<Style Selector="Button.Regular" >
+		<Setter	Property="Margin" Value="5" />
+		<Setter	Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+		<Setter	Property="CornerRadius" Value="10" />
+
+		<!--<Setter Property="Background" Value="{StaticResource GreekBlueBrush}" />
+		<Setter Property="Foreground" Value="{StaticResource ForegroudLightBrush}" /> -->
+		<Setter Property="Background" Value="{DynamicResource Theme_ForegroudMainBrush}" />
+		<Setter Property="Foreground" Value="{DynamicResource Theme_BackgroundMainBrush}" />
+		
+		<Setter Property="FontWeight" Value="Bold" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border x:Name="border"
+                            CornerRadius="10"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            >
+						<Grid>
+							<TextBlock Text="{TemplateBinding Content}"
+                                   
+                                   Focusable="False"
+                                   FontFamily="{TemplateBinding FontFamily}"
+                                   FontSize="{TemplateBinding FontSize}"
+                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                   Margin="{TemplateBinding Padding}"
+									   TextAlignment="Center"
+                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.2"/>
+			</Transitions>
+
+		</Setter>
+
+	</Style>
+	<Style Selector="Button.Regular:pointerover">
+		<Setter Property="Background" Value="{DynamicResource Theme_GreekBlueBrush}"/>
+
+	</Style>
+
+	<Style Selector="Button.IconButton">
+		<Setter Property="Background" Value="{StaticResource WordTransparentBlueBrush}" />
+		<Setter	Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+		<Setter Property="Foreground" Value="{DynamicResource Theme_ForegroudMainBrush}" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="10" />
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border x:Name="border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            >
+						<Grid>
+							<Viewbox>
+						
+								<i:Icon Value="{TemplateBinding Content}"
+										FontSize="{TemplateBinding FontSize}"
+										HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										Margin="{TemplateBinding Padding}"
+										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+										Focusable="False"/>
+							</Viewbox>
+
+
+
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.2"/>
+			</Transitions>
+
+		</Setter>
+		
+	</Style>
+	<Style Selector="Button.IconButton:pointerover">
+		<Setter Property="Background" Value="{StaticResource WordBlueBrush}"/>
+
+	</Style>
+
+
+	<Style Selector="Button.IconGrowButton">
+		<Setter Property="Background" Value="{StaticResource WordTransparentBlueBrush}" />
+		<Setter	Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+		<Setter Property="Foreground" Value="{DynamicResource Theme_ForegroudMainBrush}" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="10" />
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border x:Name="border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            >
+						<Grid>
+							<Viewbox>
+
+								<i:Icon Value="{TemplateBinding Content}"
+										FontSize="{TemplateBinding FontSize}"
+										HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										Margin="{TemplateBinding Padding}"
+										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+										Focusable="False"/>
+							</Viewbox>
+
+
+
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<TransformOperationsTransition  Property="RenderTransform" Duration="0:0:0.2"/>
+			</Transitions>
+
+		</Setter>
+
+	</Style>
+	<Style Selector="Button.IconGrowButton:pointerover">
+		<Setter Property="RenderTransform" Value="scale(1.5, 1.5)"/>
+
+	</Style>
+	
+</Styles>

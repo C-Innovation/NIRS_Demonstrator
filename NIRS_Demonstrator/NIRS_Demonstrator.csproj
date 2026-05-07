@@ -12,12 +12,24 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="AvaloniaDialogs" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" />
     <PackageReference Include="ReactiveUI.Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NIRS_Demonstrator.Core\NIRS_Demonstrator.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dialogs\DataTemplates\" />
+    <Folder Include="Helpers\Hardware\" />
   </ItemGroup>
 </Project>

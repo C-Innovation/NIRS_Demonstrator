@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Color x:Key="Theme_BackgroundMain">#ffffff</Color>
+	<SolidColorBrush x:Key="Theme_BackgroundMainBrush" Color="{StaticResource Theme_BackgroundMain}"/>
+
+	<Color x:Key="Theme_ForegroundMain">#686868</Color>
+	<SolidColorBrush x:Key="Theme_ForegroudMainBrush" Color="{StaticResource Theme_ForegroundMain}"/>
+
+	<Color x:Key="Theme_TitleBackground">#ffffff</Color>
+	<SolidColorBrush x:Key="Theme_TitleBackgroundBrush" Color="{StaticResource Theme_TitleBackground}"/>
+
+	<Color x:Key="GreekBlue">#0D5EAF</Color>
+	<SolidColorBrush x:Key="Theme_GreekBlueBrush" Color="{StaticResource GreekBlue}" />
+</ResourceDictionary>

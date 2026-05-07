@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:local="clr-namespace:NIRS_Demonstrator"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.SettingsElement">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto" />
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+
+		<Image x:Name="IconControl"
+                 Grid.Column="0"
+                 Width="50"
+                 Height="50"/>
+
+		<TextBlock x:Name="HeaderText"
+                   Grid.Column="1"
+                   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+                   FontSize="{StaticResource FontSizeLarge}"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Left"
+                   Margin="5 0 0 0"
+                   VerticalAlignment="Center"                   />
+
+		<Button x:Name="CheckBoxButton"
+                Grid.Column="2"
+                Classes="IconButton"
+                Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+                Height="50"
+                Width="50"
+                Content="{StaticResource FA_SquareIcon}"
+                Click="CheckBoxButton_Click"/>
+
+
+	</Grid>
+</UserControl>

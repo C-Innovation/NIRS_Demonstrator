@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:local="clr-namespace:NIRS_Demonstrator"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.SettingsBlock">
+
+	<UserControl.Styles>
+		<Style Selector="Border.Anim">
+			<Setter Property="BorderBrush" Value="{DynamicResource Theme_ForegroudMainBrush}" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+				</Transitions>
+				
+			</Setter>
+
+			
+			
+		</Style>
+		
+		<Style Selector="Border.Anim:pointerover">
+			<Setter Property="BorderBrush" Value="{DynamicResource Theme_GreekBlueBrush}"/>
+			
+		</Style>
+
+
+
+	</UserControl.Styles>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<!-- Header -->
+		<TextBlock x:Name="HeaderText" Grid.Row="0"
+                   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+                   FontSize="{StaticResource FontSizeXLarge}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontWeight="Bold"
+                   Margin="0 5"/>
+
+		<!-- Settings list -->
+		<Border x:Name="MainBorder"
+				Classes="Anim"
+                Grid.Row="1"
+                Background="Transparent"
+                BorderThickness="5"
+                CornerRadius="10">
+
+			<StackPanel x:Name="SettingsList"
+                        Orientation="Vertical" />
+
+			
+		</Border>
+
+	</Grid>
+</UserControl>
