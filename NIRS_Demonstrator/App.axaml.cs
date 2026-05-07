@@ -101,6 +101,7 @@ public partial class App : Application
             {
                 DataContext = new MainViewModel()
             };
+            AppConfig.GetInstance().SetApplicationLifetime(singleViewPlatform);
         }
 
         base.OnFrameworkInitializationCompleted();

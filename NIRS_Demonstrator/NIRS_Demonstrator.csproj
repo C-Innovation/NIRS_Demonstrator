@@ -22,6 +22,7 @@
     </PackageReference>
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" />
     <PackageReference Include="ReactiveUI.Avalonia" />
+    <PackageReference Include="System.IO.Ports" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +31,5 @@
 
   <ItemGroup>
     <Folder Include="Dialogs\DataTemplates\" />
-    <Folder Include="Helpers\Hardware\" />
   </ItemGroup>
 </Project>
