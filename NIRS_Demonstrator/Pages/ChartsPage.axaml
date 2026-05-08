@@ -66,7 +66,7 @@
 		<ScrollViewer VerticalScrollBarVisibility="Auto"
 					  Grid.Column="0"
 					  Grid.Row="1"
-					  Grid.ColumnSpan="2">
+					  Grid.ColumnSpan="1">
 			<Grid >
 				<Grid.RowDefinitions>
 					<RowDefinition Height="*" />
@@ -76,7 +76,7 @@
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				
-				<local:Chart2D x:Name="ChartChannel1"
+				<local:Chart2D x:Name="Nirs1Chart740"
 							   Grid.Row="0" 
 							   ChartBackground="Transparent" 
 							   BorderThickness="3"
@@ -84,10 +84,13 @@
 							   CornerRadius="7"
 							   Margin="5">
 					<local:Chart2D.ChartSeries>
-						<local:Series Name="SeriesChannel1" Stroke="Red" StrokeThickness="4" />
+						<local:Series Name="Nirs1Series740_1" Stroke="Red" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_2" Stroke="Green" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_3" Stroke="Blue" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_4" Stroke="Magenta" StrokeThickness="2" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
-				<local:Chart2D x:Name="ChartChannel2"
+				<local:Chart2D x:Name="Nirs1Chart850"
 							   Grid.Row="1" 
 							   ChartBackground="Transparent" 
 							   BorderThickness="3"
@@ -95,10 +98,13 @@
 							   CornerRadius="7"
 							   Margin="5">
 					<local:Chart2D.ChartSeries>
-						<local:Series Name="SeriesChannel2" Stroke="Red" StrokeThickness="4" />
+						<local:Series Name="Nirs1Series850_1" Stroke="Red" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_2" Stroke="Green" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_3" Stroke="Blue" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_4" Stroke="Magenta" StrokeThickness="2" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
-				<local:Chart2D x:Name="ChartChannel3"
+				<local:Chart2D x:Name="Nirs2Chart740"
 							   Grid.Row="2" 
 							   ChartBackground="Transparent" 
 							   BorderThickness="3"
@@ -109,7 +115,7 @@
 						<local:Series Name="SeriesChannel3" Stroke="Red" StrokeThickness="4" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
-				<local:Chart2D x:Name="ChartChannel4"
+				<local:Chart2D x:Name="Nirs2Chart850"
 							   Grid.Row="3" 
 							   ChartBackground="Transparent" 
 							   BorderThickness="3"
@@ -122,6 +128,63 @@
 				</local:Chart2D>
 			</Grid>
 		</ScrollViewer>
+		<Grid x:Name="ComPortControlGrid"
+			  Grid.Column="1"
+			  Grid.Row="1"
+			  HorizontalAlignment="Center"
+			  Margin="0 5 5 0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<!-- NIRS COM port selector 1 -->
+			<ComboBox x:Name="NirsComPortSelector1"
+					  Grid.Row="0"
+					  Grid.Column="0"
+					  Grid.ColumnSpan="3" 
+					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+					  BorderThickness="2"
+					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					  FontSize="{StaticResource FontSizeLarge}"
+					  FontWeight="Bold" 
+					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
 
+			<!-- NIRS COM ports control -->
+			<Button x:Name="StartComPortsButton"
+					Classes="IconGrowButton"
+					Grid.Row="2"
+					Grid.Column="0"
+					Content="{StaticResource FA_PlayIcon}"
+					Foreground="{StaticResource WordGreenBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource NirsStartText}"
+					Click="StartComPortsButton_Click"/>
+			<Button x:Name="RefreshComPortsButton"
+					Classes="IconGrowButton"
+					Grid.Row="2"
+					Grid.Column="1"
+					Content="{StaticResource FA_ArrowsRotate}"
+
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource NirsUpdatePortsText}"
+					Click="RefreshComPortsButton_Click"/>
+
+			<Button x:Name="StopComPortsButton"
+					Classes="IconGrowButton"
+					Grid.Row="2"
+					Grid.Column="2"
+					Content="{StaticResource FA_StopIcon}"
+					Foreground="{StaticResource WordRedBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource NirsStopText}"
+					Click="StopComPortsButton_Click"/>
+		</Grid>
+				
 	</Grid>
 </local:BasePage>

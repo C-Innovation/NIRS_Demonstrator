@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DynamicData;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace NIRS_Demonstrator
 
         #region Private Members
         const uint HEADER = 0x234E5253;
-        private const int NIRS_UART_BAUDRATE = 1_000_000;
+        private const int NIRS_UART_BAUDRATE = 921_600;
         private const int NIRS_QUEUE_SIZE = 1_000;
         private readonly UsbSerialPort _SerialPort;
         private Thread _NirsDataThread;
@@ -26,9 +27,12 @@ namespace NIRS_Demonstrator
         private readonly Queue<NirsSensorData> _AvailebleDataQueue;
         private readonly CircularBuffer<byte> _RawBuffer;
         private readonly Deserializer _Deserializer;
+        private bool _IsStarted = false;
         #endregion
 
         #region Public Properties
+
+        public bool IsStarted => _IsStarted;
 
         #endregion
 
@@ -60,7 +64,11 @@ namespace NIRS_Demonstrator
 
         private void DataDeselializeComplete(byte[] data, int len)
         {
-            _AvailebleDataQueue.Enqueue(data.ToNirsSensorData());
+            //lock (_AvailebleDataQueue)
+            //{
+                _AvailebleDataQueue.Enqueue(data.ToNirsSensorData());
+            //}
+            
         }
 
         #endregion
@@ -75,18 +83,32 @@ namespace NIRS_Demonstrator
 
             _SerialPort.Start();
             _NirsDataThreadStarted = true;
+            _IsStarted = true;
             _NirsDataThread = new Thread(NirsDataThreadAction);
             _NirsDataThread.Start();
         }
 
         public void Stop()
         {
-            _SerialPort.Stop();
+            
             if (_NirsDataThreadStarted)
             {
                 _NirsDataThreadStarted = false;
                 _NirsDataThread.Join();
             }
+            _SerialPort.Stop();
+            _IsStarted = false;
+        }
+
+        public List<NirsSensorData> GetAvailebleData()
+        {
+            List<NirsSensorData> data = new List<NirsSensorData>();
+            //lock (_AvailebleDataQueue)
+            //{
+                while (_AvailebleDataQueue.Count > 0)
+                    data.Add(_AvailebleDataQueue.Dequeue());
+            //}
+            return data;
         }
 
         public void Dispose()

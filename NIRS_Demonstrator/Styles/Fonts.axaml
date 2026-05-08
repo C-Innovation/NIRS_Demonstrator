@@ -48,6 +48,11 @@
 	<system:String x:Key="FA_CircleIcon">fa-solid fa-circle</system:String>
 	<system:String x:Key="FA_EraserIcon">fa-solid fa-eraser</system:String>
 	<system:String x:Key="FA_ChartIcon">fa-solid fa-chart-line</system:String>
+
+	<system:String x:Key="FA_PlayIcon">fa-solid fa-play</system:String>
+	<system:String x:Key="FA_StopIcon">fa-solid fa-stop</system:String>
+	<system:String x:Key="FA_ArrowsRotate">fa-solid fa-arrows-rotate</system:String>
 	
+
 
 </ResourceDictionary>

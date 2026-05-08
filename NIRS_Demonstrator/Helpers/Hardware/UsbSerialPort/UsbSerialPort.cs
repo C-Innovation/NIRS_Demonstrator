@@ -68,7 +68,11 @@ namespace NIRS_Demonstrator
                 return null;
             
             byte[] _tBytes = new byte[_SerialPort.BytesToRead];
-            await _SerialPort.BaseStream.ReadAsync(_tBytes, 0, _tBytes.Length);
+            //await _SerialPort.BaseStream.ReadAsync(_tBytes, 0, _tBytes.Length);
+            await Task.Run(() =>
+            {
+                _SerialPort.Read(_tBytes, 0, _tBytes.Length);
+            });
             return _tBytes;
         }
 

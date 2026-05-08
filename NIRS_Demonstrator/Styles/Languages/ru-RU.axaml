@@ -39,6 +39,10 @@
 	<system:String x:Key="ClearTerminalText">Очистить терминал</system:String>
 
 	<!-- Charts page texts -->
+	<system:String x:Key="NirsStartText">Старт</system:String>
+	<system:String x:Key="NirsStopText">Стоп</system:String>
+	<system:String x:Key="NirsUpdatePortsText">Обновить</system:String>
+
 
 	<!-- Dictionary texts -->
 	<system:String x:Key="DictionaryGroupText">Группа</system:String>

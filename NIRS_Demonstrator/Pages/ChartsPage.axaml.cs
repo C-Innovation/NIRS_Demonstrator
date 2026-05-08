@@ -18,13 +18,11 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
     private int _chart3_cnt = 0;
     private int _chart4_cnt = 0;
 
-    private List<Point> _pointsCh1;
-    private List<Point> _pointsCh2;
-    private List<Point> _pointsCh3;
-    private List<Point> _pointsCh4;
 
     private Thread _handlePointsThread;
     private bool _handlePointsThreadStarted = false;
+
+    private NirsSensorDevice NirsSensor1;
 
     public ChartsPage() : base()
     {
@@ -39,8 +37,13 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     public void Dispose()
     {
-        if(_handlePointsThreadStarted)
+
+        if(NirsSensor1 != null && NirsSensor1.IsStarted)
+            NirsSensor1.Stop();
+
+        if (_handlePointsThreadStarted)
         {
+            
             _handlePointsThreadStarted = false;
             _handlePointsThread.Join();
         }
@@ -48,90 +51,93 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     private void InitializeLocal()
     {
-        ChartChannel1.SetAxisXSize(1000);
-        ChartChannel2.SetAxisXSize(1000);
-        ChartChannel3.SetAxisXSize(1000);
-        ChartChannel4.SetAxisXSize(1000);
-        
+        Nirs1Chart740.SetAxisXSize(1000);
+        Nirs1Chart850.SetAxisXSize(1000);
+        Nirs2Chart740.SetAxisXSize(1000);
+        Nirs2Chart850.SetAxisXSize(1000);
+
         AppConfig.GetInstance().RegisterDisposableObject(this);
-        _pointsCh1 = new List<Point>();
-        _pointsCh2 = new List<Point>();
-        _pointsCh3 = new List<Point>();
-        _pointsCh4 = new List<Point>();
-        _handlePointsThreadStarted = true;
-        _handlePointsThread = new Thread(HandlePointsThreadAction);
-        _handlePointsThread.Start();
-    }
+        //_handlePointsThreadStarted = true;
+        //_handlePointsThread = new Thread(HandlePointsThreadAction);
+        //_handlePointsThread.Start();
 
-    private void OnChartDataReceived(object? sender, ChartData e)
-    {
-        switch (e.Channel)
-        {
-            case 0:
-                _pointsCh1.Add(new Point(_chart1_cnt, e.Y));
-                _chart1_cnt++;
-                break;
-
-            case 1:
-                _pointsCh2.Add(new Point(_chart2_cnt, e.Y));
-                _chart2_cnt++;
-                break;
-            case 2:
-                _pointsCh3.Add(new Point(_chart3_cnt, e.Y));
-                _chart3_cnt++;
-                break;
-            case 3:
-                _pointsCh4.Add(new Point(_chart4_cnt, e.Y));
-                _chart4_cnt++;
-                break;
-
-            default: break;
-        }
+        RefreshComPortsList();
     }
 
     private async void HandlePointsThreadAction()
     {
-        Point[] _pCh1;
-        Point[] _pCh2;
-        Point[] _pCh3;
-        Point[] _pCh4;
 
         while (_handlePointsThreadStarted)
         {
-            int __cnt = _pointsCh1.Count;
-            if (__cnt > 0)
+            List<NirsSensorData> data = NirsSensor1.GetAvailebleData();
+            foreach (NirsSensorData dataData in data)
             {
-                _pCh1 = new Point[__cnt];
-                _pointsCh1.CopyTo(0, _pCh1, 0, __cnt);
-                _pointsCh1.RemoveRange(0, __cnt);
-                await SeriesChannel1.AddPointsRangeAsync(_pCh1);
+                await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, RemoveLedBackground(dataData.Led740_1, dataData.Led740_Bgd_1).ToVoltage5V(12)));
+                await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, RemoveLedBackground(dataData.Led740_2, dataData.Led740_Bgd_2).ToVoltage5V(12)));
+                await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, RemoveLedBackground(dataData.Led740_3, dataData.Led740_Bgd_3).ToVoltage5V(12)));
+                await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, RemoveLedBackground(dataData.Led740_4, dataData.Led740_Bgd_4).ToVoltage5V(12)));
+                _chart1_cnt++;                                                                                   
+                await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, RemoveLedBackground(dataData.Led850_1, dataData.Led850_Bgd_1).ToVoltage5V(12)));
+                await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, RemoveLedBackground(dataData.Led850_2, dataData.Led850_Bgd_2).ToVoltage5V(12)));
+                await Nirs1Series850_3.AddPointAsync(new Point(_chart2_cnt, RemoveLedBackground(dataData.Led850_3, dataData.Led850_Bgd_3).ToVoltage5V(12)));
+                await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, RemoveLedBackground(dataData.Led850_4, dataData.Led850_Bgd_4).ToVoltage5V(12)));
+                _chart2_cnt++;
             }
-            __cnt = _pointsCh2.Count;
-            if (__cnt > 0)
-            {
-                _pCh2 = new Point[__cnt];
-                _pointsCh2.CopyTo(0, _pCh2, 0, __cnt);
-                _pointsCh2.RemoveRange(0, __cnt);
-                await SeriesChannel2.AddPointsRangeAsync(_pCh2);
-            }
-
-            __cnt = _pointsCh3.Count;
-            if (__cnt > 0)
-            {
-                _pCh3 = new Point[__cnt];
-                _pointsCh3.CopyTo(0, _pCh3, 0, __cnt);
-                _pointsCh3.RemoveRange(0, __cnt);
-                await SeriesChannel3.AddPointsRangeAsync(_pCh3);
-            }
-            __cnt = _pointsCh4.Count;
-            if (__cnt > 0)
-            {
-                _pCh4 = new Point[__cnt];
-                _pointsCh4.CopyTo(0, _pCh4, 0, __cnt);
-                _pointsCh4.RemoveRange(0, __cnt);
-                await SeriesChannel4.AddPointsRangeAsync(_pCh4);
-            }
-            await Task.Delay(33);
+           
+            await Task.Delay(1);
         }
+    }
+
+    private void RefreshComPortsList()
+    {
+        NirsComPortSelector1.Items.Clear();
+        string[] names = (string[])UsbSerialPort.GetPortNames();
+        foreach (string name in names)
+        {
+            NirsComPortSelector1.Items.Add(name);
+        }
+
+        NirsComPortSelector1.SelectedIndex = 0;
+    }
+
+    private void StartComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(NirsComPortSelector1.SelectedItem.ToString()))
+            return;
+
+        if (NirsSensor1 == null)
+            NirsSensor1 = new NirsSensorDevice(NirsComPortSelector1.SelectedItem.ToString());
+
+        if (NirsSensor1.IsStarted)
+            return;
+
+        _handlePointsThreadStarted = true;
+        _handlePointsThread = new Thread(HandlePointsThreadAction);
+        _handlePointsThread.Start();
+
+        NirsSensor1.Start();
+    }
+    private void StopComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (NirsSensor1 != null && NirsSensor1.IsStarted)
+            NirsSensor1.Stop();
+
+        if (_handlePointsThreadStarted)
+        {
+            _handlePointsThreadStarted = false;
+            _handlePointsThread.Join();
+        }
+    }
+    private void RefreshComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        RefreshComPortsList();
+    }
+
+    ushort RemoveLedBackground(ushort val, ushort bgd)
+    {
+        if (val < bgd)
+            return 0;
+
+        return (ushort)(val - bgd);
     }
 }

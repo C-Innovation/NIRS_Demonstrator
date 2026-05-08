@@ -109,5 +109,10 @@ namespace NIRS_Demonstrator
             return bytes.ToArray();
 
         }
+
+        public static double ToVoltage5V(this UInt16 raw, UInt16 resolutoin)
+        {
+            return (double)raw / Math.Pow(2, resolutoin) * 5.0;
+        }
     }
 }

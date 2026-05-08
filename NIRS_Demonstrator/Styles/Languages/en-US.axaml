@@ -39,6 +39,9 @@
 	<system:String x:Key="ClearTerminalText">Clear terminal</system:String>
 
     <!-- Charts page texts -->
+    <system:String x:Key="NirsStartText">Start</system:String>
+	<system:String x:Key="NirsStopText">Stop</system:String>
+	<system:String x:Key="NirsUpdatePortsText">Refresh</system:String>
 
     <!-- Dictionary texts -->
     <system:String x:Key="DictionaryGroupText">Group</system:String>
