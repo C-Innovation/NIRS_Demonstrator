@@ -112,7 +112,10 @@
 							   CornerRadius="7"
 							   Margin="5">
 					<local:Chart2D.ChartSeries>
-						<local:Series Name="SeriesChannel3" Stroke="Red" StrokeThickness="4" />
+						<local:Series Name="Nirs2Series740_1" Stroke="Red" StrokeThickness="2" />
+						<local:Series Name="Nirs2Series740_2" Stroke="Green" StrokeThickness="2" />
+						<local:Series Name="Nirs2Series740_3" Stroke="Blue" StrokeThickness="2" />
+						<local:Series Name="Nirs2Series740_4" Stroke="Magenta" StrokeThickness="2" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
 				<local:Chart2D x:Name="Nirs2Chart850"
@@ -123,7 +126,10 @@
 							   CornerRadius="7"
 							   Margin="5">
 					<local:Chart2D.ChartSeries>
-						<local:Series Name="SeriesChannel4" Stroke="Red" StrokeThickness="4" />
+						<local:Series Name="Nirs2Series850_1" Stroke="Red" StrokeThickness="2" />
+						<local:Series Name="Nirs2Series850_2" Stroke="Green" StrokeThickness="2" />
+						<local:Series Name="Nirs2Series850_3" Stroke="Blue" StrokeThickness="2" />
+						<local:Series Name="Nirs2Series850_4" Stroke="Magenta" StrokeThickness="2" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
 			</Grid>
@@ -143,9 +149,22 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
+
 			<!-- NIRS COM port selector 1 -->
 			<ComboBox x:Name="NirsComPortSelector1"
 					  Grid.Row="0"
+					  Grid.Column="0"
+					  Grid.ColumnSpan="3" 
+					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+					  BorderThickness="2"
+					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					  FontSize="{StaticResource FontSizeLarge}"
+					  FontWeight="Bold" 
+					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
+
+			<!-- NIRS COM port selector 2 -->
+			<ComboBox x:Name="NirsComPortSelector2"
+					  Grid.Row="1"
 					  Grid.Column="0"
 					  Grid.ColumnSpan="3" 
 					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
