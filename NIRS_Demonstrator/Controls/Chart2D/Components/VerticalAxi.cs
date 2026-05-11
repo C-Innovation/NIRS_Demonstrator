@@ -27,13 +27,13 @@ namespace NIRS_Demonstrator
 
         #region Public Properties
 
-        public double AxisSize { get; private set; } = 12;
-        public double AxisTotalSize { get; private set; } = 24;
+        public double AxisSize { get; private set; } = 3;
+        public double AxisTotalSize { get; private set; } = 6;
         public double AxisTickSize { get; private set; }
         public double AxisOffsetValue { get; private set; } = 0;
         public int AxisTicksCount { get; private set; }
-        public double AxisMinValue { get; private set; } = -6;
-        public double AxisMaxValue { get; private set; } = 6;
+        public double AxisMinValue { get; private set; } = -1.5;
+        public double AxisMaxValue { get; private set; } = 1.5;
 
         #endregion
 
