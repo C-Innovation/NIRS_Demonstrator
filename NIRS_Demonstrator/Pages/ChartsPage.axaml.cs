@@ -6,6 +6,7 @@ using CInnovation.SignalProcessing.Filters.BiQuad;
 using NIRS_Demonstrator.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,65 +77,61 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     private async void HandlePointsThreadAction()
     {
-        double[] results = new double[4];
-        SlipMid[] slipMids = new SlipMid[8]
+        
+        NirsSignalProcessing NirsSignalProcessing1 = new NirsSignalProcessing();
+        string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
+        string path1 = path + "_Nirs1.csv;";
+        string path2 = path + "_Nirs2.csv;";
+        ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(path1);
+        await streamerCsv.WriteHeaderAsync(new List<string>()
         {
-            new SlipMid(10),
-            new SlipMid(10),
-            new SlipMid(10),
-            new SlipMid(10),
-            new SlipMid(10),
-            new SlipMid(10),
-            new SlipMid(10),
-            new SlipMid(10)
-        };
-        LowpassFilter[] lowpassFilters = new LowpassFilter[4]
-        {
-            new LowpassFilter(100, 10.0),
-            new LowpassFilter(100, 10.0),
-            new LowpassFilter(100, 10.0),
-            new LowpassFilter(100, 10.0)
-        };
+            "Led740Ch1",
+            "Led740Ch2",
+            "Led740Ch3",
+            "Led740Ch4",
+            "Led740Ch1_Flt",
+            "Led740Ch2_Flt",
+            "Led740Ch3_Flt",
+            "Led740Ch4_Flt",
+            "Led850Ch1",
+            "Led850Ch2",
+            "Led850Ch3",
+            "Led850Ch4",
+            "Led850Ch1_Flt",
+            "Led850Ch2_Flt",
+            "Led850Ch3_Flt",
+            "Led850Ch4_Flt"
+        });
         while (_handlePointsThreadStarted)
         {
             List<NirsSensorData> data = NirsSensor1.GetAvailebleData();
+
             foreach (NirsSensorData dataData in data)
             {
-                results[0] = RemoveLedBackground(dataData.Led740_1, dataData.Led740_Bgd_1).ToVoltage5V(12);
-                results[1] = RemoveLedBackground(dataData.Led740_2, dataData.Led740_Bgd_2).ToVoltage5V(12);
-                results[2] = RemoveLedBackground(dataData.Led740_3, dataData.Led740_Bgd_3).ToVoltage5V(12);
-                results[3] = RemoveLedBackground(dataData.Led740_4, dataData.Led740_Bgd_4).ToVoltage5V(12);
+                NirsSignalData nirsData = NirsSignalProcessing1.GetNirsSignalData(dataData);
+                List<double> vals = nirsData.ToList();
 
-                results[2] = slipMids[0].Process(results[2]);
-                results[3] = slipMids[1].Process(results[3]);
-                await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, results[0]));
-                await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, results[1]));
-                await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, results[2]));
-                await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, results[3]));
+                await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch1_Flt));
+                await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch2_Flt));
+                await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
+                await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
                 _chart1_cnt++;
 
-                results[0] = RemoveLedBackground(dataData.Led850_3, dataData.Led850_Bgd_3).ToVoltage5V(12);
-                results[1] = RemoveLedBackground(dataData.Led850_4, dataData.Led850_Bgd_4).ToVoltage5V(12);
-                results[2] = RemoveLedBackground(dataData.Led850_3, dataData.Led850_Bgd_3).ToVoltage5V(12);
-                results[3] = RemoveLedBackground(dataData.Led850_4, dataData.Led850_Bgd_4).ToVoltage5V(12);
-
-                //results[2] = lowpassFilters[2].Process(results[2]);
-                //results[3] = lowpassFilters[3].Process(results[3]);
-                results[2] = slipMids[2].Process(results[2]);
-                results[3] = slipMids[3].Process(results[3]);
                 Dispatcher.UIThread.Invoke(() =>
                 {
-                    Nirs1ValueText850_1.Text = $"{results[0]:0.000} V";
-                    Nirs1ValueText850_2.Text = $"{results[1]:0.000} V";
-                    Nirs1ValueText850_3.Text = $"{results[2]:0.000} V";
-                    Nirs1ValueText850_4.Text = $"{results[3]:0.000} V";
+                    Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3:0.000} V";
+                    Nirs1ValueText850_2.Text = $"{nirsData.Led850Ch4:0.000} V";
+                    Nirs1ValueText850_3.Text = $"{nirsData.Led850Ch3_Flt:0.000} V";
+                    Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V";
                 });
                 
-                await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, results[0]));
-                await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, results[1]));
-                await Nirs1Series850_3.AddPointAsync(new Point(_chart2_cnt, results[2]));
-                await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, results[3]));
+                await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
+                await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4));
+                await Nirs1Series850_3.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3_Flt));
+                await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4_Flt));
                 _chart2_cnt++;
+
+                streamerCsv.Write(vals);
             }
 /*
             data = NirsSensor2.GetAvailebleData();
@@ -170,6 +167,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 */
             await Task.Delay(1);
         }
+        streamerCsv.Dispose();
     }
 
     private void RefreshComPortsList()
@@ -233,11 +231,5 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         RefreshComPortsList();
     }
 
-    ushort RemoveLedBackground(ushort val, ushort bgd)
-    {
-        if (val < bgd)
-            return 0;
-
-        return (ushort)(val - bgd);
-    }
+    
 }

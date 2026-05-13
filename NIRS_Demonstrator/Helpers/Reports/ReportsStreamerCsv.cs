@@ -34,6 +34,11 @@ namespace NIRS_Demonstrator
         public ReportsStreamerCsv(string path)
         {
             _ReportWriter = new StreamWriter(path);
+            _writingQueue = new Queue<List<double>>();
+            //AppConfig.GetInstance().RegisterDisposableObject(this);
+            _writeThreadStarted = true;
+            _writeThread = new Thread(WriteThreadActionAsync);
+            _writeThread.Start();
         }
 
 
@@ -42,10 +47,15 @@ namespace NIRS_Demonstrator
             string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr() + ".csv"));
             _ReportWriter = new StreamWriter(path);
             _writingQueue = new Queue<List<double>>();
-            AppConfig.GetInstance().RegisterDisposableObject(this);
+            //AppConfig.GetInstance().RegisterDisposableObject(this);
             _writeThreadStarted = true;
             _writeThread = new Thread(WriteThreadActionAsync);
             _writeThread.Start();
+        }
+
+        ~ReportsStreamerCsv()
+        {
+            Dispose();
         }
         #endregion
 
@@ -53,7 +63,7 @@ namespace NIRS_Demonstrator
 
         public async Task WriteAsync(char[]? buffer)
         {
-            _writeInProcess |= true;
+            _writeInProcess = true;
             await _ReportWriter.WriteAsync(buffer);
             _writeInProcess = false;
         }
@@ -78,7 +88,7 @@ namespace NIRS_Demonstrator
         {
             if (_ReportWriter != null)
             {
-                while (_writingQueue.Count > 0)
+                while (_writeInProcess)
                     await Task.Delay(1);
                 _ReportWriter.Close();
                 _ReportWriter.Dispose();
@@ -105,7 +115,8 @@ namespace NIRS_Demonstrator
         {
             while(_writeThreadStarted)
             {
-                while(_writingQueue.Count >0 )
+                _writeInProcess = true;
+                while (_writingQueue.Count > 0 )
                 {
                     List<double> csvDataLine = _writingQueue.Dequeue();
                     string csvDataLineStr = string.Empty;
@@ -117,6 +128,7 @@ namespace NIRS_Demonstrator
                     await _ReportWriter.WriteAsync(csvDataLineStr);
 
                 }
+                _writeInProcess = false;
                 await Task.Delay(1);
             }
         }
