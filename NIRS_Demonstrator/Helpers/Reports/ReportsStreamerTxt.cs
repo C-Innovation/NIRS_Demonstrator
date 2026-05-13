@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NIRS_Demonstrator
 {
-    public class ReportsStreamer : IDisposable
+    public class ReportsStreamerTxt : IDisposable
     {
         #region Protected members
 
@@ -27,13 +27,13 @@ namespace NIRS_Demonstrator
         /// Default constructor
         /// </summary>
         /// <param name="path">Full path to report file</param>
-        public ReportsStreamer(string path)
+        public ReportsStreamerTxt(string path)
         {
             _ReportWriter = new StreamWriter(path);
         }
 
 
-        public ReportsStreamer()
+        public ReportsStreamerTxt()
         {
             string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr() + ".txt"));
             _ReportWriter = new StreamWriter(path);
