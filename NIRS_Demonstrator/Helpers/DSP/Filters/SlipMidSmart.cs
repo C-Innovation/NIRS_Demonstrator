@@ -77,27 +77,31 @@ namespace NIRS_Demonstrator
 
         public double Process(double val)
         {
-            if (_TimeOutStartSamples > 0)
+            //if (_TimeOutStartSamples > 0)
+            if (_Samples.Count < _WindowSize)
             {
-                _TimeOutStartSamples--;
+                //_TimeOutStartSamples--;
                 return ProcessMidCalc(val);
             }
 
             switch (_CurrentState)
             {
                 case SlipMidSmartState.Idle:
-                    if(CheckNegSet(val))
-                    {
-                        _CurrentState = SlipMidSmartState.AwaitForNegReset;
-                        _MidCalcEn = false;
-                        _TimeOutCounter = _TimeOutSamples;
-                    }
-                    else if (CheckPosSet(val))
+                    if (CheckPosSet(val))
                     {
                         _CurrentState = SlipMidSmartState.AwaitForPosReset;
                         _MidCalcEn = false;
                         _TimeOutCounter = _TimeOutSamples;
+                        break;
                     }
+                    //if (CheckNegSet(val))
+                    //{
+                    //    _CurrentState = SlipMidSmartState.AwaitForNegReset;
+                    //    _MidCalcEn = false;
+                    //    _TimeOutCounter = _TimeOutSamples;
+                    //    break;
+                    //}
+                    
                     break;
 
                 case SlipMidSmartState.AwaitForNegReset:
@@ -120,6 +124,7 @@ namespace NIRS_Demonstrator
 
                 default: break;
             }
+            
             return ProcessMidCalc(val);
         }
 
@@ -140,64 +145,81 @@ namespace NIRS_Demonstrator
 
         private bool CheckNegSet(double val)
         {
-            if (_LastVal == 0.0)
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0)
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if (_LastVal > (_MidVal - _NegTrigVal) && val <= (_MidVal - _NegTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private bool CheckNegReset(double val)
         {
-            if (_LastVal == 0.0) 
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0) 
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if(_LastVal < (_MidVal - _NegTrigVal) && val >= (_MidVal - _NegTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private bool CheckPosSet(double val)
         {
-            if (_LastVal == 0.0)
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0)
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if (_LastVal < (_MidVal +_PosTrigVal) && val >= (_MidVal + _PosTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private bool CheckPosReset(double val)
         {
-            if (_LastVal == 0.0)
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0)
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if (_LastVal > (_MidVal + _PosTrigVal) && val <= (_MidVal + _PosTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private double ProcessMidCalc(double val)
         {
-            if(_Samples.Count < _WindowSize)
+            if (_Samples.Count < _WindowSize)
             {
+                _MidSum = 0;
                 _Samples.Enqueue(val);
 
                 foreach (var sample in _Samples)
@@ -208,8 +230,9 @@ namespace NIRS_Demonstrator
                 return val - _MidVal;
             }
 
-            if(_MidCalcEn)
+            if (_MidCalcEn)
             {
+                //_MidSum = 0;
                 _Samples.Enqueue(val);
 
                 if (_Samples.Count > _WindowSize)
@@ -221,7 +244,7 @@ namespace NIRS_Demonstrator
 
                 //foreach (var sample in _Samples)
                 //    _MidSum += sample;
-                 
+
                 _MidVal = _MidSum / _Samples.Count;
 
 
@@ -229,6 +252,8 @@ namespace NIRS_Demonstrator
                 //_MidCounter++;
                 //_MidVal = _MidSum / (double)_MidCounter;
             }
+
+            _LastVal = val;
             return val - _MidVal;
         }
 

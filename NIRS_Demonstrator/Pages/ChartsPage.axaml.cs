@@ -58,8 +58,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     private void InitializeLocal()
     {
-        Nirs1Chart740.SetAxisXSize(500);
-        Nirs1Chart850.SetAxisXSize(500);
+        Nirs1Chart740.SetAxisXSize(1000);
+        Nirs1Chart850.SetAxisXSize(1000);
         //Nirs2Chart740.SetAxisXSize(500);
         //Nirs2Chart850.SetAxisXSize(500);
 
@@ -80,8 +80,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         
         NirsSignalProcessing NirsSignalProcessing1 = new NirsSignalProcessing();
         string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
-        string path1 = path + "_Nirs1.csv;";
-        string path2 = path + "_Nirs2.csv;";
+        string path1 = path + "_Nirs1.csv";
+        string path2 = path + "_Nirs2.csv";
         ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(path1);
         await streamerCsv.WriteHeaderAsync(new List<string>()
         {

@@ -64,14 +64,14 @@ namespace NIRS_Demonstrator
 
             _SlipMidsSmart = new SlipMidSmart[8]
             {
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.07),
-                new SlipMidSmart(100, 1000, 10000, 0.3, 0.07)
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.07),
+                new SlipMidSmart(100, 100, 10000, 0.3, 0.07)
             };
         }
 
@@ -107,22 +107,22 @@ namespace NIRS_Demonstrator
             signalData.Led850Ch4 = RemoveLedBackground(data.Led850_4, data.Led850_Bgd_4).ToVoltage5V(12);
 
             signalData.Led740Ch1_Flt = _SlipMids[0].Process(signalData.Led740Ch1);
-            signalData.Led740Ch1_Flt = _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
+            //signalData.Led740Ch1_Flt = _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
 
             signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
-            signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
+            //signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
 
             signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
-            signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
+            //signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
 
             signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
-            signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
+            //signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
 
             signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
-            signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
+            //signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
 
             signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
-            signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
+            //signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
 
             signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
             signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
