@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace NIRS_Demonstrator
 {
@@ -24,11 +27,15 @@ namespace NIRS_Demonstrator
         private double _PosTrigVal;
         private double _NegTrigVal;
 
+        private int _WindowSize;
+
         private double _LastVal = 0.0;
         private double _MidSum = 0.0;
         private double _MidVal = 0.0;
         private ulong _MidCounter = 0;
         private bool _MidCalcEn = true;
+
+        private Queue<double> _Samples;
         #endregion
 
         #region Public Properties
@@ -50,17 +57,17 @@ namespace NIRS_Demonstrator
         /// <summary>
         /// Default constructor
         /// </summary>
-        public SlipMidSmart(int sampleRate, int timeOutMS, double posTrigVal, double negTrigVal)
+        public SlipMidSmart(int sampleRate, int windowsize, int timeOutMS, double posTrigVal, double negTrigVal)
         {
             _CurrentState = SlipMidSmartState.Idle;
-
+            _WindowSize = windowsize;
             _SampleRate = sampleRate;
             _TimeOutMS = timeOutMS;
             _TimeOutSamples = (int)((double)timeOutMS / 1000.0) * _SampleRate;
             _TimeOutStartSamples = (int)((double)TIMEOUT_START_MS / 1000.0) * _SampleRate;
             _PosTrigVal = posTrigVal;
             _NegTrigVal = negTrigVal;
-
+            _Samples = new Queue<double>(_WindowSize);
             _MidCalcEn = true;
         }
 
@@ -189,11 +196,38 @@ namespace NIRS_Demonstrator
 
         private double ProcessMidCalc(double val)
         {
+            if(_Samples.Count < _WindowSize)
+            {
+                _Samples.Enqueue(val);
+
+                foreach (var sample in _Samples)
+                    _MidSum += sample;
+
+                _MidVal = _MidSum / _Samples.Count;
+
+                return val - _MidVal;
+            }
+
             if(_MidCalcEn)
             {
-                _MidSum += val;
-                _MidCounter++;
-                _MidVal = _MidSum / (double)_MidCounter;
+                _Samples.Enqueue(val);
+
+                if (_Samples.Count > _WindowSize)
+                {
+                    _MidSum -= _Samples.ElementAt(0);
+                    _MidSum += val;
+                    _Samples.Dequeue();
+                }
+
+                //foreach (var sample in _Samples)
+                //    _MidSum += sample;
+                 
+                _MidVal = _MidSum / _Samples.Count;
+
+
+                //_MidSum += val;
+                //_MidCounter++;
+                //_MidVal = _MidSum / (double)_MidCounter;
             }
             return val - _MidVal;
         }
@@ -206,5 +240,13 @@ namespace NIRS_Demonstrator
         Idle = 0,
         AwaitForNegReset = 1,
         AwaitForPosReset = 2,
+    }
+
+    public struct SlipMidSmartData
+    {
+        public bool MidCalcEn;
+        public double CurrentPosLevel;
+        public double CurrentNegLevel;
+        public double CurrentMidLevel;
     }
 }

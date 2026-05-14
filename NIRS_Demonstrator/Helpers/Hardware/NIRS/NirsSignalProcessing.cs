@@ -1,4 +1,5 @@
 ﻿using CInnovation.SignalProcessing.Filters.BiQuad;
+using System;
 using System.Collections.Generic;
 
 namespace NIRS_Demonstrator
@@ -63,14 +64,14 @@ namespace NIRS_Demonstrator
 
             _SlipMidsSmart = new SlipMidSmart[8]
             {
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 10000, 0.3, 0.1)
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.07),
+                new SlipMidSmart(100, 1000, 10000, 0.3, 0.07)
             };
         }
 
@@ -130,6 +131,20 @@ namespace NIRS_Demonstrator
             signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
 
             return signalData;
+        }
+
+        public SlipMidSmartData GetSlipMidSmartData(int channelIndex)
+        {
+            if (channelIndex >= _SlipMidsSmart.Length)
+                throw new ArgumentException("channelIndex can`t be more then _SlipMidsSmart.Length", "channelIndex");
+
+            return new SlipMidSmartData()
+            {
+                MidCalcEn = _SlipMidsSmart[channelIndex].MidCalcEn,
+                CurrentMidLevel = _SlipMidsSmart[channelIndex].CurrentMidLevel,
+                CurrentNegLevel = _SlipMidsSmart[channelIndex].CurrentNegLevel,
+                CurrentPosLevel = _SlipMidsSmart[channelIndex].CurrentPosLevel
+            };
         }
 
         #endregion
@@ -195,4 +210,6 @@ namespace NIRS_Demonstrator
             return vals;    
         }
     }
+
+    
 }

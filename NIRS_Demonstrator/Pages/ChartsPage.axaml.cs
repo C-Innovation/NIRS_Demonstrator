@@ -111,6 +111,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 NirsSignalData nirsData = NirsSignalProcessing1.GetNirsSignalData(dataData);
                 List<double> vals = nirsData.ToList();
 
+                SlipMidSmartData slipMidSmartData = NirsSignalProcessing1.GetSlipMidSmartData(7);
+
                 await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch1_Flt));
                 await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch2_Flt));
                 await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
@@ -122,7 +124,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                     Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3:0.000} V";
                     Nirs1ValueText850_2.Text = $"{nirsData.Led850Ch4:0.000} V";
                     Nirs1ValueText850_3.Text = $"{nirsData.Led850Ch3_Flt:0.000} V";
-                    Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V";
+                    Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData.MidCalcEn ? "TRUE" : "FALSE")})";
                 });
                 
                 await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
