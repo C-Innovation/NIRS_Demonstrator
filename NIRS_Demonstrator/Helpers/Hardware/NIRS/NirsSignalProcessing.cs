@@ -21,6 +21,7 @@ namespace NIRS_Demonstrator
         SlipMid[] _SlipMids;
         LowpassFilter[] _LowpassFilters;
         SlipMidSmart[] _SlipMidsSmart;
+        FilterSolutions[] _LpBessel;
         #endregion
 
         #region Public Properties
@@ -58,21 +59,35 @@ namespace NIRS_Demonstrator
                 new SlipMid(10),
                 new SlipMid(10),
                 new SlipMid(10),
-                new SlipMid(10),
-                new SlipMid(10)
+                new SlipMid(5),
+                new SlipMid(5)
             };
 
             _SlipMidsSmart = new SlipMidSmart[8]
             {
                 new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
                 new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.15, 0.1),
+                new SlipMidSmart(100, 100, 10000, 0.15, 0.1),
                 new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
                 new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.07),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.07)
+                new SlipMidSmart(100, 100, 10000, 0.5, 0.5),
+                new SlipMidSmart(100, 100, 10000, 0.5, 0.5)
             };
+
+            _LpBessel = new FilterSolutions[8]
+            {
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+            };
+
+            FilterSolutions filterSolutions = new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F3.dat");
         }
 
         ~NirsSignalProcessing()
@@ -112,22 +127,25 @@ namespace NIRS_Demonstrator
             signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
             //signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
 
-            signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
-            //signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
+            signalData.Led740Ch3_Flt = _LpBessel[2].Process(signalData.Led740Ch3);
+            //signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
+            signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
 
-            signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
-            //signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
+            signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
+            //signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
+            signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
 
             signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
             //signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
 
             signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
             //signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
-
-            signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
+            signalData.Led850Ch3_Flt = _LpBessel[6].Process(signalData.Led850Ch3);
+            //signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
             signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
 
-            signalData.Led850Ch4_Flt = _SlipMids[7].Process(signalData.Led850Ch4);
+            signalData.Led850Ch4_Flt = _LpBessel[7].Process(signalData.Led850Ch4);
+            //signalData.Led850Ch4_Flt = _SlipMids[7].Process(signalData.Led850Ch4);
             signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
 
             return signalData;

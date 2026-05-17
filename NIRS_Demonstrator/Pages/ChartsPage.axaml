@@ -71,8 +71,8 @@
 				<Grid.RowDefinitions>
 					<RowDefinition Height="*" />
 					<RowDefinition Height="*" />
-					<!--<RowDefinition Height="*" />-->
-					<!--<RowDefinition Height="*" />-->
+					<!-- <RowDefinition Height="*" /> -->
+					<!-- <RowDefinition Height="*" /> -->
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 				
@@ -207,7 +207,7 @@
 					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
 
 			<!-- NIRS COM port selector 2 -->
-			<!--
+			
 			<ComboBox x:Name="NirsComPortSelector2"
 					  Grid.Row="1"
 					  Grid.Column="0"
@@ -218,7 +218,7 @@
 					  FontSize="{StaticResource FontSizeLarge}"
 					  FontWeight="Bold" 
 					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
-					  -->
+					  
 			<!-- NIRS COM ports control -->
 			<Button x:Name="StartComPortsButton"
 					Classes="IconGrowButton"

@@ -94,14 +94,14 @@ namespace NIRS_Demonstrator
                         _TimeOutCounter = _TimeOutSamples;
                         break;
                     }
-                    //if (CheckNegSet(val))
-                    //{
-                    //    _CurrentState = SlipMidSmartState.AwaitForNegReset;
-                    //    _MidCalcEn = false;
-                    //    _TimeOutCounter = _TimeOutSamples;
-                    //    break;
-                    //}
-                    
+                    if (CheckNegSet(val))
+                    {
+                        _CurrentState = SlipMidSmartState.AwaitForNegReset;
+                        _MidCalcEn = false;
+                        _TimeOutCounter = _TimeOutSamples;
+                        break;
+                    }
+
                     break;
 
                 case SlipMidSmartState.AwaitForNegReset:
