@@ -33,7 +33,7 @@ namespace NIRS_Demonstrator
         #region Public Properties
 
         public bool IsStarted => _IsStarted;
-
+        public double TimeStart { get; set; } = 0;
         #endregion
 
         #region Public Events

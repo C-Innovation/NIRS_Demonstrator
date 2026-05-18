@@ -58,8 +58,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     private void InitializeLocal()
     {
-        Nirs1Chart740.SetAxisXSize(200);
-        Nirs1Chart850.SetAxisXSize(200);
+        Nirs1Chart740.SetAxisXSize(2);
+        Nirs1Chart850.SetAxisXSize(2);
         //Nirs2Chart740.SetAxisXSize(1000);
         //Nirs2Chart850.SetAxisXSize(1000);
 
@@ -90,6 +90,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         ReportsStreamerCsv streamerCsv2 = new ReportsStreamerCsv(path2);
         await streamerCsv.WriteHeaderAsync(new List<string>()
         {
+            "Time",
             "Led740Ch1",
             "Led740Ch2",
             "Led740Ch3",
@@ -113,14 +114,18 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
             foreach (NirsSensorData dataData in data)
             {
+                double time = dataData.TimeMesSec + ((double)dataData.TimeMesUSec / 1000000.0);
+                if (NirsSensor1.TimeStart == 0)
+                    NirsSensor1.TimeStart = time;
+                time -= NirsSensor1.TimeStart;
                 NirsSignalData nirsData = NirsSignalProcessing1.GetNirsSignalData(dataData);
                 List<double> vals = nirsData.ToList();
-
+                vals.Insert(0, time);
                 SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing1.GetSlipMidSmartData(6);
                 SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing1.GetSlipMidSmartData(7);
 
-                await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
-                await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
+                await Nirs1Series740_1.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch3_Flt));
+                await Nirs1Series740_2.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch4_Flt));
 
                 //await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
                 //await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
@@ -134,8 +139,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                     //Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
                 });
 
-                await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3_Flt));
-                await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4_Flt));
+                await Nirs1Series850_1.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch3_Flt));
+                await Nirs1Series850_2.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch4_Flt));
 
                 //await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
                 //await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4));
@@ -157,8 +162,13 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
             data = NirsSensor2.GetAvailebleData();
             foreach (NirsSensorData dataData in data)
             {
+                double time = dataData.TimeMesSec + ((double)dataData.TimeMesUSec / 1000000.0);
+                if (NirsSensor2.TimeStart == 0)
+                    NirsSensor2.TimeStart = time;
+                time -= NirsSensor2.TimeStart;
                 NirsSignalData nirsData = NirsSignalProcessing2.GetNirsSignalData(dataData);
                 List<double> vals = nirsData.ToList();
+                vals.Insert(0, time);
                 SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing2.GetSlipMidSmartData(6);
                 SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing2.GetSlipMidSmartData(7);
                 //await Nirs2Series740_1.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch1_Flt));
@@ -167,8 +177,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch2_Flt));
                 //await Nirs2Series740_3.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch3_Flt));
                 //await Nirs2Series740_4.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch4_Flt));
-                await Nirs1Series740_3.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch3_Flt));
-                await Nirs1Series740_4.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch4_Flt));
+                await Nirs1Series740_3.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch3_Flt));
+                await Nirs1Series740_4.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch4_Flt));
                 _chart3_cnt++;
 
                 Dispatcher.UIThread.Invoke(() =>
@@ -183,8 +193,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs2Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3_Flt));
                 //await Nirs2Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4_Flt));
 
-                await Nirs1Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3_Flt));
-                await Nirs1Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4_Flt));
+                await Nirs1Series850_3.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch3_Flt));
+                await Nirs1Series850_4.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch4_Flt));
 
                 //await Nirs1Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3));
                 //await Nirs1Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4));
