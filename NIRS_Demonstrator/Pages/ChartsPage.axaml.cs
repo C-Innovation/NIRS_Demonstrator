@@ -138,10 +138,11 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 vals.Insert(0, time);
                 SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing1.GetSlipMidSmartData(6);
                 SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing1.GetSlipMidSmartData(7);
-
-                await Nirs1Series740_1.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch3_Flt));
-                await Nirs1Series740_2.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch4_Flt));
-
+                if (!OperatingSystem.IsLinux())
+                {
+                    await Nirs1Series740_1.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch3_Flt));
+                    await Nirs1Series740_2.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch4_Flt));
+                }
                 //await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
                 //await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
                 _chart1_cnt++;
@@ -157,7 +158,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                     //Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
                 });
 
-                await Nirs1Series850_1.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch3_Flt));
+                if (!OperatingSystem.IsLinux())
+                    await Nirs1Series850_1.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch3_Flt));
                 await Nirs1Series850_2.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch4_Flt));
 
                 //await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
@@ -195,8 +197,12 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch2_Flt));
                 //await Nirs2Series740_3.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch3_Flt));
                 //await Nirs2Series740_4.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch4_Flt));
-                await Nirs1Series740_3.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch3_Flt));
+                if (!OperatingSystem.IsLinux())
+                {
+                    await Nirs1Series740_3.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch3_Flt));
+                    await Nirs1Series740_4.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch4_Flt));
                 
+                }
                 _chart3_cnt++;
                 if (OperatingSystem.IsLinux())
                 {
@@ -214,8 +220,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs2Series850_2.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4));
                 //await Nirs2Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3_Flt));
                 //await Nirs2Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4_Flt));
-
-                await Nirs1Series850_3.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch3_Flt));
+                if (!OperatingSystem.IsLinux())
+                    await Nirs1Series850_3.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch3_Flt));
                 await Nirs1Series850_4.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch4_Flt));
 
                 //await Nirs1Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3));

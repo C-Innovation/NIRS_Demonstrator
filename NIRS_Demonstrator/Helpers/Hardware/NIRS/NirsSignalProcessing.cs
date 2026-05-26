@@ -131,39 +131,44 @@ namespace NIRS_Demonstrator
         public NirsSignalData GetNirsSignalData(NirsSensorData data)
         {
             NirsSignalData signalData = new NirsSignalData();
-            signalData.Led740Ch1 = RemoveLedBackground(data.Led740_1, data.Led740_Bgd_1).ToVoltage5V(12);
-            signalData.Led740Ch2 = RemoveLedBackground(data.Led740_2, data.Led740_Bgd_2).ToVoltage5V(12);
-            signalData.Led740Ch3 = RemoveLedBackground(data.Led740_3, data.Led740_Bgd_3).ToVoltage5V(12);
-            signalData.Led740Ch4 = RemoveLedBackground(data.Led740_4, data.Led740_Bgd_4).ToVoltage5V(12);
+            if (!OperatingSystem.IsLinux())
+            {
+                signalData.Led740Ch1 = RemoveLedBackground(data.Led740_1, data.Led740_Bgd_1).ToVoltage5V(12);
+                signalData.Led740Ch2 = RemoveLedBackground(data.Led740_2, data.Led740_Bgd_2).ToVoltage5V(12);
+                signalData.Led740Ch3 = RemoveLedBackground(data.Led740_3, data.Led740_Bgd_3).ToVoltage5V(12);
+                signalData.Led740Ch4 = RemoveLedBackground(data.Led740_4, data.Led740_Bgd_4).ToVoltage5V(12);
 
-            signalData.Led850Ch1 = RemoveLedBackground(data.Led850_3, data.Led850_Bgd_3).ToVoltage5V(12);
-            signalData.Led850Ch2 = RemoveLedBackground(data.Led850_4, data.Led850_Bgd_4).ToVoltage5V(12);
-            signalData.Led850Ch3 = RemoveLedBackground(data.Led850_3, data.Led850_Bgd_3).ToVoltage5V(12);
+                signalData.Led850Ch1 = RemoveLedBackground(data.Led850_3, data.Led850_Bgd_3).ToVoltage5V(12);
+                signalData.Led850Ch2 = RemoveLedBackground(data.Led850_4, data.Led850_Bgd_4).ToVoltage5V(12);
+                signalData.Led850Ch3 = RemoveLedBackground(data.Led850_3, data.Led850_Bgd_3).ToVoltage5V(12);
+            }
             signalData.Led850Ch4 = RemoveLedBackground(data.Led850_4, data.Led850_Bgd_4).ToVoltage5V(12);
 
-            signalData.Led740Ch1_Flt = _SlipMids[0].Process(signalData.Led740Ch1);
-            //signalData.Led740Ch1_Flt = _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
+            if (!OperatingSystem.IsLinux())
+            {
+                signalData.Led740Ch1_Flt = _SlipMids[0].Process(signalData.Led740Ch1);
+                //signalData.Led740Ch1_Flt = _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
 
-            signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
-            //signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
+                signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
+                //signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
 
-            signalData.Led740Ch3_Flt = _LpBessel[2].Process(signalData.Led740Ch3);
-            //signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
-            signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
+                signalData.Led740Ch3_Flt = _LpBessel[2].Process(signalData.Led740Ch3);
+                //signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
+                signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
 
-            signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
-            //signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
-            signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
+                signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
+                //signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
+                signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
 
-            signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
-            //signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
+                signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
+                //signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
 
-            signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
-            //signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
-            signalData.Led850Ch3_Flt = _LpBessel[6].Process(signalData.Led850Ch3);
-            //signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
-            signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
-
+                signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
+                //signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
+                signalData.Led850Ch3_Flt = _LpBessel[6].Process(signalData.Led850Ch3);
+                //signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
+                signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
+            }
             signalData.Led850Ch4_Flt = _LpBessel[7].Process(signalData.Led850Ch4);
             //signalData.Led850Ch4_Flt = _SlipMids[7].Process(signalData.Led850Ch4);
             signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
