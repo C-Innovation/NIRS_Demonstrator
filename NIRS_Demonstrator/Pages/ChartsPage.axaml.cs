@@ -101,6 +101,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
         string path1 = path + "_Nirs1.csv";
         string path2 = path + "_Nirs2.csv";
+
         ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(path1);
         ReportsStreamerCsv streamerCsv2 = new ReportsStreamerCsv(path2);
         await streamerCsv.WriteHeaderAsync(new List<string>()
@@ -175,8 +176,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4_Flt));
 
                 _chart2_cnt++;
-
-                streamerCsv.Write(vals);
+                if (!OperatingSystem.IsLinux())
+                    streamerCsv.Write(vals);
             }
 
             data = NirsSensor2.GetAvailebleData();
@@ -227,8 +228,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs1Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3));
                 //await Nirs1Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4));
                 _chart4_cnt++;
-
-                streamerCsv2.Write(vals);
+                if (!OperatingSystem.IsLinux())
+                    streamerCsv2.Write(vals);
             }
 
             await Task.Delay(1);
