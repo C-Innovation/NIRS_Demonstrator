@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" />
     <PackageReference Include="ReactiveUI.Avalonia" />
+    <PackageReference Include="System.Device.Gpio" />
     <PackageReference Include="System.IO.Ports" />
   </ItemGroup>
 
