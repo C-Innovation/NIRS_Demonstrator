@@ -74,6 +74,25 @@ namespace NIRS_Demonstrator
                 new SlipMidSmart(100, 100, 10000, 0.5, 0.5),
                 new SlipMidSmart(100, 100, 10000, 0.5, 0.5)
             };
+            if (OperatingSystem.IsLinux())
+            {
+                _LpBessel = new FilterSolutions[8]
+                {
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat")
+
+                };
+            }
+
+            if (OperatingSystem.IsWindows())
+            {
+            
 
             _LpBessel = new FilterSolutions[8]
             {
@@ -89,6 +108,7 @@ namespace NIRS_Demonstrator
 
             FilterSolutions filterSolutions = new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F3.dat");
         }
+    }
 
         ~NirsSignalProcessing()
         {
