@@ -21,6 +21,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
     private int _chart3_cnt = 0;
     private int _chart4_cnt = 0;
 
+    
+    private GpioSeviseRpi gpioServiceRpi;
 
     private Thread _handlePointsThread;
     private bool _handlePointsThreadStarted = false;
@@ -65,6 +67,19 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
         Nirs1Chart740.HorizontalScroll.Value = Nirs1Chart740.HorizontalScroll.Maximum;
         Nirs1Chart850.HorizontalScroll.Value = Nirs1Chart850.HorizontalScroll.Maximum;
+
+        if (OperatingSystem.IsLinux())
+        {
+
+            gpioServiceRpi = new GpioSeviseRpi();
+            gpioServiceRpi?.SetGpioState(6, false);
+            gpioServiceRpi?.SetGpioState(13, false);
+            gpioServiceRpi?.SetGpioState(5, true);
+            gpioServiceRpi?.SetGpioState(12, true);
+
+
+        }
+
         //Nirs2Chart740.HorizontalScroll.Value = Nirs2Chart740.HorizontalScroll.Maximum;
         //Nirs2Chart850.HorizontalScroll.Value = Nirs2Chart850.HorizontalScroll.Maximum;
         AppConfig.GetInstance().RegisterDisposableObject(this);
@@ -130,7 +145,10 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
                 //await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
                 _chart1_cnt++;
-
+                if (OperatingSystem.IsLinux())
+                {
+                    gpioServiceRpi?.SetGpioState(13, !slipMidSmartData7.MidCalcEn);
+                }
                 Dispatcher.UIThread.Invoke(() =>
                 {
                     Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
@@ -178,9 +196,13 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 //await Nirs2Series740_3.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch3_Flt));
                 //await Nirs2Series740_4.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch4_Flt));
                 await Nirs1Series740_3.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch3_Flt));
-                await Nirs1Series740_4.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch4_Flt));
+                
                 _chart3_cnt++;
-
+                if (OperatingSystem.IsLinux())
+                {
+                    gpioServiceRpi?.SetGpioState(6, !slipMidSmartData7.MidCalcEn);
+                }
+                
                 Dispatcher.UIThread.Invoke(() =>
                 {
                     //Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
