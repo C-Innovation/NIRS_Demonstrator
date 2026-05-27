@@ -71,8 +71,8 @@ namespace NIRS_Demonstrator
                 new SlipMidSmart(100, 100, 10000, 0.15, 0.1),
                 new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
                 new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.5, 0.5),
-                new SlipMidSmart(100, 100, 10000, 0.5, 0.5)
+                new SlipMidSmart(100, 100, 10000, 0.4, 0.5),
+                new SlipMidSmart(100, 100, 10000, 0.4, 0.5)
             };
             if (OperatingSystem.IsLinux())
             {

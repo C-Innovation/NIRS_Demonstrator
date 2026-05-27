@@ -64,11 +64,11 @@ namespace NIRS_Demonstrator
 
         private void DataDeselializeComplete(byte[] data, int len)
         {
-            //lock (_AvailebleDataQueue)
-            //{
+            lock (_AvailebleDataQueue)
+            {
                 _AvailebleDataQueue.Enqueue(data.ToNirsSensorData());
-            //}
-            
+            }
+
         }
 
         #endregion
@@ -103,11 +103,11 @@ namespace NIRS_Demonstrator
         public List<NirsSensorData> GetAvailebleData()
         {
             List<NirsSensorData> data = new List<NirsSensorData>();
-            //lock (_AvailebleDataQueue)
-            //{
+            lock (_AvailebleDataQueue)
+            {
                 while (_AvailebleDataQueue.Count > 0)
                     data.Add(_AvailebleDataQueue.Dequeue());
-            //}
+            }
             return data;
         }
 
