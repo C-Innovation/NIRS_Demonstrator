@@ -246,7 +246,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         Point[] points = new Point[0];
         while (_handlePoints2ThreadStarted)
         {
-            lock (NirsSignalQueue1)
+            lock (NirsSignalQueue2)
             {
                 int count = NirsSignalQueue2.Count;
                 points = new Point[count];
