@@ -146,32 +146,38 @@ namespace NIRS_Demonstrator
 
             if (!OperatingSystem.IsLinux())
             {
-                signalData.Led740Ch1_Flt = _SlipMids[0].Process(signalData.Led740Ch1);
+                //signalData.Led740Ch1_Flt = _SlipMids[0].Process(signalData.Led740Ch1);
+                signalData.Led740Ch1_Flt = _LpBessel[0].Process(signalData.Led740Ch1);
+
                 //signalData.Led740Ch1_Flt = _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
 
-                signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
+                //signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
+                signalData.Led740Ch2_Flt = _LpBessel[1].Process(signalData.Led740Ch2);
                 //signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
 
                 signalData.Led740Ch3_Flt = _LpBessel[2].Process(signalData.Led740Ch3);
                 //signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
-                signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
+                //signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
 
+                //signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
                 signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
                 //signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
-                signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
+                //signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
 
-                signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
+                //signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
+                signalData.Led850Ch1_Flt = _LpBessel[4].Process(signalData.Led850Ch1);
                 //signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
 
-                signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
+                //signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
+                signalData.Led850Ch2_Flt = _LpBessel[5].Process(signalData.Led850Ch2);
                 //signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
                 signalData.Led850Ch3_Flt = _LpBessel[6].Process(signalData.Led850Ch3);
                 //signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
-                signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
+                //signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
             }
             signalData.Led850Ch4_Flt = _LpBessel[7].Process(signalData.Led850Ch4);
             //signalData.Led850Ch4_Flt = _SlipMids[7].Process(signalData.Led850Ch4);
-            signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
+            //signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
 
             return signalData;
         }
@@ -188,6 +194,47 @@ namespace NIRS_Demonstrator
                 CurrentNegLevel = _SlipMidsSmart[channelIndex].CurrentNegLevel,
                 CurrentPosLevel = _SlipMidsSmart[channelIndex].CurrentPosLevel
             };
+        }
+
+        public bool GetTrigDetection(NirsSignalData signalData, int index)
+        {
+            switch (index)
+            {
+                case 0:
+                    _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
+                    return !_SlipMidsSmart[0].MidCalcEn;
+
+                case 1:
+                    _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
+                    return !_SlipMidsSmart[1].MidCalcEn;
+
+                case 2:
+                    _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
+                    return !_SlipMidsSmart[2].MidCalcEn;
+
+                case 3:
+                    _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
+                    return !_SlipMidsSmart[3].MidCalcEn;
+
+                case 4:
+                    _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
+                    return !_SlipMidsSmart[4].MidCalcEn;
+
+                case 5:
+                    _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
+                    return !_SlipMidsSmart[5].MidCalcEn;
+
+                case 6:
+                    _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
+                    return !_SlipMidsSmart[6].MidCalcEn;
+
+                case 7:
+                    _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
+                    return !_SlipMidsSmart[7].MidCalcEn;
+
+                default: return false;
+
+            }
         }
 
         #endregion
@@ -227,6 +274,8 @@ namespace NIRS_Demonstrator
         public double Led850Ch3_Flt;
         public double Led850Ch4_Flt;
 
+        public double TotalVal;
+
         public List<double> ToList()
         {
             List<double> vals = new List<double>();
@@ -251,6 +300,24 @@ namespace NIRS_Demonstrator
             vals.Add(Led850Ch4_Flt);
 
             return vals;    
+        }
+
+        public List<double> ToFltList()
+        {
+            List<double> vals = new List<double>();
+
+            vals.Add(Led740Ch1_Flt);
+            vals.Add(Led740Ch2_Flt);
+            vals.Add(Led740Ch3_Flt);
+            vals.Add(Led740Ch4_Flt);
+
+            vals.Add(Led850Ch1_Flt);
+            vals.Add(Led850Ch2_Flt);
+            vals.Add(Led850Ch3_Flt);
+            vals.Add(Led850Ch4_Flt);
+
+            vals.Add(TotalVal);
+            return vals;
         }
     }
 

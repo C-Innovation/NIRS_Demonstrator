@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using CInnovation.SignalProcessing.Filters.BiQuad;
+using NIRS_Demonstrator.Helpers.AI;
 using NIRS_Demonstrator.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -63,6 +64,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     ReportsStreamerCsv StreamerCsvNirs1;
     ReportsStreamerCsv StreamerCsvNirs2;
+
+    private double _dTotalVal1 = 0.0;
 
     public ChartsPage() : base()
     {
@@ -125,44 +128,63 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
             string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
             string path1 = path + "_Nirs1.csv";
             StreamerCsvNirs1 = new ReportsStreamerCsv(path1);
-            await StreamerCsvNirs1.WriteHeaderAsync(CSV_STREAMER_HEADERS);
+            //await StreamerCsvNirs1.WriteHeaderAsync(CSV_STREAMER_HEADERS);
         }
-        NirsSignalProcessing NirsSignalProcessing1 = new NirsSignalProcessing();
-        while (_handlePoints1ThreadStarted)
+        string modelPath = "D:\\workspace_PyCharm\\NIRS_NeuroNet\\model_exports\\model.onnx";
+        using (var nn = new TestONNX(modelPath))
         {
-            List<NirsSensorData> nirsData = NirsSensor1.GetAvailebleData();
-            foreach (NirsSensorData data in nirsData)
+            NirsSignalProcessing NirsSignalProcessing1 = new NirsSignalProcessing();
+            while (_handlePoints1ThreadStarted)
             {
-                double time = data.TimeMesSec + ((double)data.TimeMesUSec / 1000000.0);
-                if (NirsSensor1.TimeStart == 0)
-                    NirsSensor1.TimeStart = time;
-                time -= NirsSensor1.TimeStart;
-                NirsSignalData nirsDataFlt = NirsSignalProcessing1.GetNirsSignalData(data);
-                lock (NirsSignalQueue1)
+                List<NirsSensorData> nirsData = NirsSensor1.GetAvailebleData();
+                foreach (NirsSensorData data in nirsData)
                 {
-                    NirsSignalQueue1.Enqueue(nirsDataFlt);
+                    double time = data.TimeMesSec + ((double)data.TimeMesUSec / 1000000.0);
+                    if (NirsSensor1.TimeStart == 0)
+                        NirsSensor1.TimeStart = time;
+                    time -= NirsSensor1.TimeStart;
+                    NirsSignalData nirsDataFlt = NirsSignalProcessing1.GetNirsSignalData(data);
+                    //nirsDataFlt.TotalVal = GetTrigDetection(NirsSignalProcessing1, nirsDataFlt) ? 5.0 : 0.0;
+                    float[] inputs = { (float)nirsDataFlt.Led740Ch1_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led740Ch2_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led740Ch3_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led740Ch4_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led850Ch1_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led850Ch2_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led850Ch3_Flt / 5.0f,
+                                        (float)nirsDataFlt.Led850Ch4_Flt / 5.0f};
+                    nirsDataFlt.TotalVal = nn.Predict(inputs) * 5.0;
+                    lock (NirsSignalQueue1)
+                    {
+                        NirsSignalQueue1.Enqueue(nirsDataFlt);
+                    }
+                    List<double> vals = nirsDataFlt.ToFltList();
+                    //vals.Insert(0, time);
+
+                    //SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing1.GetSlipMidSmartData(6);
+                    //SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing1.GetSlipMidSmartData(7);
+
+                    //if (OperatingSystem.IsLinux())
+                    //    gpioServiceRpi?.SetGpioState(13, !slipMidSmartData7.MidCalcEn);
+
+                    //Dispatcher.UIThread.Invoke(() =>
+                    //{
+                    //    Nirs1ValueText850_1.Text = $"{nirsDataFlt.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
+                    //    Nirs1ValueText850_2.Text = $"{nirsDataFlt.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
+                    //});
+
+
+
+                    if (_WriteCsvEn)
+                    {
+                        StreamerCsvNirs1.Write(vals);
+                    }
                 }
-                List<double> vals = nirsDataFlt.ToList();
-                vals.Insert(0, time);
-                
-                SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing1.GetSlipMidSmartData(6);
-                SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing1.GetSlipMidSmartData(7);
-                
-                if (OperatingSystem.IsLinux())
-                    gpioServiceRpi?.SetGpioState(13, !slipMidSmartData7.MidCalcEn);
-                
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    Nirs1ValueText850_1.Text = $"{nirsDataFlt.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
-                    Nirs1ValueText850_2.Text = $"{nirsDataFlt.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
-                });
-                if (_WriteCsvEn)
-                {
-                    StreamerCsvNirs1.Write(vals);
-                }
+                await Task.Delay(5);
             }
-            await Task.Delay(5);
         }
+
+        
         if (_WriteCsvEn)
             StreamerCsvNirs1.Dispose();
     }
@@ -221,22 +243,27 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
     private async void PrintPointsNirs1ThreadAction()
     {
         Point[] points = new Point[0];
+        Point[] pointsTotal = new Point[0];
         while (_handlePoints1ThreadStarted)
         {
             lock (NirsSignalQueue1) 
             { 
                 int count = NirsSignalQueue1.Count;
                 points = new Point[count];
+                pointsTotal = new Point[count];
                 for (int i = 0; i < count; i++)
                 {
                     NirsSignalData nirsData = NirsSignalQueue1.Dequeue();
                     points[i] = new Point((double)_chart1_cnt / 100.0, nirsData.Led850Ch4_Flt);
+                    pointsTotal[i] = new Point((double)_chart1_cnt / 100.0, nirsData.TotalVal);
                     //await Nirs1Series740_3.AddPointAsync(points[i]);
                     _chart1_cnt++;
                 }
             }
             if(points.Length > 0) 
                 await Nirs1Series740_3.AddPointsRangeAsync(points);
+            if (pointsTotal.Length > 0)
+                await Nirs1Series740_1.AddPointsRangeAsync(pointsTotal);
             await Task.Delay(40);
         }
     }
@@ -262,132 +289,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
             await Task.Delay(40);
         }
     }
-/*
-    private async void HandlePointsThreadAction()
-    {
-        
-        NirsSignalProcessing NirsSignalProcessing1 = new NirsSignalProcessing();
-        NirsSignalProcessing NirsSignalProcessing2 = new NirsSignalProcessing();
-        string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
-        string path1 = path + "_Nirs1.csv";
-        string path2 = path + "_Nirs2.csv";
 
-        ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(path1);
-        ReportsStreamerCsv streamerCsv2 = new ReportsStreamerCsv(path2);
-        await streamerCsv.WriteHeaderAsync();
-        while (_handlePointsThreadStarted)
-        {
-            List<NirsSensorData> data = NirsSensor1.GetAvailebleData();
-
-            foreach (NirsSensorData dataData in data)
-            {
-                double time = dataData.TimeMesSec + ((double)dataData.TimeMesUSec / 1000000.0);
-                if (NirsSensor1.TimeStart == 0)
-                    NirsSensor1.TimeStart = time;
-                time -= NirsSensor1.TimeStart;
-                NirsSignalData nirsData = NirsSignalProcessing1.GetNirsSignalData(dataData);
-                List<double> vals = nirsData.ToList();
-                vals.Insert(0, time);
-                SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing1.GetSlipMidSmartData(6);
-                SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing1.GetSlipMidSmartData(7);
-                if (!OperatingSystem.IsLinux())
-                {
-                    await Nirs1Series740_1.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch3_Flt));
-                    await Nirs1Series740_2.AddPointAsync(new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch4_Flt));
-                }
-                //await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
-                //await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
-                _chart1_cnt++;
-                if (OperatingSystem.IsLinux())
-                {
-                    gpioServiceRpi?.SetGpioState(13, !slipMidSmartData7.MidCalcEn);
-                }
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
-                    Nirs1ValueText850_2.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
-                    //Nirs1ValueText850_3.Text = $"{nirsData.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
-                    //Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
-                });
-
-                if (!OperatingSystem.IsLinux())
-                    await Nirs1Series850_1.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch3_Flt));
-                await Nirs1Series850_2.AddPointAsync(new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch4_Flt));
-
-                //await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
-                //await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4));
-
-                //await Nirs1Series850_3.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3_Flt));
-                //await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4_Flt));
-
-                //await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
-                //await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4));
-
-                //await Nirs1Series850_3.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3_Flt));
-                //await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4_Flt));
-
-                _chart2_cnt++;
-                if (!OperatingSystem.IsLinux())
-                    streamerCsv.Write(vals);
-            }
-
-            data = NirsSensor2.GetAvailebleData();
-            foreach (NirsSensorData dataData in data)
-            {
-                double time = dataData.TimeMesSec + ((double)dataData.TimeMesUSec / 1000000.0);
-                if (NirsSensor2.TimeStart == 0)
-                    NirsSensor2.TimeStart = time;
-                time -= NirsSensor2.TimeStart;
-                NirsSignalData nirsData = NirsSignalProcessing2.GetNirsSignalData(dataData);
-                List<double> vals = nirsData.ToList();
-                vals.Insert(0, time);
-                SlipMidSmartData slipMidSmartData6 = NirsSignalProcessing2.GetSlipMidSmartData(6);
-                SlipMidSmartData slipMidSmartData7 = NirsSignalProcessing2.GetSlipMidSmartData(7);
-                //await Nirs2Series740_1.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch1_Flt));
-                //await Nirs2Series740_2.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch2_Flt));
-                //await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch1_Flt));
-                //await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch2_Flt));
-                //await Nirs2Series740_3.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch3_Flt));
-                //await Nirs2Series740_4.AddPointAsync(new Point(_chart3_cnt, nirsData.Led740Ch4_Flt));
-                if (!OperatingSystem.IsLinux())
-                {
-                    await Nirs1Series740_3.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch3_Flt));
-                    await Nirs1Series740_4.AddPointAsync(new Point((double)_chart3_cnt / 100.0, nirsData.Led740Ch4_Flt));
-                
-                }
-                _chart3_cnt++;
-                if (OperatingSystem.IsLinux())
-                {
-                    gpioServiceRpi?.SetGpioState(6, !slipMidSmartData7.MidCalcEn);
-                }
-                
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    //Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
-                    //Nirs1ValueText850_2.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
-                    Nirs1ValueText850_3.Text = $"{nirsData.Led850Ch3_Flt:0.000} V; (MidEN: {(slipMidSmartData6.MidCalcEn ? "TRUE" : "FALSE")})";
-                    Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData7.MidCalcEn ? "TRUE" : "FALSE")})";
-                });
-                //await Nirs2Series850_1.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3));
-                //await Nirs2Series850_2.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4));
-                //await Nirs2Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3_Flt));
-                //await Nirs2Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4_Flt));
-                if (!OperatingSystem.IsLinux())
-                    await Nirs1Series850_3.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch3_Flt));
-                await Nirs1Series850_4.AddPointAsync(new Point((double)_chart4_cnt / 100.0, nirsData.Led850Ch4_Flt));
-
-                //await Nirs1Series850_3.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch3));
-                //await Nirs1Series850_4.AddPointAsync(new Point(_chart4_cnt, nirsData.Led850Ch4));
-                _chart4_cnt++;
-                if (!OperatingSystem.IsLinux())
-                    streamerCsv2.Write(vals);
-            }
-
-            await Task.Delay(1);
-        }
-        streamerCsv.Dispose();
-    }
-*/
     private void RefreshComPortsList()
     {
         NirsComPortSelector1.Items.Clear();
@@ -477,10 +379,23 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         }
     }
 
+    private bool GetTrigDetection(NirsSignalProcessing signalProc, NirsSignalData signalData)
+    {
+        int detCount = 0;
+        for (int i = 0; i < 8; i++)
+        {
+            detCount += (signalProc.GetTrigDetection(signalData, i) ? 1 : 0);
+        }
+        return detCount > 0;
+    }
+
+    #region Buttons Callbacks
+
+
     private void StartComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Start();
-        
+
     }
     private void StopComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -491,5 +406,6 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         RefreshComPortsList();
     }
 
-    
+    #endregion
+
 }

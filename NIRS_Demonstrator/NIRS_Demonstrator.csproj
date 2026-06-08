@@ -22,10 +22,12 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" />
     <PackageReference Include="ReactiveUI.Avalonia" />
     <PackageReference Include="System.Device.Gpio" />
     <PackageReference Include="System.IO.Ports" />
+    <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
 
   <ItemGroup>
