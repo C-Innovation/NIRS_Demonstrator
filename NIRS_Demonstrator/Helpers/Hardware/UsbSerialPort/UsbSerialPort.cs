@@ -25,6 +25,7 @@ namespace NIRS_Demonstrator
             _SerialPort = new SerialPort(_PortName, _PortBaudRate, Parity.None, 8, StopBits.One);
             _SerialPort.ReadBufferSize = (baudRate / 8) * 10;
             _SerialPortMutex = new Mutex(false);
+
         }
 
         public bool Start()
@@ -84,7 +85,12 @@ namespace NIRS_Demonstrator
             if (!_SerialPort.IsOpen)
                 return false;
 
-            await _SerialPort.BaseStream.WriteAsync(buf.ToArray(), 0, buf.Count());
+            //await _SerialPort.BaseStream.WriteAsync(buf.ToArray(), 0, buf.Count());
+            await Task.Run(() =>
+            {
+                
+                _SerialPort.Write(buf.ToArray(), 0, buf.Count());
+            });
             return true;
         }
 

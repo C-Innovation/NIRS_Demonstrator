@@ -17,10 +17,12 @@ namespace NIRS_Demonstrator
         /// <param name="data">Полезная нагрузка</param>
         /// <param name="outBuffer">Целевой буфер</param>
         /// <returns>Длина пакета или 0, если outBuffer слишком мал</returns>
-        public int Serialize(ReadOnlySpan<byte> data, Span<byte> outBuffer)
+        public Span<byte> Serialize(ReadOnlySpan<byte> data)
         {
+            byte[] rb = new byte[56];
+            Span<byte> outBuffer = new Span<byte>(rb);
             int packetLen = 4 + 2 + data.Length + 2;
-            if (outBuffer.Length < packetLen) return 0;
+            //if (outBuffer.Length < packetLen) return 0;
 
             // Заголовок (Little-Endian)
             outBuffer[0] = (byte)(_header);
@@ -40,7 +42,7 @@ namespace NIRS_Demonstrator
             outBuffer[packetLen - 2] = (byte)(checksum);
             outBuffer[packetLen - 1] = (byte)(checksum >> 8);
 
-            return packetLen;
+            return outBuffer;
         }
 
         private static ushort ComputeCrc16(ReadOnlySpan<byte> data)

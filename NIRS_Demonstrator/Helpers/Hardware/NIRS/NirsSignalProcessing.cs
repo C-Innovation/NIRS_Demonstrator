@@ -138,8 +138,8 @@ namespace NIRS_Demonstrator
                 signalData.Led740Ch3 = RemoveLedBackground(data.Led740_3, data.Led740_Bgd_3).ToVoltage5V(12);
                 signalData.Led740Ch4 = RemoveLedBackground(data.Led740_4, data.Led740_Bgd_4).ToVoltage5V(12);
 
-                signalData.Led850Ch1 = RemoveLedBackground(data.Led850_3, data.Led850_Bgd_3).ToVoltage5V(12);
-                signalData.Led850Ch2 = RemoveLedBackground(data.Led850_4, data.Led850_Bgd_4).ToVoltage5V(12);
+                signalData.Led850Ch1 = RemoveLedBackground(data.Led850_1, data.Led850_Bgd_1).ToVoltage5V(12);
+                signalData.Led850Ch2 = RemoveLedBackground(data.Led850_2, data.Led850_Bgd_2).ToVoltage5V(12);
                 signalData.Led850Ch3 = RemoveLedBackground(data.Led850_3, data.Led850_Bgd_3).ToVoltage5V(12);
             }
             signalData.Led850Ch4 = RemoveLedBackground(data.Led850_4, data.Led850_Bgd_4).ToVoltage5V(12);
@@ -275,6 +275,7 @@ namespace NIRS_Demonstrator
         public double Led850Ch4_Flt;
 
         public double TotalVal;
+        public double AiVal;
 
         public List<double> ToList()
         {

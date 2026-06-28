@@ -192,6 +192,8 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
 			<!-- NIRS COM port selector 1 -->
@@ -218,11 +220,22 @@
 					  FontSize="{StaticResource FontSizeLarge}"
 					  FontWeight="Bold" 
 					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
+
+			<ComboBox x:Name="HardwareAiDeviceSelector"
+					  Grid.Row="2"
+					  Grid.Column="0"
+					  Grid.ColumnSpan="3" 
+					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+					  BorderThickness="2"
+					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					  FontSize="{StaticResource FontSizeLarge}"
+					  FontWeight="Bold" 
+					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
 					  
 			<!-- NIRS COM ports control -->
 			<Button x:Name="StartComPortsButton"
 					Classes="IconGrowButton"
-					Grid.Row="2"
+					Grid.Row="3"
 					Grid.Column="0"
 					Content="{StaticResource FA_PlayIcon}"
 					Foreground="{StaticResource WordGreenBrush}"
@@ -231,7 +244,7 @@
 					Click="StartComPortsButton_Click"/>
 			<Button x:Name="RefreshComPortsButton"
 					Classes="IconGrowButton"
-					Grid.Row="2"
+					Grid.Row="3"
 					Grid.Column="1"
 					Content="{StaticResource FA_ArrowsRotate}"
 
@@ -241,13 +254,32 @@
 
 			<Button x:Name="StopComPortsButton"
 					Classes="IconGrowButton"
-					Grid.Row="2"
+					Grid.Row="3"
 					Grid.Column="2"
 					Content="{StaticResource FA_StopIcon}"
 					Foreground="{StaticResource WordRedBrush}"
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource NirsStopText}"
 					Click="StopComPortsButton_Click"/>
+
+			<Button x:Name="StartRecordButton"
+					Classes="IconGrowButton"
+					Grid.Row="4"
+					Grid.Column="0"
+					Content="{StaticResource FA_CircleIcon}"
+					Foreground="{StaticResource WordRedBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource StartRecordText}"
+					Click="StartRecordButton_Click"/>
+
+			<Button x:Name="SettingsButton"
+					Classes="IconGrowButton"
+					Grid.Row="4"
+					Grid.Column="2"
+					Content="{StaticResource FA_GearIcon}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource SettingsText}"
+					Click="SettingsButton_Click"/>
 		</Grid>
 				
 	</Grid>
