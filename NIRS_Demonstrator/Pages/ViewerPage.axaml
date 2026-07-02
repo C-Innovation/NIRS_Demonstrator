@@ -1,0 +1,172 @@
+<local:BasePage x:TypeArguments="vm:ViewerPageViewModel" xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:NIRS_Demonstrator"
+		 	 xmlns:vm="clr-namespace:NIRS_Demonstrator.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NIRS_Demonstrator.ViewerPage"
+             x:DataType="vm:ViewerPageViewModel">
+  <Grid>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+		</Grid.ColumnDefinitions>
+
+		<Grid.RowDefinitions>
+			<!-- Header and back -->
+			<RowDefinition Height="Auto" />
+			<!-- Page content -->
+			<RowDefinition Height="*" />
+
+			<!-- Other (reserved) -->
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0"
+			  Grid.Column="0"
+			  Grid.ColumnSpan="2" >
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Button x:Name="BackToMainButton"
+					Classes="IconGrowButton"
+					Grid.Column="0"
+					Content="{StaticResource FA_LeftLongIcon}"
+					Margin="10 5 0 5"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource BackText}"
+					Command="{Binding ReturnToMainCommand}"
+					ZIndex="2"/>
+
+			<!--Command="{Binding ShowHideGroupListCommand}"/>-->
+
+			<!-- Header -->
+			<TextBlock Grid.Row="0"
+					   Grid.Column="0"
+					   Grid.ColumnSpan="3"
+					   Margin="0 30 0 0"
+					   FontFamily="{StaticResource LatoBold}"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeXXLarge}"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Text="{DynamicResource VieverHeaderText}"
+					   FontWeight="Bold"/>
+
+
+
+
+		</Grid>
+
+		<!--<local:SettingsElement Grid.Row="1" Icon="Images/usa.png">-->
+		<ScrollViewer VerticalScrollBarVisibility="Auto"
+					  Grid.Column="0"
+					  Grid.Row="1"
+					  Grid.ColumnSpan="1">
+			<Grid >
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="*" />
+					<!-- <RowDefinition Height="*" /> -->
+					<!-- <RowDefinition Height="*" /> -->
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				
+				<local:Chart2D x:Name="Nirs1Chart740"
+							   Grid.Row="0" 
+							   ChartBackground="Transparent" 
+							   BorderThickness="3"
+							   BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+							   CornerRadius="7"
+							   Margin="5"
+							   ChartMode="Static">
+					<local:Chart2D.ChartSeries>
+						<local:Series Name="Nirs1Series740_1" Stroke="Red" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_2" Stroke="Green" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_3" Stroke="Blue" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_4" Stroke="Magenta" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_TotalVal" Stroke="Orange" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_AiVal" Stroke="Black" StrokeThickness="2" />
+					</local:Chart2D.ChartSeries>
+				</local:Chart2D>
+
+				<local:Chart2D x:Name="Nirs1Chart850"
+							   Grid.Row="1" 
+							   ChartBackground="Transparent" 
+							   BorderThickness="3"
+							   BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
+							   CornerRadius="7"
+							   Margin="5"
+							   ChartMode="Static">
+					<local:Chart2D.ChartSeries>
+						<local:Series Name="Nirs1Series850_1" Stroke="Red" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_2" Stroke="Green" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_3" Stroke="Blue" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_4" Stroke="Magenta" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_TotalVal" Stroke="Orange" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_AiVal" Stroke="Black" StrokeThickness="2" />
+					</local:Chart2D.ChartSeries>
+				</local:Chart2D>
+
+				
+				
+			</Grid>
+		</ScrollViewer>
+		
+		<Grid x:Name="ComPortControlGrid"
+			  Grid.Column="2"
+			  Grid.Row="1"
+			  HorizontalAlignment="Center"
+			  Margin="0 5 5 0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+								  
+			<!-- NIRS COM ports control -->
+			<Button x:Name="OpenResearchButton"
+					Classes="IconGrowButton"
+					Grid.Row="1"
+					Grid.Column="0"
+					Content="{StaticResource FA_FolderOpenIcon}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource VieverOpenFileText}"
+					Click="OpenResearchButton_Click" />
+			<Button x:Name="SaveResarchButton"
+					Classes="IconGrowButton"
+					Grid.Row="1"
+					Grid.Column="1"
+					Content="{StaticResource FA_FloppyDiskRegularIcon}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource SaveText}"
+					/>
+
+			<Button x:Name="ViewRawDataButton"
+					Classes="IconGrowButton"
+					Grid.Row="1"
+					Grid.Column="2"
+					Content="{StaticResource FA_FileCsv}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource VieverViewRawFileText}"
+					Click="ViewRawDataButton_Click"/>
+
+			
+		</Grid>		
+	</Grid>
+</local:BasePage>

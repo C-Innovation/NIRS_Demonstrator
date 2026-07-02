@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -45,7 +45,8 @@ public partial class Chart2D : UserControl
 
     private Point _LastPointerPosition;
     private bool _IsPointerPressed;
-
+    private ChartMode _ChartMode = ChartMode.Live;
+    //protected ObservableCollection<HorizontalMarker> _HorizontalMarkers;
     #endregion
 
     #region Public Properties
@@ -55,7 +56,29 @@ public partial class Chart2D : UserControl
 
     public ObservableCollection<Series> ChartSeries { get; set; }
 
+    public ChartMode ChartMode 
+    { 
+        get => _ChartMode; 
+        set => _ChartMode = value; 
+    }
+
     public ObservableCollection<HorizontalMarker> HorizontalMarkers { get; set; }
+    //{ 
+    //    get => _HorizontalMarkers; 
+    //    set
+    //    {
+    //        //if (_HorizontalMarkers != null)
+    //        //{
+    //            _HorizontalMarkers = value;
+    //        //}
+    //    }
+    //}
+
+    #endregion
+
+    #region Public Events
+
+    public event EventHandler<double> OnHorizontalScrollValueChanged;
 
     #endregion
 
@@ -81,8 +104,8 @@ public partial class Chart2D : UserControl
         HorizontalScroll.Value = 1000;
         HorizontalScroll.ValueChanged += HorizontalScroll_ValueChanged;
 
-        VerticalScroll.Minimum = -4000;
-        VerticalScroll.Maximum = 4000;
+        VerticalScroll.Minimum = -3;
+        VerticalScroll.Maximum = 3;
         VerticalScroll.Value = 0;
         VerticalScroll.ValueChanged += VerticalScroll_ValueChanged;
         // Modules initialization
@@ -212,7 +235,7 @@ public partial class Chart2D : UserControl
         foreach (Series series in ChartSeries)
         {
             if (!series.IsValid)
-                series.SetParams(ChartArea, AxisX, AxisY);
+                series.SetParams(ChartArea, AxisX, AxisY, _ChartMode);
         }
     }
 
@@ -250,9 +273,14 @@ public partial class Chart2D : UserControl
                 break;
 
             case NotifyCollectionChangedAction.Reset:
-
-                HorizontalMarkers.Clear();
-                HorizontalMarkers = new ObservableCollection<HorizontalMarker>();
+                throw new NotImplementedException(nameof(e));
+                //foreach (var item in HorizontalMarkers)
+                //{
+                //    if (item is HorizontalMarker marker)
+                //        ChartArea.Children.Remove(marker);
+                //}
+                //_HorizontalMarkers.Clear();
+                //_HorizontalMarkers = new ObservableCollection<HorizontalMarker>();
                 break;
 
             default: break;
@@ -268,6 +296,7 @@ public partial class Chart2D : UserControl
     private void HorizontalScroll_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
         AxisX.SetAxisMinValue(e.NewValue);
+        OnHorizontalScrollValueChanged?.Invoke(this, e.NewValue);
     }
 
     private void VerticalScroll_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -298,6 +327,26 @@ public partial class Chart2D : UserControl
             HorizontalScroll.Value = HorizontalScroll.Maximum / 2;
         else
             AxisX.SetAxisMinValue(HorizontalScroll.Maximum / 2);
+    }
+
+    public void SetAxisXSizeForViewer(double size, double totalSize)
+    {
+        AxisX.SetAxisSize(size);
+        if (totalSize > size)
+        {
+            HorizontalScroll.Value = 0;
+            HorizontalScroll.Maximum = totalSize - size;
+        }
+        else
+        {
+            HorizontalScroll.Value = 0;
+            HorizontalScroll.Maximum = 0;
+        }
+        //HorizontalScroll.Maximum = size * 2;
+        //if (HorizontalScroll.Value != HorizontalScroll.Maximum / 2)
+        //    HorizontalScroll.Value = HorizontalScroll.Maximum / 2;
+        //else
+        //    AxisX.SetAxisMinValue(HorizontalScroll.Maximum / 2);
     }
 
     #endregion

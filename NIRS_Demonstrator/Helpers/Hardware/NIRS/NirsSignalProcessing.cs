@@ -237,6 +237,54 @@ namespace NIRS_Demonstrator
             }
         }
 
+        public void SetPosTrigLevel(int index, double val)
+        {
+            if(index >= _SlipMidsSmart.Length || index < 0)
+                return;
+
+            _SlipMidsSmart[index].CurrentPosLevel = val;
+            //_SlipMidsSmart[index].Reset();
+        }
+        public void SetNegTrigLevel(int index, double val)
+        {
+            if (index >= _SlipMidsSmart.Length || index < 0)
+                return;
+
+            _SlipMidsSmart[index].CurrentNegLevel = val;
+            //_SlipMidsSmart[index].Reset();
+        }
+
+        public double GetPosTrigLevel(int index)
+        {
+            if (index >= _SlipMidsSmart.Length || index < 0)
+                return double.NaN;
+
+            return _SlipMidsSmart[index].CurrentPosLevel;
+        }
+
+        public double GetNegTrigLevel(int index)
+        {
+            if (index >= _SlipMidsSmart.Length || index < 0)
+                return double.NaN;
+
+            return _SlipMidsSmart[index].CurrentNegLevel;
+        }
+
+        public double GetPosTrigTotalLevel(int index)
+        {
+            if (index >= _SlipMidsSmart.Length || index < 0)
+                return double.NaN;
+
+            return _SlipMidsSmart[index].CurrentPosTotalLevel;
+        }
+
+        public double GetNegTrigTotalLevel(int index)
+        {
+            if (index >= _SlipMidsSmart.Length || index < 0)
+                return double.NaN;
+
+            return _SlipMidsSmart[index].CurrentNegTotalLevel;
+        }
         #endregion
 
         #region Private Methods
@@ -303,7 +351,7 @@ namespace NIRS_Demonstrator
             return vals;    
         }
 
-        public List<double> ToFltList()
+        public List<double>       ToFltList()
         {
             List<double> vals = new List<double>();
 

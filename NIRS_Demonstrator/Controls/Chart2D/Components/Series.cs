@@ -111,6 +111,8 @@ namespace NIRS_Demonstrator
             }
             else if (_ChartMode == ChartMode.Static)
             {
+                _PointsTotal.Clear();
+                _PointsView.Clear();
                 /// TODO: Add handle
             }
 
@@ -256,6 +258,21 @@ namespace NIRS_Demonstrator
             await UpdatePointsViewAsync();
         }
 
+        public async Task ClearPoints()
+        {
+            await Task.Run(() =>
+            {
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    this.Points = new List<Point>();
+                    _PointsView.Clear();
+                    _PointsTotal.Clear();
+                    
+                });
+
+            });
+        }
+
         public void AddMarker(double Level)
         {
             VerticalMarker marker = new VerticalMarker()
@@ -334,6 +351,10 @@ namespace NIRS_Demonstrator
                             continue;
                         }
                     }
+                    else if (_ChartMode == ChartMode.Static)
+                    {
+                        // TODO: Add handler
+                    }
                     VerticalMarkers[i].PointsView = _PointsViewHorizontalBorders;
                     VerticalMarkers[i].UpdateMarker();
                 }
@@ -345,12 +366,19 @@ namespace NIRS_Demonstrator
         {
             if (_PointsTotal.Count == 0)
             {
-                _PointsTotalBorders.First = point.X;
-                _PointsTotalBorders.Second = _PointsTotalBorders.First + (_AxisX.AxisSize * 3);
+                //if (_ChartMode == ChartMode.Live)
+                //{
+                    _PointsTotalBorders.First = point.X;
+                    _PointsTotalBorders.Second = _PointsTotalBorders.First + (_AxisX.AxisSize * 3);
 
-                _PointsViewHorizontalBorders.First = _PointsTotalBorders.First + _AxisX.AxisMinValue;
-                _PointsViewHorizontalBorders.Second = _PointsViewHorizontalBorders.First + _AxisX.AxisSize;
-                //await UpdateMarkersAsync();
+                    _PointsViewHorizontalBorders.First = _PointsTotalBorders.First + _AxisX.AxisMinValue;
+                    _PointsViewHorizontalBorders.Second = _PointsViewHorizontalBorders.First + _AxisX.AxisSize;
+                //} //await UpdateMarkersAsync();
+                //else if (_ChartMode == ChartMode.Static)
+                //{
+                //    _PointsTotalBorders.First = point.X;
+                //    _PointsTotalBorders.Second = 1;
+                //}
             }
             else
             {
@@ -372,7 +400,14 @@ namespace NIRS_Demonstrator
                 }
                 else if (_ChartMode == ChartMode.Static)
                 {
-                    /// TODO: Add handle
+                    if (point.X > _PointsTotalBorders.Second)
+                    {
+                        double delta = _PointsTotal[1].X - _PointsTotal[0].X;
+                        _PointsTotalBorders.Second += delta;
+                        //_AxisX.SetAxisMinValue(_AxisX.AxisMinValue + delta);
+                        _PointsViewHorizontalBorders.First = _PointsTotalBorders.First + _AxisX.AxisMinValue;
+                        _PointsViewHorizontalBorders.Second = _PointsViewHorizontalBorders.First + _AxisX.AxisSize;
+                    }
                 }
 
 

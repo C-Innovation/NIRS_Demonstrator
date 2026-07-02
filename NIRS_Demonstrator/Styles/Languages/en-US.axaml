@@ -8,6 +8,7 @@
     <system:String x:Key="DisconnectedText">Disconnected</system:String>
     <system:String x:Key="TerminalText">Terminal</system:String>
     <system:String x:Key="ChartsText">Charts</system:String>
+    <system:String x:Key="VieverText">Viewer</system:String>
 
 
     <!-- Interface texts -->
@@ -42,6 +43,22 @@
     <system:String x:Key="NirsStartText">Start</system:String>
 	<system:String x:Key="NirsStopText">Stop</system:String>
 	<system:String x:Key="NirsUpdatePortsText">Refresh</system:String>
+
+    <!-- Charts settings window/page texts -->
+	<system:String x:Key="ConfigChannel1">Channel 1 configuration</system:String>
+	<system:String x:Key="ConfigChannel2">Channel 2 configuration</system:String>
+	<system:String x:Key="ConfigChannel3">Channel 3 configuration</system:String>
+	<system:String x:Key="ConfigChannel4">Channel 4 configuration</system:String>
+	<system:String x:Key="ConfigChannel5">Channel 5 configuration</system:String>
+	<system:String x:Key="ConfigChannel6">Channel 6 configuration</system:String>
+	<system:String x:Key="ConfigChannel7">Channel 7 configuration</system:String>
+	<system:String x:Key="ConfigChannel8">Channel 8 configuration</system:String>
+
+    <!-- Viwer page texts -->
+	<system:String x:Key="VieverHeaderText">View/Edit</system:String>
+    <system:String x:Key="VieverOpenFileText">Open</system:String>
+    <system:String x:Key="VieverViewRawFileText">View raw data</system:String>
+
 
     <!-- Dictionary texts -->
     <system:String x:Key="DictionaryGroupText">Group</system:String>

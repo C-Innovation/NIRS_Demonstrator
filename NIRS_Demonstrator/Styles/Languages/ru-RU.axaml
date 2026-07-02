@@ -8,6 +8,7 @@
     <system:String x:Key="DisconnectedText">Не подключено</system:String>
 	<system:String x:Key="TerminalText">Терминал</system:String>
 	<system:String x:Key="ChartsText">Графики</system:String>
+	<system:String x:Key="VieverText">Просмотр</system:String>
 
 	<!-- Interface texts -->
 	<system:String x:Key="BackText">Назад</system:String>
@@ -43,6 +44,20 @@
 	<system:String x:Key="NirsStopText">Стоп</system:String>
 	<system:String x:Key="NirsUpdatePortsText">Обновить</system:String>
 
+	<!-- Charts settings window/page texts -->
+	<system:String x:Key="ConfigChannel1">Конфигурация канала 1</system:String>
+	<system:String x:Key="ConfigChannel2">Конфигурация канала 2</system:String>
+	<system:String x:Key="ConfigChannel3">Конфигурация канала 3</system:String>
+	<system:String x:Key="ConfigChannel4">Конфигурация канала 4</system:String>
+	<system:String x:Key="ConfigChannel5">Конфигурация канала 5</system:String>
+	<system:String x:Key="ConfigChannel6">Конфигурация канала 6</system:String>
+	<system:String x:Key="ConfigChannel7">Конфигурация канала 7</system:String>
+	<system:String x:Key="ConfigChannel8">Конфигурация канала 8</system:String>
+
+	<!-- Viwer page texts -->
+	<system:String x:Key="VieverHeaderText">Просмотр/Редактирование</system:String>
+	<system:String x:Key="VieverOpenFileText">Открыть</system:String>
+	<system:String x:Key="VieverViewRawFileText">Просмотр сырых данных</system:String>
 
 	<!-- Dictionary texts -->
 	<system:String x:Key="DictionaryGroupText">Группа</system:String>

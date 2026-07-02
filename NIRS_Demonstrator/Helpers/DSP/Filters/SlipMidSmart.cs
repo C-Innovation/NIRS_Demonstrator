@@ -41,8 +41,25 @@ namespace NIRS_Demonstrator
         #region Public Properties
 
         public bool MidCalcEn { get => _MidCalcEn; }
-        public double CurrentPosLevel { get => (_MidVal + _PosTrigVal); }
-        public double CurrentNegLevel { get => (_MidVal - _NegTrigVal); }
+        public double CurrentPosLevel 
+        { 
+            get => _PosTrigVal; 
+            set => _PosTrigVal = value;
+        }
+        public double CurrentNegLevel 
+        { 
+            get => _NegTrigVal;
+            set => _NegTrigVal = value;
+        }
+
+        public double CurrentPosTotalLevel
+        {
+            get => (_MidVal + _PosTrigVal);
+        }
+        public double CurrentNegTotalLevel
+        {
+            get => (_MidVal - _NegTrigVal);
+        }
         public double CurrentMidLevel { get => _MidVal; }
 
 

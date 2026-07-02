@@ -31,11 +31,11 @@
                                        Grid.Row="0"
                                        Height="200"
                                        Width="170"
-                                       
                                        Icon="fa-solid fa-terminal"
                                        Header="{DynamicResource TerminalText}"
                                        Command="{Binding RunTerminalCommand}"
-									   CommandParameter="2"/>
+									   CommandParameter="0"/>
+
 			<local:MainMenuItemControl Grid.Column="1"
                                        Grid.Row="0"
                                        Height="200"
@@ -43,6 +43,15 @@
                                        Icon="fa-solid fa-chart-line"
                                        Header="{DynamicResource ChartsText}"
                                        Command="{Binding RunChartsCommand}"
+									   CommandParameter="1"/>
+
+			<local:MainMenuItemControl Grid.Column="0"
+									   Grid.Row="1"
+									   Height="200"
+									   Width="170"
+									   Icon="fa-solid fa-file-pen"
+									   Header="{DynamicResource VieverText}"
+									   Command="{Binding RunViewerCommand}"
 									   CommandParameter="2"/>
 
 			

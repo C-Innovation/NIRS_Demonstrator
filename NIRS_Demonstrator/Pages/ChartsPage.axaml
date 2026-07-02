@@ -88,6 +88,8 @@
 						<local:Series Name="Nirs1Series740_2" Stroke="Green" StrokeThickness="2" />
 						<local:Series Name="Nirs1Series740_3" Stroke="Blue" StrokeThickness="2" />
 						<local:Series Name="Nirs1Series740_4" Stroke="Magenta" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_TotalVal" Stroke="Orange" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series740_AiVal" Stroke="Black" StrokeThickness="2" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
 				<local:Chart2D x:Name="Nirs1Chart850"
@@ -102,6 +104,8 @@
 						<local:Series Name="Nirs1Series850_2" Stroke="Green" StrokeThickness="2" />
 						<local:Series Name="Nirs1Series850_3" Stroke="Blue" StrokeThickness="2" />
 						<local:Series Name="Nirs1Series850_4" Stroke="Magenta" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_TotalVal" Stroke="Orange" StrokeThickness="2" />
+						<local:Series Name="Nirs1Series850_AiVal" Stroke="Black" StrokeThickness="2" />
 					</local:Chart2D.ChartSeries>
 				</local:Chart2D>
 
