@@ -45,6 +45,8 @@ namespace NIRS_Demonstrator
         #region Public Properties
         public bool IsValid { get; set; } = false;
         public ObservableCollection<VerticalMarker> VerticalMarkers { get; set; }
+
+        public VerticalSelection SelectionArea { get; set; }
         #endregion
 
         #region Public Commands
@@ -205,6 +207,8 @@ namespace NIRS_Demonstrator
             VerticalMarkers = new ObservableCollection<VerticalMarker>();
             VerticalMarkers.CollectionChanged += VerticalMarkers_CollectionChanged;
 
+            
+
             _MutexUpdateChart = new Mutex(initiallyOwned: false);
             _ChartMode = chartMode;
 
@@ -225,7 +229,9 @@ namespace NIRS_Demonstrator
             _PointsView = new List<Point>();
             _PointsTotal = new List<Point>();
 
-
+            SelectionArea = new VerticalSelection(_ChartArea, _AxisX);
+            SelectionArea.Fill = this.Stroke;
+            _ChartArea.Children.Add(SelectionArea);
             IsValid = true;
         }
 
@@ -358,6 +364,10 @@ namespace NIRS_Demonstrator
                     VerticalMarkers[i].PointsView = _PointsViewHorizontalBorders;
                     VerticalMarkers[i].UpdateMarker();
                 }
+                if(SelectionArea.Fill == null)
+                    SelectionArea.Fill = this.Stroke;
+                SelectionArea.PointsView = _PointsViewHorizontalBorders;
+                SelectionArea.Update();
             });
 
         }

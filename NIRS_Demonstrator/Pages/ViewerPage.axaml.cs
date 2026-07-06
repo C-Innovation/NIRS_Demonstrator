@@ -16,6 +16,7 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
     public List<List<double>> NirsData;
     private double _AxisXSize = 1000;
     private CsvEditWindow _CsvEditWindow;
+    private string _OpenedFile;
     public ViewerPage() : base()
     {
         InitializeComponent();
@@ -97,7 +98,9 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
     }
     public void Dispose()
     {
-
+        if(_CsvEditWindow != null)
+            if (_CsvEditWindow.IsLoaded)
+                _CsvEditWindow.Close();
     }
 
     #endregion
@@ -106,11 +109,11 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 
     private async void OpenResearchButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string path = await OpenFileAsync();
-        if (string.IsNullOrEmpty(path))
+        _OpenedFile = await OpenFileAsync();
+        if (string.IsNullOrEmpty(_OpenedFile))
             return;
-        path = path.Substring(8);
-        NirsData = CsvParser.ParseCsvColumns(path);
+        _OpenedFile = _OpenedFile.Substring(8);
+        NirsData = CsvParser.ParseCsvColumns(_OpenedFile);
 
         if (NirsData != null)
         {
@@ -120,6 +123,9 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 
     private void ViewRawDataButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (string.IsNullOrEmpty(_OpenedFile))
+            return;
+
         if (_CsvEditWindow != null)
         {
             if (!_CsvEditWindow.IsLoaded)
@@ -133,6 +139,26 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
             _CsvEditWindow = new CsvEditWindow(this);
             _CsvEditWindow.Show();
         }
+    }
+
+    private async void SaveResarchButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if(string.IsNullOrEmpty(_OpenedFile))
+            return ;
+
+        File.Delete(_OpenedFile);
+        using (ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(_OpenedFile))
+        {
+            for (int i = 0; i < NirsData[0].Count; i++)
+            {
+                List<double> vals = new List<double>();
+                for (int j = 0; j < NirsData.Count; j++)
+                    vals.Add(NirsData[j][i]);
+
+                streamerCsv.Write(vals);
+            }
+        }
+            
     }
 
     private void Nirs1Chart850_OnHorizontalScrollValueChanged(object? sender, double e)
@@ -159,6 +185,8 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 
         Nirs1Chart740.OnHorizontalScrollValueChanged += Nirs1Chart740_OnHorizontalScrollValueChanged;
         Nirs1Chart850.OnHorizontalScrollValueChanged += Nirs1Chart850_OnHorizontalScrollValueChanged;
+
+        AppConfig.GetInstance().RegisterDisposableObject(this);
     }
 
     private async Task<string> OpenFileAsync()
@@ -196,7 +224,9 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
         return string.Empty;
     }
 
-   
+    
+
+
 
     #endregion
 

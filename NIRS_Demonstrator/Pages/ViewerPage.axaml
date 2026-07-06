@@ -136,7 +136,7 @@
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 								  
-			<!-- NIRS COM ports control -->
+			<!-- NIRS-data view/edit control -->
 			<Button x:Name="OpenResearchButton"
 					Classes="IconGrowButton"
 					Grid.Row="1"
@@ -154,7 +154,7 @@
 					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource SaveText}"
-					/>
+					Click="SaveResarchButton_Click"/>
 
 			<Button x:Name="ViewRawDataButton"
 					Classes="IconGrowButton"

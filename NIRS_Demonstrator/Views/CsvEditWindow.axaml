@@ -3,19 +3,55 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:NIRS_Demonstrator.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
+        Width="950" Height="450"
         x:Class="NIRS_Demonstrator.CsvEditWindow"
         Title="CsvEditWindow"
         x:DataType="vm:CsvEditWindowViewModel">
 
-    <Grid x:Name="MAinGrid">
+    <Grid x:Name="MainGrid">
+
+        <Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
         <DataGrid x:Name="CsvDataGrid" 
-                  ItemsSource="{Binding NirsCsvRawData}" 
+                  Grid.Column="0"
+                  ItemsSource="{Binding NirsCsvRawData, Mode=TwoWay}" 
                   AutoGenerateColumns="True" 
                   CanUserResizeColumns="True"
                   CanUserReorderColumns="True"
+                  CanUserSortColumns="False"
                   GridLinesVisibility="All"
                   BorderBrush="Gray"
                   BorderThickness="1"/>
+
+        <Grid x:Name="ButtonsGrid"
+              Grid.Column="1"
+              VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="SetToOneButton"
+					Classes="IconGrowButton"
+					Grid.Column="0"
+                    Width="50"
+					Content="{StaticResource FA_ArrowUp}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					Command="{Binding SetToOneCommand}"
+					 />
+            <Button x:Name="SetToZeroButton"
+					Classes="IconGrowButton"
+					Grid.Column="1"
+                    Width="50"
+					Content="{StaticResource FA_ArrowDown}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					Command="{Binding SetToZeroCommand}"
+					 />
+        </Grid>
     </Grid>
 </Window>

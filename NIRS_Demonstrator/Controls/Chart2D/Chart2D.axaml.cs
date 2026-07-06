@@ -74,12 +74,13 @@ public partial class Chart2D : UserControl
     //    }
     //}
 
+    
     #endregion
 
     #region Public Events
 
     public event EventHandler<double> OnHorizontalScrollValueChanged;
-
+    public event EventHandler<Point> OnChartAreaDoubleClick;
     #endregion
 
     #region Constructor
@@ -117,6 +118,8 @@ public partial class Chart2D : UserControl
         ChartArea.PointerMoved += ChartArea_PointerMoved;
         ChartArea.PointerPressed += ChartArea_PointerPressed;
         ChartArea.PointerReleased += ChartArea_PointerReleased;
+
+        
         // Size changed handling
         //ChartArea.SizeChanged += ChartArea_SizeChanged;
     }
@@ -188,7 +191,11 @@ public partial class Chart2D : UserControl
         //_MajorGrid.UpdatePositions(new Size(ChartArea.Bounds.Width, ChartArea.Bounds.Height));
         AxisY.Update(new Size(ChartArea.Bounds.Width, ChartArea.Bounds.Height));
         AxisX.Update(new Size(ChartArea.Bounds.Width, ChartArea.Bounds.Height));
+
+        ChartArea.DoubleTapped += ChartArea_DoubleTapped;
     }
+
+    
 
     private void Series_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -304,6 +311,20 @@ public partial class Chart2D : UserControl
         AxisY.SetAxisOffsetValue(e.NewValue);
     }
 
+    private void ChartArea_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        var chartArea = sender as Canvas;
+
+        if (chartArea is null)
+            return;
+
+        var currentPosition = e.GetPosition(chartArea);
+
+        double x = AxisX.AxisMinValue + ((currentPosition.X / chartArea.Bounds.Width) * AxisX.AxisSize);
+        double y = AxisY.AxisMinValue + (((chartArea.Bounds.Height - currentPosition.Y) / chartArea.Bounds.Height) * AxisY.AxisSize);
+
+        OnChartAreaDoubleClick?.Invoke(this, new Point(x, y));
+    }
     //private void ChartArea_SizeChanged(object? sender, SizeChangedEventArgs e)
     //{
 
