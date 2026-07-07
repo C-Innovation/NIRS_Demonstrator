@@ -57,6 +57,7 @@
 
 	<system:String x:Key="FA_ArrowUp">fa-solid fa-arrow-up</system:String>
 	<system:String x:Key="FA_ArrowDown">fa-solid fa-arrow-down</system:String>
+	<system:String x:Key="FA_Atom">fa-solid fa-atom</system:String>
 	
 	
 

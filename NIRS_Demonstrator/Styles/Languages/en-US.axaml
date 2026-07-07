@@ -58,6 +58,7 @@
 	<system:String x:Key="VieverHeaderText">View/Edit</system:String>
     <system:String x:Key="VieverOpenFileText">Open</system:String>
     <system:String x:Key="VieverViewRawFileText">View raw data</system:String>
+    <system:String x:Key="VieverRunAiText">Run AI model</system:String>
 
 
     <!-- Dictionary texts -->

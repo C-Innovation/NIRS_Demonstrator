@@ -88,4 +88,65 @@ namespace NIRS_Demonstrator.Helpers.AI
             session?.Dispose();
         }
     }
+
+    class SequenceOnnxPredictor : IDisposable
+    {
+        private InferenceSession session;
+        private string inputName;
+        private int inputSize;
+        private int outputSize;
+
+        public SequenceOnnxPredictor(string modelPath = "model.onnx")
+        {
+            session = new InferenceSession(modelPath);
+            inputName = session.InputMetadata.Keys.First();
+            inputSize = session.InputMetadata[inputName].Dimensions[1];
+            outputSize = session.OutputMetadata[session.OutputMetadata.Keys.First()].Dimensions[1];
+
+            Console.WriteLine($"Model loaded: input={inputSize}, output={outputSize}");
+        }
+
+        public float[] Predict(float[] inputSequence)
+        {
+            if (inputSequence.Length != inputSize)
+                throw new ArgumentException($"Expected {inputSize} inputs, got {inputSequence.Length}");
+
+            var tensor = new DenseTensor<float>(inputSequence, new[] { 1, inputSize });
+            var inputs = new List<NamedOnnxValue>
+        {
+            NamedOnnxValue.CreateFromTensor(inputName, tensor)
+        };
+
+            using var results = session.Run(inputs);
+            var outputTensor = results.First().AsTensor<float>();
+
+            float[] output = new float[outputSize];
+            for (int i = 0; i < outputSize; i++)
+            {
+                output[i] = outputTensor.GetValue(i);
+            }
+
+            return output;
+        }
+
+        public void Dispose()
+        {
+            session?.Dispose();
+        }
+    }
+
+    // Использование:
+    /*
+    using (var predictor = new SequenceOnnxPredictor())
+    {
+        float[] input = new float[40];  // 5 семплов × 8 признаков
+        // Заполнение input...
+
+        float[] output = predictor.Predict(input);
+        for (int i = 0; i < output.Length; i++)
+        {
+            Console.WriteLine($"Output[{i}]: {output[i]:F4}");
+        }
+    }
+    */
 }

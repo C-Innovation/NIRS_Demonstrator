@@ -166,7 +166,15 @@
 					ToolTip.Tip="{DynamicResource VieverViewRawFileText}"
 					Click="ViewRawDataButton_Click"/>
 
-			
+			<Button x:Name="RunAiButton"
+					Classes="IconGrowButton"
+					Grid.Row="2"
+					Grid.Column="2"
+					Content="{StaticResource FA_Atom}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource VieverRunAiText}"
+					Click="RunAiButton_Click"/>
 		</Grid>		
 	</Grid>
 </local:BasePage>

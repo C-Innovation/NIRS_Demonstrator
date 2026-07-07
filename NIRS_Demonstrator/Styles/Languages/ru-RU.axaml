@@ -58,6 +58,7 @@
 	<system:String x:Key="VieverHeaderText">Просмотр/Редактирование</system:String>
 	<system:String x:Key="VieverOpenFileText">Открыть</system:String>
 	<system:String x:Key="VieverViewRawFileText">Просмотр сырых данных</system:String>
+	<system:String x:Key="VieverRunAiText">Запуск модели машинного обучения</system:String>
 
 	<!-- Dictionary texts -->
 	<system:String x:Key="DictionaryGroupText">Группа</system:String>

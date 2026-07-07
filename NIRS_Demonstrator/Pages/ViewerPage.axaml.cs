@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using NIRS_Demonstrator.Helpers.AI;
 using NIRS_Demonstrator.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -98,7 +99,7 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
     }
     public void Dispose()
     {
-        if(_CsvEditWindow != null)
+        if (_CsvEditWindow != null)
             if (_CsvEditWindow.IsLoaded)
                 _CsvEditWindow.Close();
     }
@@ -143,8 +144,8 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 
     private async void SaveResarchButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if(string.IsNullOrEmpty(_OpenedFile))
-            return ;
+        if (string.IsNullOrEmpty(_OpenedFile))
+            return;
 
         File.Delete(_OpenedFile);
         using (ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(_OpenedFile))
@@ -158,7 +159,59 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
                 streamerCsv.Write(vals);
             }
         }
-            
+
+    }
+
+    private async void RunAiButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if(string.IsNullOrEmpty(_OpenedFile))
+            return;
+        await Nirs1Series740_AiVal.ClearPoints();
+        Point[] points = new Point[(NirsData[0].Count / 5) * 5];
+        int pcnt = 0;
+        string modelPath = "D:\\workspace_PyCharm\\NIRS_NeuroNetMult\\model_exports\\model.onnx";
+        using (var predictor = new SequenceOnnxPredictor(modelPath))
+        {
+            for(int i=0; i < NirsData[0].Count - 5; i += 5)
+            {
+                float[] input = new float[40];
+                for (int j = 0; j < 5; j++)
+                {
+                    for(int k = 0; k < NirsData.Count - 1; k++)
+                    {
+                        input[8 * j + k] = (float)(NirsData[k][i + j] / 5.0f);
+                    }
+                }
+                float[] output = predictor.Predict(input);
+                for(int j = 0;j < output.Length; j++)
+                {
+                    points[pcnt] = new Point(pcnt, output[j] * 5.0);
+                    pcnt++;
+                }
+
+            }
+        }
+        await Nirs1Series740_AiVal.AddPointsRangeAsync(points);
+
+        await Nirs1Series850_AiVal.ClearPoints();
+        points = new Point[NirsData[0].Count];
+        pcnt = 0;
+        modelPath = "D:\\workspace_PyCharm\\NIRS_NeuroNet\\model_exports\\model.onnx";
+        using (var predictor = new TestONNX(modelPath))
+        {
+            for (int i = 0; i < NirsData[0].Count; i ++)
+            {
+                float[] input = new float[8];
+                for (int j = 0; j < NirsData.Count - 1; j++)
+                {
+                    input[j] = (float)(NirsData[j][i] / 5.0f);
+                }
+                float output = predictor.Predict(input);
+                points[pcnt] = new Point(pcnt, output * 5.0);
+                pcnt++;
+            }
+        }
+        await Nirs1Series850_AiVal.AddPointsRangeAsync(points);
     }
 
     private void Nirs1Chart850_OnHorizontalScrollValueChanged(object? sender, double e)
@@ -225,6 +278,8 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
     }
 
     
+
+
 
 
 
