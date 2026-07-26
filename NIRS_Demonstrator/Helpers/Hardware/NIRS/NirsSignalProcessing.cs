@@ -96,14 +96,14 @@ namespace NIRS_Demonstrator
 
             _LpBessel = new FilterSolutions[8]
             {
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
             };
 
             FilterSolutions filterSolutions = new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F3.dat");
@@ -178,6 +178,25 @@ namespace NIRS_Demonstrator
             signalData.Led850Ch4_Flt = _LpBessel[7].Process(signalData.Led850Ch4);
             //signalData.Led850Ch4_Flt = _SlipMids[7].Process(signalData.Led850Ch4);
             //signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
+
+            return signalData;
+        }
+
+        public NirsSignalData GetNirsSignalData(NirsSensorFilteredData data)
+        {
+            NirsSignalData signalData = new NirsSignalData();
+            if (!OperatingSystem.IsLinux())
+            {
+                signalData.Led740Ch1_Flt = data.Led740_1.ToVoltage5V(12);
+                signalData.Led740Ch2_Flt = data.Led740_2.ToVoltage5V(12);
+                signalData.Led740Ch3_Flt = data.Led740_3.ToVoltage5V(12);
+                signalData.Led740Ch4_Flt = data.Led740_4.ToVoltage5V(12);
+
+                signalData.Led850Ch1_Flt = data.Led850_1.ToVoltage5V(12);
+                signalData.Led850Ch2_Flt = data.Led850_2.ToVoltage5V(12);
+                signalData.Led850Ch3_Flt = data.Led850_3.ToVoltage5V(12);
+            }
+            signalData.Led850Ch4_Flt = data.Led850_4.ToVoltage5V(12);
 
             return signalData;
         }

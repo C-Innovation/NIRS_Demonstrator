@@ -5,6 +5,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NIRS_Demonstrator
 {
@@ -19,14 +20,16 @@ namespace NIRS_Demonstrator
 
         #region Private Members
         const uint HEADER = 0x234E5253;
-        private const int NIRS_UART_BAUDRATE = 921_600;
-        private const int NIRS_QUEUE_SIZE = 1_000;
+        private const int NIRS_UART_BAUDRATE = 4000000;
+        private const int NIRS_QUEUE_SIZE = 100_000;
         private readonly UsbSerialPort _SerialPort;
         private Thread _NirsDataThread;
         private bool _NirsDataThreadStarted;
         private readonly Queue<NirsSensorData> _AvailebleDataQueue;
+        private readonly Queue<NirsSensorFilteredData> _AvailebleFilteredDataQueue;
         private readonly CircularBuffer<byte> _RawBuffer;
         private readonly Deserializer _Deserializer;
+        private readonly Serializer _Serializer;
         private bool _IsStarted = false;
         #endregion
 
@@ -49,8 +52,10 @@ namespace NIRS_Demonstrator
         {
             _SerialPort = new UsbSerialPort(interfaceName, NIRS_UART_BAUDRATE);
             _AvailebleDataQueue = new Queue<NirsSensorData>(NIRS_QUEUE_SIZE);
+            _AvailebleFilteredDataQueue = new Queue<NirsSensorFilteredData>(NIRS_QUEUE_SIZE);
             _RawBuffer = new CircularBuffer<byte>(NIRS_QUEUE_SIZE * 64);
             _Deserializer = new Deserializer(_RawBuffer, HEADER, DataDeselializeComplete);
+            _Serializer = new Serializer(HEADER);
             AppConfig.GetInstance().RegisterDisposableObject(this);
         }
 
@@ -64,11 +69,26 @@ namespace NIRS_Demonstrator
 
         private void DataDeselializeComplete(byte[] data, int len)
         {
-            lock (_AvailebleDataQueue)
-            {
-                _AvailebleDataQueue.Enqueue(data.ToNirsSensorData());
+            if (data[0] == 0x01) {
+                lock (_AvailebleDataQueue)
+                {
+                    byte[] b = new byte[len - 1];
+                    Array.Copy(data, 1, b, 0, len - 1);
+                    _AvailebleDataQueue.Enqueue(b.ToNirsSensorData());
+                    
+                }
             }
 
+            if (data[0] == 0x02)
+            {
+                lock (_AvailebleFilteredDataQueue)
+                {
+                    byte[] b = new byte[len - 1];
+                    Array.Copy(data, 1, b, 0, len - 1);
+                    _AvailebleFilteredDataQueue.Enqueue(b.ToNirsSensorFilteredData());
+                }
+            }
+            
         }
 
         #endregion
@@ -78,6 +98,7 @@ namespace NIRS_Demonstrator
         public void Start()
         {
             _AvailebleDataQueue.Clear();
+            _AvailebleFilteredDataQueue.Clear();
             while(_RawBuffer.Size > 0)
                 _RawBuffer.PopFront();
 
@@ -109,6 +130,27 @@ namespace NIRS_Demonstrator
                     data.Add(_AvailebleDataQueue.Dequeue());
             }
             return data;
+        }
+
+        public List<NirsSensorFilteredData> GetAvailebleFilteredData()
+        {
+            List<NirsSensorFilteredData> data = new List<NirsSensorFilteredData>();
+            lock (_AvailebleFilteredDataQueue)
+            {
+                while (_AvailebleFilteredDataQueue.Count > 0)
+                    data.Add(_AvailebleFilteredDataQueue.Dequeue());
+            }
+            return data;
+        }
+
+        public async Task SetIrLedCurrentProcAsync(float proc)
+        {
+            List<byte> bytes = new List<byte>();
+            bytes.Add(0x04);
+            bytes.Add(0x02);
+            bytes.AddRange(BitConverter.GetBytes(proc));
+            var outbytes = _Serializer.Serialize(bytes.ToArray());
+            await _SerialPort.WriteAsync(outbytes.ToArray());
         }
 
         public void Dispose()

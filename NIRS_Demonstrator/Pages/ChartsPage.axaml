@@ -198,6 +198,8 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
 			<!-- NIRS COM port selector 1 -->
@@ -223,7 +225,8 @@
 					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
 					  FontSize="{StaticResource FontSizeLarge}"
 					  FontWeight="Bold" 
-					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
+					  Width="{Binding #ComPortControlGrid.Bounds.Width}"
+					  IsVisible="False"/>
 
 			<ComboBox x:Name="HardwareAiDeviceSelector"
 					  Grid.Row="2"
@@ -234,7 +237,8 @@
 					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
 					  FontSize="{StaticResource FontSizeLarge}"
 					  FontWeight="Bold" 
-					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
+					  Width="{Binding #ComPortControlGrid.Bounds.Width}"
+					  IsVisible="False"/>
 					  
 			<!-- NIRS COM ports control -->
 			<Button x:Name="StartComPortsButton"
@@ -284,6 +288,23 @@
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource SettingsText}"
 					Click="SettingsButton_Click"/>
+
+			<!-- Channel 1 configuration -->
+			<NumericUpDown x:Name="LedsIrCurrentCongig" 
+						   Grid.Column="0"
+						   Grid.ColumnSpan="3"
+						   Grid.Row="5"
+						   Minimum="0"
+						   Maximum="100"
+						   Increment="1.00"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="{Binding #ComPortControlGrid.Bounds.Width}"
+						   ValueChanged="LedsIrCurrentCongig_ValueChanged"
+						   Value="50"/>
 		</Grid>
 				
 	</Grid>

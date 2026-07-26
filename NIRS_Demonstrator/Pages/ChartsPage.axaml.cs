@@ -67,7 +67,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     private bool _WriteCsvEn = false;
     private GpioSeviseRpi gpioServiceRpi;
-        
+
     private double _dTotalVal1 = 0.0;
 
     private UsbSerialPort _AiDevPort;
@@ -134,11 +134,11 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         RefreshComPortsList();
     }
 
-    
+
 
     private async void HandlePointsNirs1ThreadAction()
     {
-        
+
         string modelPath = "D:\\workspace_PyCharm\\NIRS_NeuroNet\\model_exports\\model.onnx";
         Serializer serializer = new Serializer(HEADER);
         using (var nn = new TestONNX(modelPath))
@@ -146,10 +146,10 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
             NirsChartData1.NirsSignalProcessing = new NirsSignalProcessing();
             while (NirsChartData1.HandlePointsThreadStarted)
             {
-                List<NirsSensorData> nirsData = NirsChartData1.NirsSensor.GetAvailebleData();
-                foreach (NirsSensorData data in nirsData)
+                List<NirsSensorFilteredData> nirsData = NirsChartData1.NirsSensor.GetAvailebleFilteredData();
+                foreach (NirsSensorFilteredData data in nirsData)
                 {
-                    double time = data.TimeMesSec + ((double)data.TimeMesUSec / 1000000.0);
+                    double time = (double)data.Time / 1000000.0;
                     if (NirsChartData1.NirsSensor.TimeStart == 0)
                         NirsChartData1.NirsSensor.TimeStart = time;
                     time -= NirsChartData1.NirsSensor.TimeStart;
@@ -235,10 +235,10 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         NirsChartData2.NirsSignalProcessing = new NirsSignalProcessing();
         while (NirsChartData2.HandlePointsThreadStarted)
         {
-            List<NirsSensorData> nirsData = NirsChartData2.NirsSensor.GetAvailebleData();
-            foreach (NirsSensorData data in nirsData)
+            List<NirsSensorFilteredData> nirsData = NirsChartData2.NirsSensor.GetAvailebleFilteredData();
+            foreach (NirsSensorFilteredData data in nirsData)
             {
-                double time = data.TimeMesSec + ((double)data.TimeMesUSec / 1000000.0);
+                double time = (double)data.Time / 1000000.0;
                 if (NirsChartData2.NirsSensor.TimeStart == 0)
                     NirsChartData2.NirsSensor.TimeStart = time;
                 time -= NirsChartData2.NirsSensor.TimeStart;
@@ -307,19 +307,19 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
                 for (int i = 0; i < count; i++)
                 {
                     NirsSignalData nirsData = NirsChartData1.NirsSignalQueue.Dequeue();
-                    pointsCh1[i] = new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch1_Flt);
-                    pointsCh2[i] = new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch2_Flt);
-                    pointsCh3[i] = new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch3_Flt);
-                    pointsCh4[i] = new Point((double)_chart1_cnt / 100.0, nirsData.Led740Ch4_Flt);
-                    pointsTotal[i] = new Point((double)_chart1_cnt / 100.0, nirsData.TotalVal);
-                    pointsAi[i] = new Point((double)_chart1_cnt / 100.0, nirsData.AiVal);
+                    pointsCh1[i] = new Point((double)_chart1_cnt / 1000.0, nirsData.Led740Ch1_Flt);
+                    pointsCh2[i] = new Point((double)_chart1_cnt / 1000.0, nirsData.Led740Ch2_Flt);
+                    pointsCh3[i] = new Point((double)_chart1_cnt / 1000.0, nirsData.Led740Ch3_Flt);
+                    pointsCh4[i] = new Point((double)_chart1_cnt / 1000.0, nirsData.Led740Ch4_Flt);
+                    pointsTotal[i] = new Point((double)_chart1_cnt / 1000.0, nirsData.TotalVal);
+                    pointsAi[i] = new Point((double)_chart1_cnt / 1000.0, nirsData.AiVal);
 
-                    pointsCh1_2[i] = new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch1_Flt);
-                    pointsCh2_2[i] = new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch2_Flt);
-                    pointsCh3_2[i] = new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch3_Flt);
-                    pointsCh4_2[i] = new Point((double)_chart2_cnt / 100.0, nirsData.Led850Ch4_Flt);
-                    pointsTotal_2[i] = new Point((double)_chart2_cnt / 100.0, nirsData.TotalVal);
-                    pointsAi_2[i] = new Point((double)_chart2_cnt / 100.0, nirsData.AiVal);
+                    pointsCh1_2[i] = new Point((double)_chart2_cnt / 1000.0, nirsData.Led850Ch1_Flt);
+                    pointsCh2_2[i] = new Point((double)_chart2_cnt / 1000.0, nirsData.Led850Ch2_Flt);
+                    pointsCh3_2[i] = new Point((double)_chart2_cnt / 1000.0, nirsData.Led850Ch3_Flt);
+                    pointsCh4_2[i] = new Point((double)_chart2_cnt / 1000.0, nirsData.Led850Ch4_Flt);
+                    pointsTotal_2[i] = new Point((double)_chart2_cnt / 1000.0, nirsData.TotalVal);
+                    pointsAi_2[i] = new Point((double)_chart2_cnt / 1000.0, nirsData.AiVal);
                     //await Nirs1Series740_3.AddPointAsync(points[i]);
                     _chart1_cnt++;
                     _chart2_cnt++;
@@ -522,10 +522,10 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         while (RecordThreadStarted)
         {
             double opacity = 1.0;
-            while(opacity > 0.0)
+            while (opacity > 0.0)
             {
                 opacity -= 0.05;
-                if(opacity < 0.0)
+                if (opacity < 0.0)
                     opacity = 0.0;
 
                 Dispatcher.UIThread.Invoke(() =>
@@ -565,6 +565,12 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         Nirs1Chart850.HorizontalScroll.Value = e;
     }
 
+    private async void LedsIrCurrentCongig_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        if(NirsChartData1 != null && NirsChartData1.NirsSensor != null && NirsChartData1.HandlePointsThreadStarted)
+            await NirsChartData1.NirsSensor.SetIrLedCurrentProcAsync((float)e.NewValue);
+    }
+
     #endregion
 
     #region Buttons Callbacks
@@ -586,9 +592,9 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
 
     private void StartRecordButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if(!NirsChartData1.StreamerCsvNirsStarted)
+        if (!NirsChartData1.StreamerCsvNirsStarted)
         {
-            if(NirsChartData1.HandlePointsThreadStarted)
+            if (NirsChartData1.HandlePointsThreadStarted)
             {
                 string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
                 string path1 = path + "_Nirs1.csv";
@@ -621,7 +627,7 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
         }
 
         RecordThreadStarted = NirsChartData1.StreamerCsvNirsStarted || NirsChartData2.StreamerCsvNirsStarted;
-        if(RecordThreadStarted)
+        if (RecordThreadStarted)
         {
             RecordThread = new Thread(RecordThreadAction);
             RecordThread.Start();
@@ -644,6 +650,8 @@ public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
             _ChartSettingsWindow.Show();
         }
     }
+
+    
     #endregion
 
 }
