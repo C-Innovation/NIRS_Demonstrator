@@ -160,25 +160,37 @@ namespace NIRS_Demonstrator
 
         #endregion
 
+        #region Public Properties
+
+        /// <summary>
+        /// Печатать ли результат каждой записи в пин. Выключено по умолчанию:
+        /// SetPinState вызывается из потока обработки отсчётов, а небуферизованный
+        /// вывод в консоль на встраиваемой плате стоит дороже самой записи в GPIO.
+        /// </summary>
+        public static bool VerboseLogging { get; set; } = false;
+
+        #endregion
+
         #region Public Methods
         public void SetPinState(string pinName, bool state)
         {
-            if (_lineHandles.ContainsKey(pinName))
+            if (_lineHandles.TryGetValue(pinName, out IntPtr lineHandle))
             {
                 try
                 {
                     int value = state ? 1 : 0;
-                    int result = gpiod_line_set_value(_lineHandles[pinName], value);
-                
+                    int result = gpiod_line_set_value(lineHandle, value);
+
                     if (result == 0)
                     {
-                        if (_pins.ContainsKey(pinName))
+                        if (_pins.TryGetValue(pinName, out GpioPin pin))
                         {
-                            _pins[pinName].IsActive = state;
+                            pin.IsActive = state;
                         }
-                        Console.WriteLine($"Set {pinName} to {(state ? "HIGH" : "LOW")}");
+                        if (VerboseLogging)
+                            Console.WriteLine($"Set {pinName} to {(state ? "HIGH" : "LOW")}");
                     }
-                    else
+                    else if (VerboseLogging)
                     {
                         Console.WriteLine($"Failed to set {pinName}");
                     }

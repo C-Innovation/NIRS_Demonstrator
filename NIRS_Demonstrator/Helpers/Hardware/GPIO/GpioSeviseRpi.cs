@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Device.Gpio;
 using Avalonia.Interactivity;
 
@@ -14,7 +15,14 @@ public class GpioSeviseRpi
     private const int GPIO13 = 13;
 
     private GpioController? gpioController;
-    
+
+    /// <summary>
+    /// Последнее записанное состояние каждого пина. SetGpioState вызывается из
+    /// потока обработки отсчётов, но реальное значение меняется редко, поэтому
+    /// повторные записи в драйвер отбрасываются.
+    /// </summary>
+    private readonly Dictionary<int, bool> _lastStates = new Dictionary<int, bool>();
+
     public GpioSeviseRpi()
     {
         InitializeGpio();
@@ -48,9 +56,13 @@ public class GpioSeviseRpi
    
     public void SetGpioState(int pinNumber, bool isOn)
     {
+        if (_lastStates.TryGetValue(pinNumber, out bool last) && last == isOn)
+            return;
+
         try
         {
             gpioController?.Write(pinNumber, isOn ? PinValue.High : PinValue.Low);
+            _lastStates[pinNumber] = isOn;
         }
         catch (Exception ex)
         {

@@ -29,6 +29,12 @@ namespace NIRS_Demonstrator.ViewModels
 
         #region Public Properties
 
+        /// <summary>
+        /// Обработка сигналов первого датчика. Живёт в модели представления страницы,
+        /// а не в самой странице.
+        /// </summary>
+        private NirsSignalProcessing SignalProcessing => _ChartsPage.ViewModel.SignalProcessing1;
+
         #endregion
 
         #region MVVM Properties
@@ -60,7 +66,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel1)
                 {
                     _PosValueChnnel1 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(0, _PosValueChnnel1);
+                    SignalProcessing.SetPosTrigLevel(0, _PosValueChnnel1);
                     OnPropertyChanged();
                 }
             }
@@ -76,7 +82,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel1)
                 {
                     _NegValueChnnel1 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(0, _NegValueChnnel1);
+                    SignalProcessing.SetNegTrigLevel(0, _NegValueChnnel1);
                     OnPropertyChanged();
                 }
             }
@@ -92,7 +98,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel2)
                 {
                     _PosValueChnnel2 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(1, _PosValueChnnel2);
+                    SignalProcessing.SetPosTrigLevel(1, _PosValueChnnel2);
                     OnPropertyChanged();
                 }
             }
@@ -108,7 +114,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel2)
                 {
                     _NegValueChnnel2 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(1, _NegValueChnnel2);
+                    SignalProcessing.SetNegTrigLevel(1, _NegValueChnnel2);
                     OnPropertyChanged();
                 }
             }
@@ -124,7 +130,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel3)
                 {
                     _PosValueChnnel3 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(2, _PosValueChnnel3);
+                    SignalProcessing.SetPosTrigLevel(2, _PosValueChnnel3);
                     OnPropertyChanged();
                 }
             }
@@ -140,7 +146,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel3)
                 {
                     _NegValueChnnel3 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(2, _NegValueChnnel3);
+                    SignalProcessing.SetNegTrigLevel(2, _NegValueChnnel3);
                     OnPropertyChanged();
                 }
             }
@@ -157,7 +163,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel4)
                 {
                     _PosValueChnnel4 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(3, _PosValueChnnel4);
+                    SignalProcessing.SetPosTrigLevel(3, _PosValueChnnel4);
                     OnPropertyChanged();
                 }
             }
@@ -173,7 +179,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel4)
                 {
                     _NegValueChnnel4 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(3, _NegValueChnnel4);
+                    SignalProcessing.SetNegTrigLevel(3, _NegValueChnnel4);
                     OnPropertyChanged();
                 }
             }
@@ -190,7 +196,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel5)
                 {
                     _PosValueChnnel5 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(4, _PosValueChnnel5);
+                    SignalProcessing.SetPosTrigLevel(4, _PosValueChnnel5);
                     OnPropertyChanged();
                 }
             }
@@ -206,7 +212,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel5)
                 {
                     _NegValueChnnel5 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(4, _NegValueChnnel5);
+                    SignalProcessing.SetNegTrigLevel(4, _NegValueChnnel5);
                     OnPropertyChanged();
                 }
             }
@@ -222,7 +228,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel6)
                 {
                     _PosValueChnnel6 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(5, _PosValueChnnel6);
+                    SignalProcessing.SetPosTrigLevel(5, _PosValueChnnel6);
                     OnPropertyChanged();
                 }
             }
@@ -238,7 +244,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel6)
                 {
                     _NegValueChnnel6 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(5, _NegValueChnnel6);
+                    SignalProcessing.SetNegTrigLevel(5, _NegValueChnnel6);
                     OnPropertyChanged();
                 }
             }
@@ -254,7 +260,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel7)
                 {
                     _PosValueChnnel7 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(6, _PosValueChnnel7);
+                    SignalProcessing.SetPosTrigLevel(6, _PosValueChnnel7);
                     OnPropertyChanged();
                 }
             }
@@ -270,7 +276,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel7)
                 {
                     _NegValueChnnel7 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(6, _NegValueChnnel7);
+                    SignalProcessing.SetNegTrigLevel(6, _NegValueChnnel7);
                     OnPropertyChanged();
                 }
             }
@@ -287,7 +293,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _PosValueChnnel8)
                 {
                     _PosValueChnnel8 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetPosTrigLevel(7, _PosValueChnnel8);
+                    SignalProcessing.SetPosTrigLevel(7, _PosValueChnnel8);
                     OnPropertyChanged();
                 }
             }
@@ -303,7 +309,7 @@ namespace NIRS_Demonstrator.ViewModels
                 if (value != _NegValueChnnel8)
                 {
                     _NegValueChnnel8 = value;
-                    _ChartsPage.NirsChartData1.NirsSignalProcessing.SetNegTrigLevel(7, _NegValueChnnel8);
+                    SignalProcessing.SetNegTrigLevel(7, _NegValueChnnel8);
                     OnPropertyChanged();
                 }
             }
@@ -328,7 +334,7 @@ namespace NIRS_Demonstrator.ViewModels
             _ChartsPage = chartsPage;
             _ChartsSettinsWindow = window;
             _ChartsSettinsWindow.Closed += _ChartsSettinsWindow_Closed;
-            ConfigEn = _ChartsPage.NirsChartData1.HandlePointsThreadStarted;
+            ConfigEn = _ChartsPage.ViewModel.IsRunning;
             _UpdateThreadStarted = true;
             _UpdateThread = new Thread(UpdateThreadAction);
             _UpdateThread.Start();
@@ -374,7 +380,7 @@ namespace NIRS_Demonstrator.ViewModels
         {
             while(_UpdateThreadStarted)
             {
-                ConfigEn = _ChartsPage.NirsChartData1.HandlePointsThreadStarted;
+                ConfigEn = _ChartsPage.ViewModel.IsRunning;
                 UpdateMarkers();
                 await Task.Delay(33);
             }
@@ -384,31 +390,31 @@ namespace NIRS_Demonstrator.ViewModels
         {
             if (en)
             {
-                while (_ChartsPage.NirsChartData1.NirsSignalProcessing == null)
+                while (SignalProcessing == null)
                     await Task.Delay(100);
-                PosValueChannel1 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(0);
-                NegValueChannel1 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(0);
+                PosValueChannel1 = SignalProcessing.GetPosTrigLevel(0);
+                NegValueChannel1 = SignalProcessing.GetNegTrigLevel(0);
 
-                PosValueChannel2 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(1);
-                NegValueChannel2 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(1);
+                PosValueChannel2 = SignalProcessing.GetPosTrigLevel(1);
+                NegValueChannel2 = SignalProcessing.GetNegTrigLevel(1);
 
-                PosValueChannel3 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(2);
-                NegValueChannel3 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(2);
+                PosValueChannel3 = SignalProcessing.GetPosTrigLevel(2);
+                NegValueChannel3 = SignalProcessing.GetNegTrigLevel(2);
 
-                PosValueChannel4 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(3);
-                NegValueChannel4 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(3);
+                PosValueChannel4 = SignalProcessing.GetPosTrigLevel(3);
+                NegValueChannel4 = SignalProcessing.GetNegTrigLevel(3);
 
-                PosValueChannel5 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(4);
-                NegValueChannel5 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(4);
+                PosValueChannel5 = SignalProcessing.GetPosTrigLevel(4);
+                NegValueChannel5 = SignalProcessing.GetNegTrigLevel(4);
 
-                PosValueChannel6 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(5);
-                NegValueChannel6 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(5);
+                PosValueChannel6 = SignalProcessing.GetPosTrigLevel(5);
+                NegValueChannel6 = SignalProcessing.GetNegTrigLevel(5);
 
-                PosValueChannel7 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(6);
-                NegValueChannel7 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(6);
+                PosValueChannel7 = SignalProcessing.GetPosTrigLevel(6);
+                NegValueChannel7 = SignalProcessing.GetNegTrigLevel(6);
 
-                PosValueChannel8 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigLevel(7);
-                NegValueChannel8 = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigLevel(7);
+                PosValueChannel8 = SignalProcessing.GetPosTrigLevel(7);
+                NegValueChannel8 = SignalProcessing.GetNegTrigLevel(7);
 
                 ClearMarkers();
                 Dispatcher.UIThread.Invoke(() =>
@@ -418,7 +424,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_1.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(0)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(0)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
                     marker = new HorizontalMarker()
@@ -426,7 +432,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_1.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(0)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(0)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -435,7 +441,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_2.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(1)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(1)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -444,7 +450,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_2.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(1)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(1)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -453,7 +459,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_3.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(2)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(2)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -462,7 +468,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_3.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(2)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(2)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -471,7 +477,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_4.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(3)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(3)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -480,7 +486,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series740_4.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(3)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(3)
                     };
                     _ChartsPage.Nirs1Chart740.HorizontalMarkers.Add(marker);
 
@@ -490,7 +496,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_1.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(4)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(4)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
                     marker = new HorizontalMarker()
@@ -498,7 +504,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_1.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(4)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(4)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
 
@@ -507,7 +513,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_2.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(5)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(5)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
 
@@ -516,7 +522,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_2.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(5)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(5)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
 
@@ -525,7 +531,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_3.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(6)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(6)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
 
@@ -534,7 +540,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_3.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(6)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(6)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
 
@@ -543,7 +549,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_4.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(7)
+                        Level = SignalProcessing.GetPosTrigTotalLevel(7)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
 
@@ -552,7 +558,7 @@ namespace NIRS_Demonstrator.ViewModels
                         Stroke = _ChartsPage.Nirs1Series850_4.Stroke,
                         Opacity = 0.5,
                         StrokeThickness = 1,
-                        Level = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(7)
+                        Level = SignalProcessing.GetNegTrigTotalLevel(7)
                     };
                     _ChartsPage.Nirs1Chart850.HorizontalMarkers.Add(marker);
                 });
@@ -568,46 +574,46 @@ namespace NIRS_Demonstrator.ViewModels
                 if (_ChartsPage.Nirs1Chart740.HorizontalMarkers.Count == 0)
                     return;
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[0].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(0);
+                    = SignalProcessing.GetPosTrigTotalLevel(0);
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[1].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(0);
+                    = SignalProcessing.GetNegTrigTotalLevel(0);
 
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[2].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(1);
+                    = SignalProcessing.GetPosTrigTotalLevel(1);
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[3].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(1);
+                    = SignalProcessing.GetNegTrigTotalLevel(1);
 
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[4].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(2);
+                    = SignalProcessing.GetPosTrigTotalLevel(2);
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[5].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(2);
+                    = SignalProcessing.GetNegTrigTotalLevel(2);
 
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[6].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(3);
+                    = SignalProcessing.GetPosTrigTotalLevel(3);
                 _ChartsPage.Nirs1Chart740.HorizontalMarkers[7].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(3);
+                    = SignalProcessing.GetNegTrigTotalLevel(3);
 
                 if (_ChartsPage.Nirs1Chart850.HorizontalMarkers.Count == 0)
                     return;
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[0].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(4);
+                    = SignalProcessing.GetPosTrigTotalLevel(4);
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[1].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(4);
+                    = SignalProcessing.GetNegTrigTotalLevel(4);
 
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[2].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(5);
+                    = SignalProcessing.GetPosTrigTotalLevel(5);
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[3].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(5);
+                    = SignalProcessing.GetNegTrigTotalLevel(5);
 
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[4].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(6);
+                    = SignalProcessing.GetPosTrigTotalLevel(6);
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[5].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(6);
+                    = SignalProcessing.GetNegTrigTotalLevel(6);
 
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[6].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetPosTrigTotalLevel(7);
+                    = SignalProcessing.GetPosTrigTotalLevel(7);
                 _ChartsPage.Nirs1Chart850.HorizontalMarkers[7].Level
-                    = _ChartsPage.NirsChartData1.NirsSignalProcessing.GetNegTrigTotalLevel(7);
+                    = SignalProcessing.GetNegTrigTotalLevel(7);
             });
             
         }

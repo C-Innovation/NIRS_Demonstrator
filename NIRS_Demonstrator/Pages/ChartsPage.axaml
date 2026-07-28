@@ -138,7 +138,8 @@
 							   Foreground="Blue"
 							   FontWeight="Bold"
 							   FontSize="{StaticResource FontSizeLarge}"
-							   Margin="10 0 0 0" />
+							   Margin="10 0 0 0"
+							   Text="{Binding Value850Ch3Text}" />
 					<TextBlock x:Name="Nirs1ValueText850_4"
 							   Grid.Row="3"
 							   HorizontalAlignment="Left"
@@ -146,7 +147,8 @@
 							   Foreground="Magenta"
 							   FontWeight="Bold"
 							   FontSize="{StaticResource FontSizeLarge}"
-							   Margin="10 0 0 0" />
+							   Margin="10 0 0 0"
+							   Text="{Binding Value850Ch4Text}" />
 				</Grid>
 				
 				<!--
@@ -206,40 +208,46 @@
 			<ComboBox x:Name="NirsComPortSelector1"
 					  Grid.Row="0"
 					  Grid.Column="0"
-					  Grid.ColumnSpan="3" 
+					  Grid.ColumnSpan="3"
 					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
 					  BorderThickness="2"
 					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
 					  FontSize="{StaticResource FontSizeLarge}"
-					  FontWeight="Bold" 
-					  Width="{Binding #ComPortControlGrid.Bounds.Width}"/>
+					  FontWeight="Bold"
+					  Width="{Binding #ComPortControlGrid.Bounds.Width}"
+					  ItemsSource="{Binding AvailablePorts}"
+					  SelectedItem="{Binding SelectedNirsPort1}"/>
 
 			<!-- NIRS COM port selector 2 -->
-			
+
 			<ComboBox x:Name="NirsComPortSelector2"
 					  Grid.Row="1"
 					  Grid.Column="0"
-					  Grid.ColumnSpan="3" 
+					  Grid.ColumnSpan="3"
 					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
 					  BorderThickness="2"
 					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
 					  FontSize="{StaticResource FontSizeLarge}"
-					  FontWeight="Bold" 
+					  FontWeight="Bold"
 					  Width="{Binding #ComPortControlGrid.Bounds.Width}"
+					  ItemsSource="{Binding AvailablePorts}"
+					  SelectedItem="{Binding SelectedNirsPort2}"
 					  IsVisible="False"/>
 
 			<ComboBox x:Name="HardwareAiDeviceSelector"
 					  Grid.Row="2"
 					  Grid.Column="0"
-					  Grid.ColumnSpan="3" 
+					  Grid.ColumnSpan="3"
 					  BorderBrush="{DynamicResource Theme_ForegroudMainBrush}"
 					  BorderThickness="2"
 					  Foreground="{DynamicResource Theme_ForegroudMainBrush}"
 					  FontSize="{StaticResource FontSizeLarge}"
-					  FontWeight="Bold" 
+					  FontWeight="Bold"
 					  Width="{Binding #ComPortControlGrid.Bounds.Width}"
+					  ItemsSource="{Binding AvailablePorts}"
+					  SelectedItem="{Binding SelectedAiDevicePort}"
 					  IsVisible="False"/>
-					  
+
 			<!-- NIRS COM ports control -->
 			<Button x:Name="StartComPortsButton"
 					Classes="IconGrowButton"
@@ -249,7 +257,7 @@
 					Foreground="{StaticResource WordGreenBrush}"
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource NirsStartText}"
-					Click="StartComPortsButton_Click"/>
+					Command="{Binding StartCommand}"/>
 			<Button x:Name="RefreshComPortsButton"
 					Classes="IconGrowButton"
 					Grid.Row="3"
@@ -258,7 +266,7 @@
 
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource NirsUpdatePortsText}"
-					Click="RefreshComPortsButton_Click"/>
+					Command="{Binding RefreshPortsCommand}"/>
 
 			<Button x:Name="StopComPortsButton"
 					Classes="IconGrowButton"
@@ -268,17 +276,37 @@
 					Foreground="{StaticResource WordRedBrush}"
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource NirsStopText}"
-					Click="StopComPortsButton_Click"/>
+					Command="{Binding StopCommand}"/>
 
+			<!-- Мигание во время записи задаётся анимацией стиля, а не
+			     фоновым потоком, дёргающим Opacity через диспетчер. -->
 			<Button x:Name="StartRecordButton"
 					Classes="IconGrowButton"
+					Classes.recording="{Binding IsRecording}"
 					Grid.Row="4"
 					Grid.Column="0"
 					Content="{StaticResource FA_CircleIcon}"
 					Foreground="{StaticResource WordRedBrush}"
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource StartRecordText}"
-					Click="StartRecordButton_Click"/>
+					Command="{Binding ToggleRecordCommand}">
+				<Button.Styles>
+					<Style Selector="Button.recording">
+						<Style.Animations>
+							<Animation Duration="0:0:0.5"
+									   IterationCount="INFINITE"
+									   PlaybackDirection="Alternate">
+								<KeyFrame Cue="0%">
+									<Setter Property="Opacity" Value="1.0"/>
+								</KeyFrame>
+								<KeyFrame Cue="100%">
+									<Setter Property="Opacity" Value="0.0"/>
+								</KeyFrame>
+							</Animation>
+						</Style.Animations>
+					</Style>
+				</Button.Styles>
+			</Button>
 
 			<Button x:Name="SettingsButton"
 					Classes="IconGrowButton"
@@ -287,10 +315,10 @@
 					Content="{StaticResource FA_GearIcon}"
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource SettingsText}"
-					Click="SettingsButton_Click"/>
+					Command="{Binding OpenSettingsCommand}"/>
 
 			<!-- Channel 1 configuration -->
-			<NumericUpDown x:Name="LedsIrCurrentCongig" 
+			<NumericUpDown x:Name="LedsIrCurrentCongig"
 						   Grid.Column="0"
 						   Grid.ColumnSpan="3"
 						   Grid.Row="5"
@@ -303,8 +331,7 @@
 						   Background="Transparent"
 						   FontSize="{StaticResource FontSizeLarge}"
 						   Width="{Binding #ComPortControlGrid.Bounds.Width}"
-						   ValueChanged="LedsIrCurrentCongig_ValueChanged"
-						   Value="50"/>
+						   Value="{Binding LedCurrentPercent}"/>
 		</Grid>
 				
 	</Grid>

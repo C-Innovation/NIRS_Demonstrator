@@ -18,7 +18,7 @@ namespace NIRS_Demonstrator
     /// <summary>
     /// 
     /// </summary>
-    public class Series : Polyline
+    public class Series : Polyline, IDisposable
     {
         #region Dependency Properties
 
@@ -32,13 +32,22 @@ namespace NIRS_Demonstrator
         private Canvas _ChartArea;
         private HorizontalAxi _AxisX;
         private VerticalAxi _AxisY;
-        private List<Point> _PointsView;
         private Pair<double, double> _PointsViewHorizontalBorders;
         private Pair<double, double> _PointsViewVerticalBorders;
-        private List<Point> _PointsTotal;
+        private PointDeque _PointsTotal;
         private Pair<double, double> _PointsTotalBorders;
         private ChartMode _ChartMode;
-        private Mutex _MutexUpdateChart;
+
+        /// <summary>
+        /// Два буфера экранных точек, используемых по очереди. Присваивание
+        /// <see cref="Polyline.Points"/> нужно, чтобы Avalonia перестроила геометрию,
+        /// а чередование даёт новую ссылку без выделения списка на каждый кадр.
+        /// </summary>
+        private List<Point> _RenderBufferA;
+        private List<Point> _RenderBufferB;
+        private bool _UseRenderBufferA;
+
+        private bool _IsDisposed;
 
         #endregion
 
@@ -106,15 +115,10 @@ namespace NIRS_Demonstrator
             if (_ChartMode == ChartMode.Live)
             {
                 _PointsTotal.Clear();
-                _PointsView.Clear();
-                //this.Points = _PointsView;
-
-
             }
             else if (_ChartMode == ChartMode.Static)
             {
                 _PointsTotal.Clear();
-                _PointsView.Clear();
                 /// TODO: Add handle
             }
 
@@ -204,12 +208,13 @@ namespace NIRS_Demonstrator
 
         public void SetParams(Canvas chartArea, HorizontalAxi axisX, VerticalAxi axisY, ChartMode chartMode = ChartMode.Live)
         {
+            // Повторная привязка к другой области построения не должна оставлять
+            // подписки на предыдущей.
+            DetachHandlers();
+
             VerticalMarkers = new ObservableCollection<VerticalMarker>();
             VerticalMarkers.CollectionChanged += VerticalMarkers_CollectionChanged;
 
-            
-
-            _MutexUpdateChart = new Mutex(initiallyOwned: false);
             _ChartMode = chartMode;
 
             _ChartArea = chartArea;
@@ -226,8 +231,10 @@ namespace NIRS_Demonstrator
             _PointsViewVerticalBorders.Second = _AxisY.AxisMaxValue;
             StrokeThickness = 2;
 
-            _PointsView = new List<Point>();
-            _PointsTotal = new List<Point>();
+            _PointsTotal = new PointDeque();
+            _RenderBufferA = new List<Point>();
+            _RenderBufferB = new List<Point>();
+            _UseRenderBufferA = true;
 
             SelectionArea = new VerticalSelection(_ChartArea, _AxisX);
             SelectionArea.Fill = this.Stroke;
@@ -235,48 +242,110 @@ namespace NIRS_Demonstrator
             IsValid = true;
         }
 
-
-
-        public async Task AddPointAsync(Point point)
+        /// <summary>
+        /// Отписывается от области построения и осей. Без этого удалённая серия
+        /// остаётся достижимой из долгоживущих Canvas/Axi вместе со всеми накопленными
+        /// точками — классическая утечка через обработчики событий.
+        /// </summary>
+        public void DetachHandlers()
         {
-            PrepareSeriesPoints(point);
+            if (VerticalMarkers != null)
+                VerticalMarkers.CollectionChanged -= VerticalMarkers_CollectionChanged;
 
-            //_MutexUpdateChart.WaitOne();
-            //if(point.X > _PointsTotalBorders.First && point.X < _PointsTotalBorders.Second)
-            await UpdatePointsViewAsync();
-            //_MutexUpdateChart.ReleaseMutex();
+            if (_ChartArea != null)
+            {
+                _ChartArea.SizeChanged -= _ChartArea_SizeChanged;
+
+                if (SelectionArea != null)
+                    _ChartArea.Children.Remove(SelectionArea);
+
+                if (VerticalMarkers != null)
+                {
+                    foreach (VerticalMarker marker in VerticalMarkers)
+                        _ChartArea.Children.Remove(marker);
+                }
+            }
+
+            if (_AxisX != null)
+            {
+                _AxisX.AxisSizeChanged -= _AxisX_AxisSizeChanged;
+                _AxisX.AxisMinValueChanged -= _AxisX_AxisMinValueChanged;
+            }
+
+            if (_AxisY != null)
+            {
+                _AxisY.AxisSizeChanged -= _AxisY_AxisSizeChanged;
+                _AxisY.AxisMinValueChanged -= _AxisY_AxisMinValueChanged;
+            }
+
+            IsValid = false;
         }
 
+        public void Dispose()
+        {
+            if (_IsDisposed)
+                return;
+
+            _IsDisposed = true;
+            DetachHandlers();
+            _PointsTotal?.Clear();
+            _RenderBufferA?.Clear();
+            _RenderBufferB?.Clear();
+        }
+
+
+
+        public Task AddPointAsync(Point point)
+        {
+            return AddPointsRangeAsync(new[] { point });
+        }
+
+        /// <summary>
+        /// Добавление точек и перерисовка выполняются одной операцией в потоке UI:
+        /// иначе фоновый поток мог бы менять буфер точек ровно в тот момент,
+        /// когда поток UI по нему проходит.
+        /// </summary>
         public async Task AddPointsRangeAsync(IEnumerable<Point> points)
         {
-            //await Task.Run(async () =>
-            //{
-            //    foreach (Point point in points)
-            //    {
-            //        await AddPointAsync(point);
-            //    }
-            //});
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                AddPointsRangeCore(points);
+                return;
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() => AddPointsRangeCore(points));
+        }
+
+        private void AddPointsRangeCore(IEnumerable<Point> points)
+        {
+            if (_IsDisposed)
+                return;
 
             foreach (Point point in points)
             {
                 PrepareSeriesPoints(point);
             }
-            await UpdatePointsViewAsync();
+
+            UpdatePointsViewCore();
         }
 
         public async Task ClearPoints()
         {
-            await Task.Run(() =>
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    this.Points = new List<Point>();
-                    _PointsView.Clear();
-                    _PointsTotal.Clear();
-                    
-                });
+                ClearPointsCore();
+                return;
+            }
 
-            });
+            await Dispatcher.UIThread.InvokeAsync(ClearPointsCore);
+        }
+
+        private void ClearPointsCore()
+        {
+            _PointsTotal.Clear();
+            _RenderBufferA.Clear();
+            _RenderBufferB.Clear();
+            this.Points = _UseRenderBufferA ? _RenderBufferA : _RenderBufferB;
         }
 
         public void AddMarker(double Level)
@@ -296,49 +365,66 @@ namespace NIRS_Demonstrator
 
         private async Task UpdatePointsViewAsync()
         {
-            await Task.Run(() =>
+            // Раньше здесь был Task.Run поверх блокирующего Dispatcher.Invoke:
+            // поток из пула занимался только тем, что ждал поток UI.
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    this.Points = new List<Point>();
-                    _PointsView.Clear();
+                UpdatePointsViewCore();
+                return;
+            }
 
-                    if (_PointsTotal.Count == 0)
-                        return;
-
-                    PrepareCurrentScreenPoints();
-
-                    if (_PointsView.Count == 0)
-                        return;
-
-                    foreach (Point point in _PointsView)
-                    {
-                        double X, Y;
-
-                        X = ((point.X - _PointsViewHorizontalBorders.First) / _AxisX.AxisSize) * _ChartArea.Bounds.Width;// _ChartArea.Width;
-                        if (point.Y <= _PointsViewVerticalBorders.First)
-                            Y = _ChartArea.Bounds.Height; //_ChartArea.Height;
-                        else if (point.Y >= _PointsViewVerticalBorders.Second)
-                            Y = 0;
-                        else
-                            Y = _ChartArea.Bounds.Height - (((point.Y - _PointsViewVerticalBorders.First) / _AxisY.AxisSize) * _ChartArea.Bounds.Height);//); //_ChartArea.Height);
-                        this.Points.Add(new Point(X, Y));
-                    }
-                });
-
-            });
+            await Dispatcher.UIThread.InvokeAsync(UpdatePointsViewCore);
         }
 
-        private void PrepareCurrentScreenPoints()
+        /// <summary>
+        /// Пересчитывает видимые точки в экранные координаты. Только поток UI.
+        /// </summary>
+        private void UpdatePointsViewCore()
         {
-            for (int i = 0; i < _PointsTotal.Count; i++)
-            {
-                if (i >= _PointsTotal.Count)
-                    return;
+            if (_IsDisposed || _PointsTotal == null)
+                return;
 
-                if (_PointsTotal[i].X >= _PointsViewHorizontalBorders.First && _PointsTotal[i].X <= _PointsViewHorizontalBorders.Second)
-                    _PointsView.Add(_PointsTotal[i]);
+            List<Point> target = _UseRenderBufferA ? _RenderBufferA : _RenderBufferB;
+            _UseRenderBufferA = !_UseRenderBufferA;
+            target.Clear();
+
+            if (_PointsTotal.Count != 0)
+            {
+                // Точки упорядочены по X, поэтому границы окна ищутся бинарным поиском,
+                // а не полным проходом по всей истории на каждую перерисовку.
+                int from = _PointsTotal.LowerBound(_PointsViewHorizontalBorders.First);
+                int to = _PointsTotal.UpperBound(_PointsViewHorizontalBorders.Second);
+
+                double areaWidth = _ChartArea.Bounds.Width;
+                double areaHeight = _ChartArea.Bounds.Height;
+                double axisSizeX = _AxisX.AxisSize;
+                double axisSizeY = _AxisY.AxisSize;
+                double left = _PointsViewHorizontalBorders.First;
+                double bottom = _PointsViewVerticalBorders.First;
+                double top = _PointsViewVerticalBorders.Second;
+
+                if (target.Capacity < to - from)
+                    target.Capacity = to - from;
+
+                for (int i = from; i < to; i++)
+                {
+                    Point point = _PointsTotal[i];
+
+                    double x = ((point.X - left) / axisSizeX) * areaWidth;
+                    double y;
+
+                    if (point.Y <= bottom)
+                        y = areaHeight;
+                    else if (point.Y >= top)
+                        y = 0;
+                    else
+                        y = areaHeight - (((point.Y - bottom) / axisSizeY) * areaHeight);
+
+                    target.Add(new Point(x, y));
+                }
             }
+
+            this.Points = target;
         }
 
         private async Task UpdateMarkersAsync()
@@ -395,11 +481,11 @@ namespace NIRS_Demonstrator
                 if (_ChartMode == ChartMode.Live)
                 {
 
-                    if (point.X > _PointsTotalBorders.Second)
+                    if (point.X > _PointsTotalBorders.Second && _PointsTotal.Count > 1)
                     {
-                        double delta = _PointsTotal[1].X - _PointsTotal[0].X;
-                        _PointsTotal.RemoveAt(0);
-                        _PointsTotalBorders.First = _PointsTotal[0].X;
+                        // O(1) вместо List.RemoveAt(0), сдвигавшего весь массив.
+                        _PointsTotal.RemoveFirst();
+                        _PointsTotalBorders.First = _PointsTotal.First.X;
                         _PointsTotalBorders.Second = _PointsTotalBorders.First + (_AxisX.AxisSize * 3);
                         //_AxisX.SetAxisMinValue(_AxisX.AxisMinValue + delta);
                         _PointsViewHorizontalBorders.First = _PointsTotalBorders.First + _AxisX.AxisMinValue;
@@ -410,7 +496,7 @@ namespace NIRS_Demonstrator
                 }
                 else if (_ChartMode == ChartMode.Static)
                 {
-                    if (point.X > _PointsTotalBorders.Second)
+                    if (point.X > _PointsTotalBorders.Second && _PointsTotal.Count > 1)
                     {
                         double delta = _PointsTotal[1].X - _PointsTotal[0].X;
                         _PointsTotalBorders.Second += delta;
@@ -422,7 +508,7 @@ namespace NIRS_Demonstrator
 
 
             }
-            _PointsTotal.Add(point);
+            _PointsTotal.AddLast(point);
         }
 
         #endregion

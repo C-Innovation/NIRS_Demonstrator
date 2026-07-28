@@ -154,6 +154,9 @@ namespace NIRS_Demonstrator
             _MidSum = 0.0;
             _MidVal = 0.0;
             _MidCounter = 0;
+            // Скользящая сумма считается инкрементально, поэтому окно
+            // обязано сбрасываться вместе с ней.
+            _Samples.Clear();
         }
 
         #endregion
@@ -234,13 +237,12 @@ namespace NIRS_Demonstrator
 
         private double ProcessMidCalc(double val)
         {
+            // Окно ещё не заполнено: сумма набирается инкрементально,
+            // без пересчёта по всему буферу на каждый отсчёт.
             if (_Samples.Count < _WindowSize)
             {
-                _MidSum = 0;
                 _Samples.Enqueue(val);
-
-                foreach (var sample in _Samples)
-                    _MidSum += sample;
+                _MidSum += val;
 
                 _MidVal = _MidSum / _Samples.Count;
 
@@ -249,25 +251,15 @@ namespace NIRS_Demonstrator
 
             if (_MidCalcEn)
             {
-                //_MidSum = 0;
+                // Окно заполнено: вытесняем самый старый отсчёт и добавляем новый.
+                // Peek() вместо ElementAt(0) — без прохода по перечислителю Queue.
+                _MidSum -= _Samples.Peek();
+                _Samples.Dequeue();
+
                 _Samples.Enqueue(val);
-
-                if (_Samples.Count > _WindowSize)
-                {
-                    _MidSum -= _Samples.ElementAt(0);
-                    _MidSum += val;
-                    _Samples.Dequeue();
-                }
-
-                //foreach (var sample in _Samples)
-                //    _MidSum += sample;
+                _MidSum += val;
 
                 _MidVal = _MidSum / _Samples.Count;
-
-
-                //_MidSum += val;
-                //_MidCounter++;
-                //_MidVal = _MidSum / (double)_MidCounter;
             }
 
             _LastVal = val;

@@ -41,7 +41,7 @@ namespace NIRS_Demonstrator
                     Consume(headerPos);
 
                 // Читаем длину поля данных (Little-Endian)
-                ushort dataLen = (ushort)(_buffer[4] | (_buffer[5] << 8));
+                ushort dataLen = (ushort)(_buffer.GetUnchecked(4) | (_buffer.GetUnchecked(5) << 8));
                 int totalPacketLen = 4 + 2 + dataLen + 2;
 
                 // Проверка на адекватный размер
@@ -56,7 +56,8 @@ namespace NIRS_Demonstrator
 
                 // Вычисляем и сверяем CRC
                 ushort calcCrc = ComputeCrc16FromBuffer(totalPacketLen - 2);
-                ushort recvCrc = (ushort)(_buffer[totalPacketLen - 2] | (_buffer[totalPacketLen - 1] << 8));
+                ushort recvCrc = (ushort)(_buffer.GetUnchecked(totalPacketLen - 2) |
+                                          (_buffer.GetUnchecked(totalPacketLen - 1) << 8));
 
                 if (calcCrc != recvCrc)
                 {
@@ -74,8 +75,7 @@ namespace NIRS_Demonstrator
                 }
 
                 byte[] payload = new byte[dataLen];
-                for (int i = 0; i < dataLen; i++)
-                    payload[i] = _buffer[6 + i];
+                _buffer.CopyTo(6, payload, 0, dataLen);
 
                 // Уведомляем потребителя
                 _callback?.Invoke(payload, dataLen);
@@ -85,18 +85,28 @@ namespace NIRS_Demonstrator
             }
         }
 
+        /// <summary>
+        /// Ищет заголовок скользящим 32-битным окном: каждый байт буфера читается
+        /// один раз, а не четыре (как при чтении по четыре байта на каждое смещение).
+        /// </summary>
         private int FindHeader()
         {
             int avail = _buffer.Size;
             if (avail < 4) return -1;
 
-            for (int offset = 0; offset <= avail - 4; offset++)
+            // Заголовок пишется как Little-Endian, поэтому в окне младший байт — самый ранний.
+            uint window = (uint)(_buffer.GetUnchecked(0) |
+                                 (_buffer.GetUnchecked(1) << 8) |
+                                 (_buffer.GetUnchecked(2) << 16) |
+                                 (_buffer.GetUnchecked(3) << 24));
+
+            if (window == _expectedHeader)
+                return 0;
+
+            for (int offset = 1; offset <= avail - 4; offset++)
             {
-                uint val = (uint)(_buffer[offset] |
-                                  (_buffer[offset + 1] << 8) |
-                                  (_buffer[offset + 2] << 16) |
-                                  (_buffer[offset + 3] << 24));
-                if (val == _expectedHeader)
+                window = (window >> 8) | ((uint)_buffer.GetUnchecked(offset + 3) << 24);
+                if (window == _expectedHeader)
                     return offset;
             }
             return -1;
@@ -107,7 +117,7 @@ namespace NIRS_Demonstrator
             ushort crc = 0x0000;
             for (int i = 0; i < len; i++)
             {
-                crc ^= (ushort)(_buffer[i] << 8);
+                crc ^= (ushort)(_buffer.GetUnchecked(i) << 8);
                 for (int bit = 0; bit < 8; bit++)
                 {
                     if ((crc & 0x8000) != 0)
@@ -120,13 +130,11 @@ namespace NIRS_Demonstrator
         }
 
         /// <summary>
-        /// Удаляет count элементов с начала буфера.
-        /// (В оригинальном CircularBuffer нет пакетного удаления, поэтому цикл)
+        /// Удаляет count элементов с начала буфера за O(1).
         /// </summary>
         private void Consume(int count)
         {
-            for (int i = 0; i < count; i++)
-                _buffer.PopFront();
+            _buffer.Skip(count);
         }
     }
 }

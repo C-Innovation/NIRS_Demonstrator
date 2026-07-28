@@ -213,7 +213,7 @@ public partial class Chart2D : UserControl
                 foreach(var item in e.OldItems)
                 {
                     if (item is Series series)
-                        ChartArea.Children.Remove(series);
+                        RemoveSeries(series);
                 }
                 break;
 
@@ -221,7 +221,7 @@ public partial class Chart2D : UserControl
                 foreach (var item in e.OldItems)
                 {
                     if (item is Series series)
-                        ChartArea.Children.Remove(series);
+                        RemoveSeries(series);
                 }
                 foreach (var item in e.NewItems)
                 {
@@ -232,8 +232,13 @@ public partial class Chart2D : UserControl
 
             case NotifyCollectionChangedAction.Reset:
 
-                ChartSeries.Clear();
-                ChartSeries = new ObservableCollection<Series>();
+                // Reset не сообщает, что именно было удалено, поэтому убираем с холста
+                // все серии, которых больше нет в коллекции.
+                for (int i = ChartArea.Children.Count - 1; i >= 0; i--)
+                {
+                    if (ChartArea.Children[i] is Series series && !ChartSeries.Contains(series))
+                        RemoveSeries(series);
+                }
                 break;
 
             default: break;
@@ -244,6 +249,16 @@ public partial class Chart2D : UserControl
             if (!series.IsValid)
                 series.SetParams(ChartArea, AxisX, AxisY, _ChartMode);
         }
+    }
+
+    /// <summary>
+    /// Убирает серию с холста и отписывает её от области построения и осей,
+    /// иначе она остаётся достижимой из них вместе со всеми накопленными точками.
+    /// </summary>
+    private void RemoveSeries(Series series)
+    {
+        ChartArea.Children.Remove(series);
+        series.Dispose();
     }
 
     private void HorizontalMarkers_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

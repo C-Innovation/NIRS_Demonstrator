@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -21,12 +22,21 @@ namespace NIRS_Demonstrator
 
         #region Private Members
 
-        private double _K;
+        /// <summary>
+        /// Разобранные коэффициенты .dat-файлов. Они неизменяемы после разбора,
+        /// поэтому кэшируются по пути к файлу и переиспользуются всеми экземплярами:
+        /// иначе каждый запуск устройства заново читает и парсит 8 одинаковых файлов.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, ParsedFilter> _parsedCache
+            = new ConcurrentDictionary<string, ParsedFilter>(StringComparer.OrdinalIgnoreCase);
 
-        private List<FilterSolutionsData> Cascades;
+        private readonly double _K;
 
-        private List<double[]> _historyX;
-        private List<double[]> _historyY;
+        private readonly List<FilterSolutionsData> Cascades;
+
+        // История задержек — состояние фильтра, у каждого экземпляра своё.
+        private readonly List<double[]> _historyX;
+        private readonly List<double[]> _historyY;
         #endregion
 
         #region Public Properties
@@ -56,16 +66,17 @@ namespace NIRS_Demonstrator
             if(!File.Exists(datPath))
                 throw new ArgumentException("FilterSolution!", "datPath");
 
-            _historyX = new List<double[]>();
-            _historyY = new List<double[]>();
+            ParsedFilter parsed = _parsedCache.GetOrAdd(datPath, ParseDatFile);
 
-            Cascades = new List<FilterSolutionsData>();
+            _K = parsed.K;
+            Cascades = parsed.Cascades;
 
-            ParseDatFile(datPath);
+            _historyX = new List<double[]>(Cascades.Count);
+            _historyY = new List<double[]>(Cascades.Count);
 
             foreach (var cascade in Cascades)
             {
-                
+
                 int order = cascade.Denominators.Count - 1;
                 _historyX.Add(new double[order]);
                 _historyY.Add(new double[order]);
@@ -168,36 +179,40 @@ namespace NIRS_Demonstrator
             1, -1.61, .7
          **/
 
-        private bool ParseDatFile(string datPath)
+        private static ParsedFilter ParseDatFile(string datPath)
         {
+            ParsedFilter parsed = new ParsedFilter();
+
             string[] lines = File.ReadAllLines(datPath);
             string strK = lines[0].Substring(lines[0].LastIndexOf(" ") + 1, lines[0].Length - lines[0].LastIndexOf(" ") - 1);
-            if(! double.TryParse(strK, CultureInfo.InvariantCulture, out _K))
-                return false;
+            if (!double.TryParse(strK, CultureInfo.InvariantCulture, out double k))
+                return parsed;
+
+            parsed.K = k;
 
             for (int i = 1; i < lines.Length; i += 4)
             {
                 if (!lines[i + 1].Contains("Term"))
-                    return false;
+                    return parsed;
 
                 FilterSolutionsData data = new FilterSolutionsData();
 
                 data.Numerators = ParseCoefsLine(lines[i + 2]);
-                if(data.Numerators == null) 
-                    return false;
+                if(data.Numerators == null)
+                    return parsed;
 
                 data.Denominators = ParseCoefsLine(lines[i + 3]);
-                if (data.Numerators == null) 
-                    return false;
+                if (data.Denominators == null)
+                    return parsed;
 
-                Cascades.Add(data);
+                parsed.Cascades.Add(data);
             }
 
-            return true;
+            return parsed;
         }
 
 
-        private List<double> ParseCoefsLine(string line)
+        private static List<double> ParseCoefsLine(string line)
         {
             List<double> coefs = new List<double>();
             while (line.Length > 0)
@@ -232,6 +247,15 @@ namespace NIRS_Demonstrator
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Неизменяемый результат разбора .dat-файла, общий для всех экземпляров фильтра.
+    /// </summary>
+    internal class ParsedFilter
+    {
+        public double K;
+        public List<FilterSolutionsData> Cascades = new List<FilterSolutionsData>();
     }
 
     public class FilterSolutionsData
