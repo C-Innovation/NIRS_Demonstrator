@@ -35,6 +35,9 @@ namespace NIRS_Demonstrator
                 case ApplicationPage.Charts:
                     return new ChartsPage(viewModel as ChartsPageViewModel);
 
+                case ApplicationPage.Viewer:
+                    return new ViewerPage(viewModel as ViewerPageViewModel);
+
                 default:
                     Debugger.Break();
                     return null;
@@ -60,6 +63,9 @@ namespace NIRS_Demonstrator
 
             if (page is ChartsPage)
                 return ApplicationPage.Charts;
+
+            if (page is ViewerPage)
+                return ApplicationPage.Viewer;
 
             Debugger.Break();
             return default(ApplicationPage);

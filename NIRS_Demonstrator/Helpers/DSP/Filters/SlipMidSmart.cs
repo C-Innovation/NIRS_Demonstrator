@@ -41,8 +41,25 @@ namespace NIRS_Demonstrator
         #region Public Properties
 
         public bool MidCalcEn { get => _MidCalcEn; }
-        public double CurrentPosLevel { get => (_MidVal + _PosTrigVal); }
-        public double CurrentNegLevel { get => (_MidVal - _NegTrigVal); }
+        public double CurrentPosLevel 
+        { 
+            get => _PosTrigVal; 
+            set => _PosTrigVal = value;
+        }
+        public double CurrentNegLevel 
+        { 
+            get => _NegTrigVal;
+            set => _NegTrigVal = value;
+        }
+
+        public double CurrentPosTotalLevel
+        {
+            get => (_MidVal + _PosTrigVal);
+        }
+        public double CurrentNegTotalLevel
+        {
+            get => (_MidVal - _NegTrigVal);
+        }
         public double CurrentMidLevel { get => _MidVal; }
 
 
@@ -77,27 +94,31 @@ namespace NIRS_Demonstrator
 
         public double Process(double val)
         {
-            if (_TimeOutStartSamples > 0)
+            //if (_TimeOutStartSamples > 0)
+            if (_Samples.Count < _WindowSize)
             {
-                _TimeOutStartSamples--;
+                //_TimeOutStartSamples--;
                 return ProcessMidCalc(val);
             }
 
             switch (_CurrentState)
             {
                 case SlipMidSmartState.Idle:
-                    if(CheckNegSet(val))
-                    {
-                        _CurrentState = SlipMidSmartState.AwaitForNegReset;
-                        _MidCalcEn = false;
-                        _TimeOutCounter = _TimeOutSamples;
-                    }
-                    else if (CheckPosSet(val))
+                    if (CheckPosSet(val))
                     {
                         _CurrentState = SlipMidSmartState.AwaitForPosReset;
                         _MidCalcEn = false;
                         _TimeOutCounter = _TimeOutSamples;
+                        break;
                     }
+                    if (CheckNegSet(val))
+                    {
+                        _CurrentState = SlipMidSmartState.AwaitForNegReset;
+                        _MidCalcEn = false;
+                        _TimeOutCounter = _TimeOutSamples;
+                        break;
+                    }
+
                     break;
 
                 case SlipMidSmartState.AwaitForNegReset:
@@ -120,6 +141,7 @@ namespace NIRS_Demonstrator
 
                 default: break;
             }
+            
             return ProcessMidCalc(val);
         }
 
@@ -132,6 +154,9 @@ namespace NIRS_Demonstrator
             _MidSum = 0.0;
             _MidVal = 0.0;
             _MidCounter = 0;
+            // Скользящая сумма считается инкрементально, поэтому окно
+            // обязано сбрасываться вместе с ней.
+            _Samples.Clear();
         }
 
         #endregion
@@ -140,95 +165,104 @@ namespace NIRS_Demonstrator
 
         private bool CheckNegSet(double val)
         {
-            if (_LastVal == 0.0)
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0)
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if (_LastVal > (_MidVal - _NegTrigVal) && val <= (_MidVal - _NegTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private bool CheckNegReset(double val)
         {
-            if (_LastVal == 0.0) 
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0) 
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if(_LastVal < (_MidVal - _NegTrigVal) && val >= (_MidVal - _NegTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private bool CheckPosSet(double val)
         {
-            if (_LastVal == 0.0)
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0)
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if (_LastVal < (_MidVal +_PosTrigVal) && val >= (_MidVal + _PosTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private bool CheckPosReset(double val)
         {
-            if (_LastVal == 0.0)
-            {
-                _LastVal = val;
-                return false;
-            }
+            //if (_LastVal == 0.0)
+            //{
+            //    _LastVal = val;
+            //    return false;
+            //}
 
             if (_LastVal > (_MidVal + _PosTrigVal) && val <= (_MidVal + _PosTrigVal))
+            {
+                //_LastVal = val;
                 return true;
+            }
+            //_LastVal = val;
 
             return false;
         }
 
         private double ProcessMidCalc(double val)
         {
-            if(_Samples.Count < _WindowSize)
+            // Окно ещё не заполнено: сумма набирается инкрементально,
+            // без пересчёта по всему буферу на каждый отсчёт.
+            if (_Samples.Count < _WindowSize)
             {
                 _Samples.Enqueue(val);
-
-                foreach (var sample in _Samples)
-                    _MidSum += sample;
+                _MidSum += val;
 
                 _MidVal = _MidSum / _Samples.Count;
 
                 return val - _MidVal;
             }
 
-            if(_MidCalcEn)
+            if (_MidCalcEn)
             {
+                // Окно заполнено: вытесняем самый старый отсчёт и добавляем новый.
+                // Peek() вместо ElementAt(0) — без прохода по перечислителю Queue.
+                _MidSum -= _Samples.Peek();
+                _Samples.Dequeue();
+
                 _Samples.Enqueue(val);
+                _MidSum += val;
 
-                if (_Samples.Count > _WindowSize)
-                {
-                    _MidSum -= _Samples.ElementAt(0);
-                    _MidSum += val;
-                    _Samples.Dequeue();
-                }
-
-                //foreach (var sample in _Samples)
-                //    _MidSum += sample;
-                 
                 _MidVal = _MidSum / _Samples.Count;
-
-
-                //_MidSum += val;
-                //_MidCounter++;
-                //_MidVal = _MidSum / (double)_MidCounter;
             }
+
+            _LastVal = val;
             return val - _MidVal;
         }
 

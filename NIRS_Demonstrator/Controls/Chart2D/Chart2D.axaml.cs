@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -45,7 +45,8 @@ public partial class Chart2D : UserControl
 
     private Point _LastPointerPosition;
     private bool _IsPointerPressed;
-
+    private ChartMode _ChartMode = ChartMode.Live;
+    //protected ObservableCollection<HorizontalMarker> _HorizontalMarkers;
     #endregion
 
     #region Public Properties
@@ -55,8 +56,31 @@ public partial class Chart2D : UserControl
 
     public ObservableCollection<Series> ChartSeries { get; set; }
 
-    public ObservableCollection<HorizontalMarker> HorizontalMarkers { get; set; }
+    public ChartMode ChartMode 
+    { 
+        get => _ChartMode; 
+        set => _ChartMode = value; 
+    }
 
+    public ObservableCollection<HorizontalMarker> HorizontalMarkers { get; set; }
+    //{ 
+    //    get => _HorizontalMarkers; 
+    //    set
+    //    {
+    //        //if (_HorizontalMarkers != null)
+    //        //{
+    //            _HorizontalMarkers = value;
+    //        //}
+    //    }
+    //}
+
+    
+    #endregion
+
+    #region Public Events
+
+    public event EventHandler<double> OnHorizontalScrollValueChanged;
+    public event EventHandler<Point> OnChartAreaDoubleClick;
     #endregion
 
     #region Constructor
@@ -81,8 +105,8 @@ public partial class Chart2D : UserControl
         HorizontalScroll.Value = 1000;
         HorizontalScroll.ValueChanged += HorizontalScroll_ValueChanged;
 
-        VerticalScroll.Minimum = -4000;
-        VerticalScroll.Maximum = 4000;
+        VerticalScroll.Minimum = -3;
+        VerticalScroll.Maximum = 3;
         VerticalScroll.Value = 0;
         VerticalScroll.ValueChanged += VerticalScroll_ValueChanged;
         // Modules initialization
@@ -94,6 +118,8 @@ public partial class Chart2D : UserControl
         ChartArea.PointerMoved += ChartArea_PointerMoved;
         ChartArea.PointerPressed += ChartArea_PointerPressed;
         ChartArea.PointerReleased += ChartArea_PointerReleased;
+
+        
         // Size changed handling
         //ChartArea.SizeChanged += ChartArea_SizeChanged;
     }
@@ -165,7 +191,11 @@ public partial class Chart2D : UserControl
         //_MajorGrid.UpdatePositions(new Size(ChartArea.Bounds.Width, ChartArea.Bounds.Height));
         AxisY.Update(new Size(ChartArea.Bounds.Width, ChartArea.Bounds.Height));
         AxisX.Update(new Size(ChartArea.Bounds.Width, ChartArea.Bounds.Height));
+
+        ChartArea.DoubleTapped += ChartArea_DoubleTapped;
     }
+
+    
 
     private void Series_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -183,7 +213,7 @@ public partial class Chart2D : UserControl
                 foreach(var item in e.OldItems)
                 {
                     if (item is Series series)
-                        ChartArea.Children.Remove(series);
+                        RemoveSeries(series);
                 }
                 break;
 
@@ -191,7 +221,7 @@ public partial class Chart2D : UserControl
                 foreach (var item in e.OldItems)
                 {
                     if (item is Series series)
-                        ChartArea.Children.Remove(series);
+                        RemoveSeries(series);
                 }
                 foreach (var item in e.NewItems)
                 {
@@ -202,8 +232,13 @@ public partial class Chart2D : UserControl
 
             case NotifyCollectionChangedAction.Reset:
 
-                ChartSeries.Clear();
-                ChartSeries = new ObservableCollection<Series>();
+                // Reset не сообщает, что именно было удалено, поэтому убираем с холста
+                // все серии, которых больше нет в коллекции.
+                for (int i = ChartArea.Children.Count - 1; i >= 0; i--)
+                {
+                    if (ChartArea.Children[i] is Series series && !ChartSeries.Contains(series))
+                        RemoveSeries(series);
+                }
                 break;
 
             default: break;
@@ -212,8 +247,18 @@ public partial class Chart2D : UserControl
         foreach (Series series in ChartSeries)
         {
             if (!series.IsValid)
-                series.SetParams(ChartArea, AxisX, AxisY);
+                series.SetParams(ChartArea, AxisX, AxisY, _ChartMode);
         }
+    }
+
+    /// <summary>
+    /// Убирает серию с холста и отписывает её от области построения и осей,
+    /// иначе она остаётся достижимой из них вместе со всеми накопленными точками.
+    /// </summary>
+    private void RemoveSeries(Series series)
+    {
+        ChartArea.Children.Remove(series);
+        series.Dispose();
     }
 
     private void HorizontalMarkers_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -250,9 +295,14 @@ public partial class Chart2D : UserControl
                 break;
 
             case NotifyCollectionChangedAction.Reset:
-
-                HorizontalMarkers.Clear();
-                HorizontalMarkers = new ObservableCollection<HorizontalMarker>();
+                throw new NotImplementedException(nameof(e));
+                //foreach (var item in HorizontalMarkers)
+                //{
+                //    if (item is HorizontalMarker marker)
+                //        ChartArea.Children.Remove(marker);
+                //}
+                //_HorizontalMarkers.Clear();
+                //_HorizontalMarkers = new ObservableCollection<HorizontalMarker>();
                 break;
 
             default: break;
@@ -268,6 +318,7 @@ public partial class Chart2D : UserControl
     private void HorizontalScroll_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
         AxisX.SetAxisMinValue(e.NewValue);
+        OnHorizontalScrollValueChanged?.Invoke(this, e.NewValue);
     }
 
     private void VerticalScroll_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -275,6 +326,20 @@ public partial class Chart2D : UserControl
         AxisY.SetAxisOffsetValue(e.NewValue);
     }
 
+    private void ChartArea_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        var chartArea = sender as Canvas;
+
+        if (chartArea is null)
+            return;
+
+        var currentPosition = e.GetPosition(chartArea);
+
+        double x = AxisX.AxisMinValue + ((currentPosition.X / chartArea.Bounds.Width) * AxisX.AxisSize);
+        double y = AxisY.AxisMinValue + (((chartArea.Bounds.Height - currentPosition.Y) / chartArea.Bounds.Height) * AxisY.AxisSize);
+
+        OnChartAreaDoubleClick?.Invoke(this, new Point(x, y));
+    }
     //private void ChartArea_SizeChanged(object? sender, SizeChangedEventArgs e)
     //{
 
@@ -298,6 +363,26 @@ public partial class Chart2D : UserControl
             HorizontalScroll.Value = HorizontalScroll.Maximum / 2;
         else
             AxisX.SetAxisMinValue(HorizontalScroll.Maximum / 2);
+    }
+
+    public void SetAxisXSizeForViewer(double size, double totalSize)
+    {
+        AxisX.SetAxisSize(size);
+        if (totalSize > size)
+        {
+            HorizontalScroll.Value = 0;
+            HorizontalScroll.Maximum = totalSize - size;
+        }
+        else
+        {
+            HorizontalScroll.Value = 0;
+            HorizontalScroll.Maximum = 0;
+        }
+        //HorizontalScroll.Maximum = size * 2;
+        //if (HorizontalScroll.Value != HorizontalScroll.Maximum / 2)
+        //    HorizontalScroll.Value = HorizontalScroll.Maximum / 2;
+        //else
+        //    AxisX.SetAxisMinValue(HorizontalScroll.Maximum / 2);
     }
 
     #endregion

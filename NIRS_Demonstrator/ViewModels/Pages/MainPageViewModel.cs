@@ -47,6 +47,8 @@ namespace NIRS_Demonstrator.ViewModels
         public ICommand RunTerminalCommand { get; set; }
         public ICommand RunChartsCommand { get; set; }
 
+        public ICommand RunViewerCommand { get; set; }
+
         #endregion
 
         #region Public Events
@@ -65,6 +67,7 @@ namespace NIRS_Demonstrator.ViewModels
             RunSettingsCommand = new RelayCommand(RunSettingsCommandAction);
             RunTerminalCommand = new RelayCommand(RunTerminalCommandAction);
             RunChartsCommand = new RelayCommand(RunChartsCommandAction);
+            RunViewerCommand = new RelayCommand(RunViewerCommandAction);
 
             AppConfig.GetInstance().RegisterDisposableObject(this);
         }
@@ -108,8 +111,11 @@ namespace NIRS_Demonstrator.ViewModels
         {
             IoC.Application.GoToPage(ApplicationPage.Charts);
         }
-        
 
+        private void RunViewerCommandAction()
+        {
+            IoC.Application.GoToPage(ApplicationPage.Viewer);
+        }
         #endregion
 
         #region Public Methods
@@ -118,7 +124,7 @@ namespace NIRS_Demonstrator.ViewModels
 
         #region Private Methods
 
-       
+
 
         #endregion
     }

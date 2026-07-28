@@ -1,0 +1,361 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:NIRS_Demonstrator.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="450"
+		Width="300" Height="450"
+        x:Class="NIRS_Demonstrator.ChartSettingsWindow"
+        Title="ChartSettingsWindow"
+        x:DataType="vm:ChartSettingsWindowViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+		<Grid x:Name="MainGrid">
+	        <Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+			<!-- Channel 1 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="0"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel1}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="1"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel1, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="1"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel1, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<!-- Channel 2 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="2"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel2}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="3"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel2, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="3"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel2, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<!-- Channel 3 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="4"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel3}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="5"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel3, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="5"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel3, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<!-- Channel 4 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="6"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel4}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="7"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel4, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="7"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel4, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+<!--==================================================================================================-->
+			<!-- Channel 5 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="8"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel5}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="9"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel5, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="9"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel5, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<!-- Channel 6 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="10"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel6}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="11"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel6, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="11"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel6, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<!-- Channel 7 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="12"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel7}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="13"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel7, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="13"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel7, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<!-- Channel 8 configuration -->
+			<TextBlock Grid.Column="0"
+					   Grid.ColumnSpan="2"
+					   Grid.Row="14"
+					   HorizontalAlignment="Center"
+					   VerticalAlignment="Center"
+					   Margin="5"
+					   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					   Background="Transparent"
+					   FontSize="{StaticResource FontSizeLarge}"
+					   Text="{DynamicResource ConfigChannel8}"/>
+
+			<NumericUpDown Grid.Column="0"
+						   Grid.Row="15"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding PosValueChannel8, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+
+			<NumericUpDown Grid.Column="1"
+						   Grid.Row="15"
+						   Minimum="0"
+						   Maximum="2"
+						   Increment="0.01"
+						   HorizontalAlignment="Center"
+						   VerticalAlignment="Center"
+						   Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+						   Background="Transparent"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   Width="135"
+						   Value="{Binding NegValueChannel8, Mode=TwoWay}"
+						   IsEnabled="{Binding ConfigEn}"/>
+        </Grid>
+
+		
+    </ScrollViewer>
+  
+</Window>

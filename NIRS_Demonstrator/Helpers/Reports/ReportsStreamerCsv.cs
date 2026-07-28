@@ -119,6 +119,8 @@ namespace NIRS_Demonstrator
                 while (_writingQueue.Count > 0 )
                 {
                     List<double> csvDataLine = _writingQueue.Dequeue();
+                    if(csvDataLine == null)
+                        continue;
                     string csvDataLineStr = string.Empty;
                     foreach (double data in csvDataLine)
                     {

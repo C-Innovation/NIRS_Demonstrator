@@ -52,6 +52,13 @@
 	<system:String x:Key="FA_PlayIcon">fa-solid fa-play</system:String>
 	<system:String x:Key="FA_StopIcon">fa-solid fa-stop</system:String>
 	<system:String x:Key="FA_ArrowsRotate">fa-solid fa-arrows-rotate</system:String>
+	<system:String x:Key="FA_FilePen">fa-solid fa-file-pen</system:String>
+	<system:String x:Key="FA_FileCsv">fa-solid fa-file-csv</system:String>
+
+	<system:String x:Key="FA_ArrowUp">fa-solid fa-arrow-up</system:String>
+	<system:String x:Key="FA_ArrowDown">fa-solid fa-arrow-down</system:String>
+	<system:String x:Key="FA_Atom">fa-solid fa-atom</system:String>
+	
 	
 
 

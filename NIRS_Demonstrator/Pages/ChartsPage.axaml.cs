@@ -1,237 +1,110 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
-using CInnovation.SignalProcessing.Filters.BiQuad;
 using NIRS_Demonstrator.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NIRS_Demonstrator;
 
-public partial class ChartsPage : BasePage<ChartsPageViewModel>, IDisposable
+/// <summary>
+/// Представление страницы графиков. Вся логика работы с датчиками и обработки
+/// сигналов вынесена в <see cref="ChartsPageViewModel"/>; здесь остаётся только
+/// то, что нельзя выразить привязкой: раскладка точек по сериям Chart2D,
+/// синхронизация горизонтальной прокрутки и открытие окна настроек.
+/// </summary>
+public partial class ChartsPage : BasePage<ChartsPageViewModel>
 {
+    private Series[] _Series740;
+    private Series[] _Series850;
 
-    private int _chart1_cnt = 0;
-    private int _chart2_cnt = 0;
-    private int _chart3_cnt = 0;
-    private int _chart4_cnt = 0;
-
-
-    private Thread _handlePointsThread;
-    private bool _handlePointsThreadStarted = false;
-
-    private NirsSensorDevice NirsSensor1;
-    private NirsSensorDevice NirsSensor2;
+    private ChartSettingsWindow _ChartSettingsWindow;
 
     public ChartsPage() : base()
     {
         InitializeComponent();
         InitializeLocal();
     }
-    public ChartsPage(ChartsPageViewModel spespecificTesterViewModel = null) : base(spespecificTesterViewModel)
+
+    public ChartsPage(ChartsPageViewModel specificViewModel = null) : base(specificViewModel)
     {
         InitializeComponent();
         InitializeLocal();
     }
 
-    public void Dispose()
-    {
-
-        if(NirsSensor1 != null && NirsSensor1.IsStarted)
-            NirsSensor1.Stop();
-
-        //if (NirsSensor2 != null && NirsSensor2.IsStarted)
-        //    NirsSensor2.Stop();
-
-        if (_handlePointsThreadStarted)
-        {
-            
-            _handlePointsThreadStarted = false;
-            _handlePointsThread.Join();
-        }
-    }
+    #region Private Methods
 
     private void InitializeLocal()
     {
-        Nirs1Chart740.SetAxisXSize(500);
-        Nirs1Chart850.SetAxisXSize(500);
-        //Nirs2Chart740.SetAxisXSize(500);
-        //Nirs2Chart850.SetAxisXSize(500);
+        // Порядок обязан совпадать с индексами NirsChartBatch.
+        _Series740 = new[]
+        {
+            Nirs1Series740_1, Nirs1Series740_2, Nirs1Series740_3,
+            Nirs1Series740_4, Nirs1Series740_TotalVal, Nirs1Series740_AiVal
+        };
+
+        _Series850 = new[]
+        {
+            Nirs1Series850_1, Nirs1Series850_2, Nirs1Series850_3,
+            Nirs1Series850_4, Nirs1Series850_TotalVal, Nirs1Series850_AiVal
+        };
+
+        Nirs1Chart740.SetAxisXSize(2);
+        Nirs1Chart850.SetAxisXSize(2);
+
+        Nirs1Chart740.OnHorizontalScrollValueChanged += Nirs1Chart740_OnHorizontalScrollValueChanged;
+        Nirs1Chart850.OnHorizontalScrollValueChanged += Nirs1Chart850_OnHorizontalScrollValueChanged;
 
         Nirs1Chart740.HorizontalScroll.Value = Nirs1Chart740.HorizontalScroll.Maximum;
         Nirs1Chart850.HorizontalScroll.Value = Nirs1Chart850.HorizontalScroll.Maximum;
-        //Nirs2Chart740.HorizontalScroll.Value = Nirs2Chart740.HorizontalScroll.Maximum;
-        //Nirs2Chart850.HorizontalScroll.Value = Nirs2Chart850.HorizontalScroll.Maximum;
-        AppConfig.GetInstance().RegisterDisposableObject(this);
-        //_handlePointsThreadStarted = true;
-        //_handlePointsThread = new Thread(HandlePointsThreadAction);
-        //_handlePointsThread.Start();
 
-        RefreshComPortsList();
+        ViewModel.PointsBatchReady += ViewModel_PointsBatchReady;
+        ViewModel.SettingsRequested += ViewModel_SettingsRequested;
+
+        Unloaded += ChartsPage_Unloaded;
     }
 
-    private async void HandlePointsThreadAction()
+    private async void AppendBatchAsync(NirsChartBatch batch)
     {
-        
-        NirsSignalProcessing NirsSignalProcessing1 = new NirsSignalProcessing();
-        string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, (DataHelpers.GetCurrentDateTimeStr()));
-        string path1 = path + "_Nirs1.csv;";
-        string path2 = path + "_Nirs2.csv;";
-        ReportsStreamerCsv streamerCsv = new ReportsStreamerCsv(path1);
-        await streamerCsv.WriteHeaderAsync(new List<string>()
+        for (int i = 0; i < NirsChartBatch.SeriesCount; i++)
         {
-            "Led740Ch1",
-            "Led740Ch2",
-            "Led740Ch3",
-            "Led740Ch4",
-            "Led740Ch1_Flt",
-            "Led740Ch2_Flt",
-            "Led740Ch3_Flt",
-            "Led740Ch4_Flt",
-            "Led850Ch1",
-            "Led850Ch2",
-            "Led850Ch3",
-            "Led850Ch4",
-            "Led850Ch1_Flt",
-            "Led850Ch2_Flt",
-            "Led850Ch3_Flt",
-            "Led850Ch4_Flt"
-        });
-        while (_handlePointsThreadStarted)
-        {
-            List<NirsSensorData> data = NirsSensor1.GetAvailebleData();
-
-            foreach (NirsSensorData dataData in data)
-            {
-                NirsSignalData nirsData = NirsSignalProcessing1.GetNirsSignalData(dataData);
-                List<double> vals = nirsData.ToList();
-
-                SlipMidSmartData slipMidSmartData = NirsSignalProcessing1.GetSlipMidSmartData(7);
-
-                await Nirs1Series740_1.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch1_Flt));
-                await Nirs1Series740_2.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch2_Flt));
-                await Nirs1Series740_3.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch3_Flt));
-                await Nirs1Series740_4.AddPointAsync(new Point(_chart1_cnt, nirsData.Led740Ch4_Flt));
-                _chart1_cnt++;
-
-                Dispatcher.UIThread.Invoke(() =>
-                {
-                    Nirs1ValueText850_1.Text = $"{nirsData.Led850Ch3:0.000} V";
-                    Nirs1ValueText850_2.Text = $"{nirsData.Led850Ch4:0.000} V";
-                    Nirs1ValueText850_3.Text = $"{nirsData.Led850Ch3_Flt:0.000} V";
-                    Nirs1ValueText850_4.Text = $"{nirsData.Led850Ch4_Flt:0.000} V; (MidEN: {(slipMidSmartData.MidCalcEn ? "TRUE" : "FALSE")})";
-                });
-                
-                await Nirs1Series850_1.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3));
-                await Nirs1Series850_2.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4));
-                await Nirs1Series850_3.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch3_Flt));
-                await Nirs1Series850_4.AddPointAsync(new Point(_chart2_cnt, nirsData.Led850Ch4_Flt));
-                _chart2_cnt++;
-
-                streamerCsv.Write(vals);
-            }
-/*
-            data = NirsSensor2.GetAvailebleData();
-            foreach (NirsSensorData dataData in data)
-            {
-                results[0] = RemoveLedBackground(dataData.Led740_3, dataData.Led740_Bgd_3).ToVoltage5V(12);
-                results[1] = RemoveLedBackground(dataData.Led740_4, dataData.Led740_Bgd_4).ToVoltage5V(12);
-                results[2] = RemoveLedBackground(dataData.Led740_3, dataData.Led740_Bgd_3).ToVoltage5V(12);
-                results[3] = RemoveLedBackground(dataData.Led740_4, dataData.Led740_Bgd_4).ToVoltage5V(12);
-
-                results[2] = slipMids[4].Process(results[2]);
-                results[3] = slipMids[5].Process(results[3]);
-
-                //await Nirs2Series740_1.AddPointAsync(new Point(_chart3_cnt, results[0]));
-                //await Nirs2Series740_2.AddPointAsync(new Point(_chart3_cnt, results[1]));
-                await Nirs2Series740_3.AddPointAsync(new Point(_chart3_cnt, results[2]));
-                await Nirs2Series740_4.AddPointAsync(new Point(_chart3_cnt, results[3]));
-                _chart3_cnt++;
-
-                results[0] = RemoveLedBackground(dataData.Led850_3, dataData.Led850_Bgd_3).ToVoltage5V(12);
-                results[1] = RemoveLedBackground(dataData.Led850_4, dataData.Led850_Bgd_4).ToVoltage5V(12);
-                results[2] = RemoveLedBackground(dataData.Led850_3, dataData.Led850_Bgd_3).ToVoltage5V(12);
-                results[3] = RemoveLedBackground(dataData.Led850_4, dataData.Led850_Bgd_4).ToVoltage5V(12);
-
-                results[2] = slipMids[6].Process(results[2]);
-                results[3] = slipMids[7].Process(results[3]);
-                //await Nirs2Series850_1.AddPointAsync(new Point(_chart4_cnt, results[0]));
-                //await Nirs2Series850_2.AddPointAsync(new Point(_chart4_cnt, results[1]));
-                await Nirs2Series850_3.AddPointAsync(new Point(_chart4_cnt, results[2]));
-                await Nirs2Series850_4.AddPointAsync(new Point(_chart4_cnt, results[3]));
-                _chart4_cnt++;
-            }
-*/
-            await Task.Delay(1);
-        }
-        streamerCsv.Dispose();
-    }
-
-    private void RefreshComPortsList()
-    {
-        NirsComPortSelector1.Items.Clear();
-        //NirsComPortSelector2.Items.Clear();
-        string[] names = (string[])UsbSerialPort.GetPortNames();
-        foreach (string name in names)
-        {
-            NirsComPortSelector1.Items.Add(name);
-            //NirsComPortSelector2.Items.Add(name);
-        }
-
-        NirsComPortSelector1.SelectedIndex = 0;
-        //NirsComPortSelector2.SelectedIndex = 0;
-    }
-
-    private void StartComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (string.IsNullOrEmpty(NirsComPortSelector1.SelectedItem.ToString()) /*|| string.IsNullOrEmpty(NirsComPortSelector2.SelectedItem.ToString())*/)
-            return;
-
-        //if(NirsComPortSelector1.SelectedItem.ToString() == NirsComPortSelector2.SelectedItem.ToString())
-        //    return;
-
-        if (NirsSensor1 == null)
-            NirsSensor1 = new NirsSensorDevice(NirsComPortSelector1.SelectedItem.ToString());
-
-        if (NirsSensor1.IsStarted)
-            return;
-
-        //if (NirsSensor2 == null)
-        //    NirsSensor2 = new NirsSensorDevice(NirsComPortSelector2.SelectedItem.ToString());
-
-        //if (NirsSensor2.IsStarted)
-        //    return;
-
-        _handlePointsThreadStarted = true;
-        _handlePointsThread = new Thread(HandlePointsThreadAction);
-        _handlePointsThread.Start();
-
-        NirsSensor1.Start();
-        //NirsSensor2.Start();
-    }
-    private void StopComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (NirsSensor1 != null && NirsSensor1.IsStarted)
-            NirsSensor1.Stop();
-
-        //if (NirsSensor2 != null && NirsSensor2.IsStarted)
-        //    NirsSensor2.Stop();
-
-        if (_handlePointsThreadStarted)
-        {
-            _handlePointsThreadStarted = false;
-            _handlePointsThread.Join();
+            await _Series740[i].AddPointsRangeAsync(batch.Series740[i]);
+            await _Series850[i].AddPointsRangeAsync(batch.Series850[i]);
         }
     }
-    private void RefreshComPortsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+
+    #endregion
+
+    #region Private Callbacks
+
+    private void ViewModel_PointsBatchReady(object sender, NirsChartBatch batch)
     {
-        RefreshComPortsList();
+        AppendBatchAsync(batch);
     }
 
-    
+    private void ViewModel_SettingsRequested(object sender, EventArgs e)
+    {
+        if (_ChartSettingsWindow == null || !_ChartSettingsWindow.IsLoaded)
+        {
+            _ChartSettingsWindow = new ChartSettingsWindow(this);
+            _ChartSettingsWindow.Show();
+        }
+    }
+
+    private void ChartsPage_Unloaded(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        // Без отписки страница осталась бы достижимой из ViewModel.
+        ViewModel.PointsBatchReady -= ViewModel_PointsBatchReady;
+        ViewModel.SettingsRequested -= ViewModel_SettingsRequested;
+    }
+
+    private void Nirs1Chart850_OnHorizontalScrollValueChanged(object sender, double e)
+    {
+        Nirs1Chart740.HorizontalScroll.Value = e;
+    }
+
+    private void Nirs1Chart740_OnHorizontalScrollValueChanged(object sender, double e)
+    {
+        Nirs1Chart850.HorizontalScroll.Value = e;
+    }
+
+    #endregion
 }

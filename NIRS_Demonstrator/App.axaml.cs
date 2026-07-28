@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+//using Avalonia.Controls.Shapes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using NIRS_Demonstrator.Core;
@@ -15,6 +16,7 @@ public partial class App : Application
 {
     public const string APP_CINNOVATION_ROOT = "C-Innovation";
     public const string APP_SYS_SECTION = "Local";
+    public const string APP_SYS_SECTION_LINUX = "Local";
     public const string APP_CONFIG_DIR_NAME = ".sys";
     public const string APP_DICTIONARIES_DIR_NAME = ".dictionaries";
     public const string APP_AI_FOLDER_NAME = "AI";
@@ -58,6 +60,16 @@ public partial class App : Application
             AppConfig.GetInstance().AiDirectoryPath = (Path.Combine(AppDomain.CurrentDomain.BaseDirectory, APP_AI_FOLDER_NAME));
             //string path2 = path + "\\" + APP_SYS_SECTION + "\\" + APP_MEDICOM_ROOT + "\\" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "\\" + APP_CONFIG_DIR_NAME;
         }
+
+        if(OperatingSystem.IsLinux())
+        {
+            string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            AppConfig.GetInstance().SettingsDirectoryPath = (Path.Combine(homeDirectory,  APP_CINNOVATION_ROOT, APP_NAME, APP_CONFIG_DIR_NAME));
+            AppConfig.GetInstance().ReportsDirectoryPath = (Path.Combine(homeDirectory,  APP_CINNOVATION_ROOT, APP_NAME, APP_REPORTS_FOLDER_NAME));
+            AppConfig.GetInstance().DictionariesDirectoryPath = (Path.Combine(homeDirectory,  APP_CINNOVATION_ROOT, APP_NAME, APP_DICTIONARIES_DIR_NAME));
+            AppConfig.GetInstance().AiDirectoryPath = (Path.Combine(AppDomain.CurrentDomain.BaseDirectory, APP_AI_FOLDER_NAME));
+        }
+
         AppConfig.GetInstance().InitializeAppConfig();
 
         IoC.Setup();

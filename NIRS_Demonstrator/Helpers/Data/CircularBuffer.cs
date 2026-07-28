@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -180,6 +181,118 @@ namespace NIRS_Demonstrator
                 Increment(ref _end);
                 ++_size;
             }
+        }
+
+        /// <summary>
+        /// Reads an element by its logical index without any bounds checking.
+        /// For hot paths (CRC / header scan) where the caller has already
+        /// validated the range against <see cref="Size"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal T GetUnchecked(int index)
+        {
+            return _buffer[InternalIndex(index)];
+        }
+
+        /// <summary>
+        /// Bulk version of <see cref="PushBack(T)"/>: appends <paramref name="count"/> items
+        /// using at most two <see cref="Array.Copy(Array, int, Array, int, int)"/> calls
+        /// instead of one method call per element.
+        /// Overflow behaviour is identical to calling PushBack in a loop.
+        /// </summary>
+        public void PushBack(T[] items, int offset, int count)
+        {
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
+            if (offset < 0 || count < 0 || offset + count > items.Length)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0)
+                return;
+
+            // Writing more than the capacity: only the last Capacity items survive.
+            if (count >= Capacity)
+            {
+                Array.Copy(items, offset + count - Capacity, _buffer, 0, Capacity);
+                _start = 0;
+                _end = 0;
+                _size = Capacity;
+                return;
+            }
+
+            bool overflows = _size + count > Capacity;
+
+            int firstPart = Math.Min(count, Capacity - _end);
+            Array.Copy(items, offset, _buffer, _end, firstPart);
+            if (firstPart < count)
+                Array.Copy(items, offset + firstPart, _buffer, 0, count - firstPart);
+
+            _end += count;
+            if (_end >= Capacity)
+                _end -= Capacity;
+
+            if (overflows)
+            {
+                _start = _end;
+                _size = Capacity;
+            }
+            else
+            {
+                _size += count;
+            }
+        }
+
+        /// <summary>
+        /// Bulk version of <see cref="PopFront"/>: drops <paramref name="count"/> elements
+        /// from the front in O(1) instead of O(count).
+        /// </summary>
+        public void Skip(int count)
+        {
+            if (count <= 0)
+                return;
+            if (count > _size)
+                count = _size;
+
+            // Only reference types need their slots cleared so the GC can collect them.
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                int firstPart = Math.Min(count, Capacity - _start);
+                Array.Clear(_buffer, _start, firstPart);
+                if (firstPart < count)
+                    Array.Clear(_buffer, 0, count - firstPart);
+            }
+
+            _start += count;
+            if (_start >= Capacity)
+                _start -= Capacity;
+            _size -= count;
+        }
+
+        /// <summary>
+        /// Copies <paramref name="count"/> elements starting at logical index
+        /// <paramref name="sourceIndex"/> into <paramref name="destination"/>.
+        /// </summary>
+        public void CopyTo(int sourceIndex, T[] destination, int destinationIndex, int count)
+        {
+            if (destination == null)
+                throw new ArgumentNullException(nameof(destination));
+            if (sourceIndex < 0 || count < 0 || sourceIndex + count > _size)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0)
+                return;
+
+            int start = InternalIndex(sourceIndex);
+            int firstPart = Math.Min(count, Capacity - start);
+            Array.Copy(_buffer, start, destination, destinationIndex, firstPart);
+            if (firstPart < count)
+                Array.Copy(_buffer, 0, destination, destinationIndex + firstPart, count - firstPart);
+        }
+
+        /// <summary>
+        /// Removes every element from the buffer in O(1).
+        /// </summary>
+        public void Clear()
+        {
+            Skip(_size);
         }
 
         /// <summary>

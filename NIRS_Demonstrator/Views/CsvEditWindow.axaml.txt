@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:NIRS_Demonstrator.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="NIRS_Demonstrator.CsvEditWindow"
+        Title="CsvEditWindow"
+        x:DataType="vm:CsvEditWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Auto">
+    <Grid x:Name="MAinGrid">
+		<DataGrid x:Name="CsvDataGrid" ItemsSource="{Binding NirsCsvRawData}"/>
+    </Grid>
+  </ScrollViewer>
+</Window>

@@ -26,5 +26,9 @@ namespace NIRS_Demonstrator.Core
         /// </summary>
         Charts = 3,
 
+        /// <summary>
+        /// Viewer Page
+        /// </summary>
+        Viewer = 4,
     }
 }
