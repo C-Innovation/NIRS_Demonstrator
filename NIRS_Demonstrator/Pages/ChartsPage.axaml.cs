@@ -16,6 +16,9 @@ using System.Xml.Linq;
 
 namespace NIRS_Demonstrator;
 
+/// <summary>
+/// 
+/// </summary>
 public class NirsChartData
 {
     public Thread HandlePointsThread;
