@@ -338,6 +338,7 @@ namespace NIRS_Demonstrator.ViewModels
             _UpdateThreadStarted = true;
             _UpdateThread = new Thread(UpdateThreadAction);
             _UpdateThread.Start();
+
             AppConfig.GetInstance().RegisterDisposableObject(this);
         }
 

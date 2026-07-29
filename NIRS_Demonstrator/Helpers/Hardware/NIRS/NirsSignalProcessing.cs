@@ -321,6 +321,8 @@ namespace NIRS_Demonstrator
 
     public struct NirsSignalData
     {
+        public double Time;
+
         public double Led740Ch1;
         public double Led740Ch2;
         public double Led740Ch3;

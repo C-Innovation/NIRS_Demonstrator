@@ -519,8 +519,12 @@ namespace NIRS_Demonstrator.ViewModels
 
                     foreach (NirsSensorFilteredData data in nirsData)
                     {
+                        double time = (double)data.Time / 1000000.0;
+                        if (_Pipeline1.Sensor.TimeStart == 0)
+                            _Pipeline1.Sensor.TimeStart = time;
+                        time -= _Pipeline1.Sensor.TimeStart;
                         NirsSignalData signal = _Pipeline1.SignalProcessing.GetNirsSignalData(data);
-
+                        signal.Time = time;
                         if (_IsAiDevEnabled)
                             await SendToAiDeviceAsync(serializer, signal, token);
 
@@ -585,6 +589,7 @@ namespace NIRS_Demonstrator.ViewModels
                         time -= _Pipeline2.Sensor.TimeStart;
 
                         NirsSignalData signal = _Pipeline2.SignalProcessing.GetNirsSignalData(data);
+                        signal.Time = time;
 
                         lock (_Pipeline2.Queue)
                         {
@@ -679,19 +684,19 @@ namespace NIRS_Demonstrator.ViewModels
                 double x = _SampleIndex * X_STEP_PER_SAMPLE;
                 _SampleIndex++;
 
-                batch.Series740[NirsChartBatch.Channel1][i] = new Point(x, sample.Led740Ch1_Flt);
-                batch.Series740[NirsChartBatch.Channel2][i] = new Point(x, sample.Led740Ch2_Flt);
-                batch.Series740[NirsChartBatch.Channel3][i] = new Point(x, sample.Led740Ch3_Flt);
-                batch.Series740[NirsChartBatch.Channel4][i] = new Point(x, sample.Led740Ch4_Flt);
-                batch.Series740[NirsChartBatch.TotalVal][i] = new Point(x, sample.TotalVal);
-                batch.Series740[NirsChartBatch.AiVal][i] = new Point(x, sample.AiVal);
+                batch.Series740[NirsChartBatch.Channel1][i] = new Point(sample.Time, sample.Led740Ch1_Flt);
+                batch.Series740[NirsChartBatch.Channel2][i] = new Point(sample.Time, sample.Led740Ch2_Flt);
+                batch.Series740[NirsChartBatch.Channel3][i] = new Point(sample.Time, sample.Led740Ch3_Flt);
+                batch.Series740[NirsChartBatch.Channel4][i] = new Point(sample.Time, sample.Led740Ch4_Flt);
+                batch.Series740[NirsChartBatch.TotalVal][i] = new Point(sample.Time, sample.TotalVal);
+                batch.Series740[NirsChartBatch.AiVal][i] = new Point(sample.Time, sample.AiVal);
 
-                batch.Series850[NirsChartBatch.Channel1][i] = new Point(x, sample.Led850Ch1_Flt);
-                batch.Series850[NirsChartBatch.Channel2][i] = new Point(x, sample.Led850Ch2_Flt);
-                batch.Series850[NirsChartBatch.Channel3][i] = new Point(x, sample.Led850Ch3_Flt);
-                batch.Series850[NirsChartBatch.Channel4][i] = new Point(x, sample.Led850Ch4_Flt);
-                batch.Series850[NirsChartBatch.TotalVal][i] = new Point(x, sample.TotalVal);
-                batch.Series850[NirsChartBatch.AiVal][i] = new Point(x, sample.AiVal);
+                batch.Series850[NirsChartBatch.Channel1][i] = new Point(sample.Time, sample.Led850Ch1_Flt);
+                batch.Series850[NirsChartBatch.Channel2][i] = new Point(sample.Time, sample.Led850Ch2_Flt);
+                batch.Series850[NirsChartBatch.Channel3][i] = new Point(sample.Time, sample.Led850Ch3_Flt);
+                batch.Series850[NirsChartBatch.Channel4][i] = new Point(sample.Time, sample.Led850Ch4_Flt);
+                batch.Series850[NirsChartBatch.TotalVal][i] = new Point(sample.Time, sample.TotalVal);
+                batch.Series850[NirsChartBatch.AiVal][i] = new Point(sample.Time, sample.AiVal);
             }
 
             return batch;
