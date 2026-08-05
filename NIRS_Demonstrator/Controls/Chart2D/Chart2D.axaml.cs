@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using System;
@@ -25,6 +26,20 @@ public partial class Chart2D : UserControl
         set { SetValue(ChartBackgroundProperty, value); }
     }
 
+    public static readonly StyledProperty<IBrush> SelectionBrushProperty =
+        AvaloniaProperty.Register<Chart2D, IBrush>(
+            nameof(SelectionBrush),
+            defaultValue: new SolidColorBrush(Color.FromRgb(0x1E, 0x90, 0xFF)));
+
+    /// <summary>
+    /// Заливка прямоугольников выделения области.
+    /// </summary>
+    public IBrush SelectionBrush
+    {
+        get { return (IBrush)GetValue(SelectionBrushProperty); }
+        set { SetValue(SelectionBrushProperty, value); }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change == null) return;
@@ -32,6 +47,16 @@ public partial class Chart2D : UserControl
         if (change.Property == ChartBackgroundProperty)
         {
             MainGrid.Background = (IBrush?)change.NewValue;
+        }
+        else if (change.Property == SelectionBrushProperty)
+        {
+            IBrush? brush = (IBrush?)change.NewValue;
+
+            foreach (VerticalSelection selection in _Selections)
+                selection.Fill = brush;
+
+            if (_PendingSelection != null)
+                _PendingSelection.Fill = brush;
         }
 
 
@@ -44,8 +69,21 @@ public partial class Chart2D : UserControl
     #region Private Members
 
     private Point _LastPointerPosition;
-    private bool _IsPointerPressed;
+    private bool _IsPanning;
     private ChartMode _ChartMode = ChartMode.Live;
+
+    /// <summary>
+    /// Подтверждённые выделенные области. Прямоугольник на каждую область.
+    /// </summary>
+    private readonly List<VerticalSelection> _Selections = new List<VerticalSelection>();
+
+    /// <summary>
+    /// Прямоугольник, показываемый пока правая кнопка удерживается.
+    /// </summary>
+    private VerticalSelection _PendingSelection;
+
+    private bool _IsSelecting;
+    private double _SelectionStartValue;
     //protected ObservableCollection<HorizontalMarker> _HorizontalMarkers;
     #endregion
 
@@ -60,6 +98,33 @@ public partial class Chart2D : UserControl
     { 
         get => _ChartMode; 
         set => _ChartMode = value; 
+    }
+
+    /// <summary>
+    /// Разрешено ли выделение области по горизонтали правой кнопкой мыши.
+    /// </summary>
+    public bool IsSelectionEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Минимальная ширина выделения в пикселях. Более узкое протягивание
+    /// считается промахом и выделение не создаёт.
+    /// </summary>
+    public double MinSelectionWidth { get; set; } = 3;
+
+    /// <summary>
+    /// Диапазоны подтверждённых выделенных областей в реальных значениях оси X.
+    /// </summary>
+    public IReadOnlyList<Pair<double, double>> SelectionRanges
+    {
+        get
+        {
+            List<Pair<double, double>> ranges = new List<Pair<double, double>>(_Selections.Count);
+
+            foreach (VerticalSelection selection in _Selections)
+                ranges.Add(new Pair<double, double>(selection.LevelStart, selection.LevelStop));
+
+            return ranges;
+        }
     }
 
     public ObservableCollection<HorizontalMarker> HorizontalMarkers { get; set; }
@@ -81,6 +146,22 @@ public partial class Chart2D : UserControl
 
     public event EventHandler<double> OnHorizontalScrollValueChanged;
     public event EventHandler<Point> OnChartAreaDoubleClick;
+
+    /// <summary>
+    /// Границы выделения меняются: правая кнопка удерживается и указатель движется.
+    /// </summary>
+    public event EventHandler<ChartSelectionRangeEventArgs> SelectionChanging;
+
+    /// <summary>
+    /// Выделение завершено: правая кнопка отпущена, ширина области достаточна.
+    /// </summary>
+    public event EventHandler<ChartSelectionRangeEventArgs> SelectionCompleted;
+
+    /// <summary>
+    /// Запрошено снятие одной выделенной области: двойной клик правой кнопкой
+    /// по ней. Передаётся её индекс в порядке добавления.
+    /// </summary>
+    public event EventHandler<int> SelectionRemoveRequested;
     #endregion
 
     #region Constructor
@@ -118,38 +199,112 @@ public partial class Chart2D : UserControl
         ChartArea.PointerMoved += ChartArea_PointerMoved;
         ChartArea.PointerPressed += ChartArea_PointerPressed;
         ChartArea.PointerReleased += ChartArea_PointerReleased;
+        ChartArea.PointerCaptureLost += ChartArea_PointerCaptureLost;
 
-        
-        // Size changed handling
-        //ChartArea.SizeChanged += ChartArea_SizeChanged;
+        // Выделение задано в реальных значениях, поэтому при прокрутке,
+        // изменении масштаба и размера области его нужно перерисовать.
+        ChartArea.SizeChanged += ChartArea_SizeChanged;
+        AxisX.AxisMinValueChanged += AxisX_SelectionAffectingChanged;
+        AxisX.AxisSizeChanged += AxisX_SelectionAffectingChanged;
     }
 
    
 
     private void ChartArea_PointerReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
     {
-        _IsPointerPressed = false;
-        _LastPointerPosition = new Point(0,0);
+        if (_IsSelecting && e.InitialPressMouseButton == MouseButton.Right)
+        {
+            _IsSelecting = false;
+            e.Pointer.Capture(null);
+            HidePendingSelection();
+
+            double stopValue = SelectionValueAt(e.GetPosition(ChartArea).X);
+            ChartSelectionRangeEventArgs range = new ChartSelectionRangeEventArgs(_SelectionStartValue, stopValue);
+
+            // Случайный щелчок правой кнопкой не должен плодить выделения нулевой ширины.
+            if (ValueToCanvasX(range.StopValue) - ValueToCanvasX(range.StartValue) >= MinSelectionWidth)
+                SelectionCompleted?.Invoke(this, range);
+
+            e.Handled = true;
+            return;
+        }
+
+        if (e.InitialPressMouseButton == MouseButton.Left)
+        {
+            _IsPanning = false;
+            _LastPointerPosition = new Point(0, 0);
+        }
     }
 
     private void ChartArea_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
     {
-        _LastPointerPosition = e.GetPosition(sender as Canvas);
-        _IsPointerPressed = true;
-        
-
-    }
-
-    
-    private void ChartArea_PointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
-    {
-         
-        if (!_IsPointerPressed)
-            return;
-
         var chartArea = sender as Canvas;
 
         if (chartArea is null)
+            return;
+
+        var properties = e.GetCurrentPoint(chartArea).Properties;
+        var position = e.GetPosition(chartArea);
+
+        if (properties.IsRightButtonPressed)
+        {
+            if (!IsSelectionEnabled)
+                return;
+
+            if (e.ClickCount >= 2)
+            {
+                _IsSelecting = false;
+                e.Pointer.Capture(null);
+                HidePendingSelection();
+
+                // Двойной клик по выделенной области снимает именно её.
+                // Все области сразу снимаются только кнопкой на странице.
+                int index = GetSelectionIndexAt(position.X);
+
+                if (index >= 0)
+                    SelectionRemoveRequested?.Invoke(this, index);
+
+                e.Handled = true;
+                return;
+            }
+
+            _IsSelecting = true;
+            _SelectionStartValue = SelectionValueAt(position.X);
+            // Захват указателя нужен, чтобы протягивание за пределы области
+            // построения не обрывалось на середине.
+            e.Pointer.Capture(chartArea);
+            ShowPendingSelection(_SelectionStartValue, _SelectionStartValue);
+            SelectionChanging?.Invoke(this, new ChartSelectionRangeEventArgs(_SelectionStartValue, _SelectionStartValue));
+            e.Handled = true;
+            return;
+        }
+
+        if (!properties.IsLeftButtonPressed)
+            return;
+
+        _LastPointerPosition = position;
+        _IsPanning = true;
+    }
+
+
+    private void ChartArea_PointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
+    {
+        var chartArea = sender as Canvas;
+
+        if (chartArea is null)
+            return;
+
+        if (_IsSelecting)
+        {
+            double currentValue = SelectionValueAt(e.GetPosition(chartArea).X);
+            ChartSelectionRangeEventArgs range = new ChartSelectionRangeEventArgs(_SelectionStartValue, currentValue);
+
+            ShowPendingSelection(range.StartValue, range.StopValue);
+            SelectionChanging?.Invoke(this, range);
+            return;
+        }
+
+        if (!_IsPanning)
             return;
 
         var currentPosition = e.GetPosition(chartArea);
@@ -340,14 +495,165 @@ public partial class Chart2D : UserControl
 
         OnChartAreaDoubleClick?.Invoke(this, new Point(x, y));
     }
-    //private void ChartArea_SizeChanged(object? sender, SizeChangedEventArgs e)
-    //{
 
-    //}
+    private void ChartArea_SizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        RefreshSelections();
+    }
+
+    private void AxisX_SelectionAffectingChanged(object? sender, double e)
+    {
+        RefreshSelections();
+    }
+
+    /// <summary>
+    /// Захват указателя может быть потерян (например, окно ушло из фокуса) —
+    /// незавершённое выделение в этом случае просто сбрасывается.
+    /// </summary>
+    private void ChartArea_PointerCaptureLost(object? sender, Avalonia.Input.PointerCaptureLostEventArgs e)
+    {
+        if (!_IsSelecting)
+            return;
+
+        _IsSelecting = false;
+        HidePendingSelection();
+    }
 
     #endregion
 
     #region Public Methods
+
+    /// <summary>
+    /// Координата X на области построения -> реальное значение оси X.
+    /// </summary>
+    public double CanvasXToValue(double canvasX)
+    {
+        double width = ChartArea.Bounds.Width;
+
+        if (width <= 0)
+            return AxisX.AxisMinValue;
+
+        return AxisX.AxisMinValue + ((canvasX / width) * AxisX.AxisSize);
+    }
+
+    /// <summary>
+    /// Реальное значение оси X -> координата X на области построения.
+    /// </summary>
+    public double ValueToCanvasX(double value)
+    {
+        if (AxisX.AxisSize <= 0)
+            return 0;
+
+        return ((value - AxisX.AxisMinValue) / AxisX.AxisSize) * ChartArea.Bounds.Width;
+    }
+
+    /// <summary>
+    /// Добавляет подтверждённую выделенную область на всю высоту оси Y.
+    /// </summary>
+    public void AddSelection(double startValue, double stopValue)
+    {
+        VerticalSelection selection = new VerticalSelection(ChartArea, AxisX);
+        selection.Fill = SelectionBrush;
+        ChartArea.Children.Add(selection);
+        _Selections.Add(selection);
+
+        selection.SetRange(startValue, stopValue, GetSelectionPointsView());
+    }
+
+    /// <summary>
+    /// Индекс выделенной области под указанной координатой X области построения.
+    /// Возвращает -1, если под ней выделения нет. Из перекрывающихся областей
+    /// выбирается добавленная последней — та, что нарисована сверху.
+    /// </summary>
+    public int GetSelectionIndexAt(double canvasX)
+    {
+        double value = CanvasXToValue(canvasX);
+
+        for (int i = _Selections.Count - 1; i >= 0; i--)
+        {
+            VerticalSelection selection = _Selections[i];
+
+            if (value >= selection.LevelStart && value <= selection.LevelStop)
+                return i;
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Убирает одну выделенную область по её индексу в порядке добавления.
+    /// </summary>
+    public void RemoveSelectionAt(int index)
+    {
+        if ((uint)index >= (uint)_Selections.Count)
+            return;
+
+        ChartArea.Children.Remove(_Selections[index]);
+        _Selections.RemoveAt(index);
+    }
+
+    /// <summary>
+    /// Убирает все выделенные области, включая незавершённую.
+    /// </summary>
+    public void ClearSelections()
+    {
+        HidePendingSelection();
+
+        foreach (VerticalSelection selection in _Selections)
+            ChartArea.Children.Remove(selection);
+
+        _Selections.Clear();
+    }
+
+    /// <summary>
+    /// Показывает границы ещё не подтверждённого выделения.
+    /// </summary>
+    public void ShowPendingSelection(double startValue, double stopValue)
+    {
+        if (_PendingSelection == null)
+        {
+            _PendingSelection = new VerticalSelection(ChartArea, AxisX);
+            _PendingSelection.Fill = SelectionBrush;
+            ChartArea.Children.Add(_PendingSelection);
+        }
+
+        _PendingSelection.SetRange(startValue, stopValue, GetSelectionPointsView());
+    }
+
+    /// <summary>
+    /// Скрывает незавершённое выделение.
+    /// </summary>
+    public void HidePendingSelection()
+    {
+        if (_PendingSelection == null)
+            return;
+
+        ChartArea.Children.Remove(_PendingSelection);
+        _PendingSelection = null;
+    }
+
+    /// <summary>
+    /// Пересчитывает положение всех выделенных областей под текущее окно просмотра.
+    /// </summary>
+    public void RefreshSelections()
+    {
+        if (_Selections.Count == 0 && _PendingSelection == null)
+            return;
+
+        Pair<double, double> pointsView = GetSelectionPointsView();
+
+        foreach (VerticalSelection selection in _Selections)
+        {
+            selection.PointsView = pointsView;
+            selection.Update();
+        }
+
+        if (_PendingSelection != null)
+        {
+            _PendingSelection.PointsView = pointsView;
+            _PendingSelection.Update();
+        }
+    }
 
     public void UpdateChartArea()
     {
@@ -391,8 +697,34 @@ public partial class Chart2D : UserControl
 
     private void Initialize()
     {
-        
-        
+
+
+    }
+
+    /// <summary>
+    /// Окно просмотра в реальных значениях оси X — в нём прямоугольники
+    /// выделения считают своё положение на области построения.
+    /// </summary>
+    private Pair<double, double> GetSelectionPointsView()
+    {
+        return new Pair<double, double>(AxisX.AxisMinValue, AxisX.AxisMinValue + AxisX.AxisSize);
+    }
+
+    /// <summary>
+    /// Реальное значение под указателем, прижатое к границам видимого окна:
+    /// при захвате указателя протягивание уходит за пределы области построения,
+    /// а выделять что-то вне видимого диапазона смысла нет.
+    /// </summary>
+    private double SelectionValueAt(double canvasX)
+    {
+        double value = CanvasXToValue(canvasX);
+
+        if (value < AxisX.AxisMinValue)
+            return AxisX.AxisMinValue;
+
+        double maxValue = AxisX.AxisMinValue + AxisX.AxisSize;
+
+        return value > maxValue ? maxValue : value;
     }
 
     #endregion

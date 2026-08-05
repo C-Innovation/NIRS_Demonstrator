@@ -175,6 +175,18 @@
 					FontSize="{StaticResource FontSizeXXLarge}"
 					ToolTip.Tip="{DynamicResource VieverRunAiText}"
 					Click="RunAiButton_Click"/>
-		</Grid>		
+
+			<!-- Снятие выделения сразу на обоих графиках -->
+			<Button x:Name="CancelSelectionButton"
+					Classes="IconGrowButton"
+					Grid.Row="2"
+					Grid.Column="0"
+					Content="{StaticResource FA_EraserIcon}"
+					Foreground="{DynamicResource Theme_ForegroudMainBrush}"
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource VieverCancelSelectionText}"
+					IsEnabled="{Binding HasSelection}"
+					Command="{Binding CancelSelectionCommand}"/>
+		</Grid>
 	</Grid>
 </local:BasePage>

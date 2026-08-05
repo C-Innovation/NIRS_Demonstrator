@@ -18,6 +18,9 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
     private double _AxisXSize = 1000;
     private CsvEditWindow _CsvEditWindow;
     private string _OpenedFile;
+
+    private bool _IsDisposed;
+
     public ViewerPage() : base()
     {
         InitializeComponent();
@@ -96,9 +99,31 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
                 break;
             default: break;
         }
+
+        // Значения выделенных областей берутся из NirsData, поэтому после
+        // правки данных их нужно пересобрать.
+        ViewModel.RefreshSelectionData(NirsData);
     }
     public void Dispose()
     {
+        if (_IsDisposed)
+            return;
+
+        _IsDisposed = true;
+
+        Nirs1Chart740.SelectionChanging -= Chart_SelectionChanging;
+        Nirs1Chart850.SelectionChanging -= Chart_SelectionChanging;
+        Nirs1Chart740.SelectionCompleted -= Chart_SelectionCompleted;
+        Nirs1Chart850.SelectionCompleted -= Chart_SelectionCompleted;
+        Nirs1Chart740.SelectionRemoveRequested -= Chart_SelectionRemoveRequested;
+        Nirs1Chart850.SelectionRemoveRequested -= Chart_SelectionRemoveRequested;
+
+        if (ViewModel != null)
+        {
+            ViewModel.SelectionCleared -= ViewModel_SelectionCleared;
+            ViewModel.SelectionAreaRemoved -= ViewModel_SelectionAreaRemoved;
+        }
+
         if (_CsvEditWindow != null)
             if (_CsvEditWindow.IsLoaded)
                 _CsvEditWindow.Close();
@@ -114,6 +139,10 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
         if (string.IsNullOrEmpty(_OpenedFile))
             return;
         _OpenedFile = _OpenedFile.Substring(8);
+
+        // Выделения указывают на строки предыдущего исследования.
+        ViewModel.ClearSelectionAreas();
+
         NirsData = CsvParser.ParseCsvColumns(_OpenedFile);
 
         if (NirsData != null)
@@ -224,6 +253,53 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
         Nirs1Chart850.HorizontalScroll.Value = e;
     }
 
+    /// <summary>
+    /// Пока правая кнопка удерживается, оба графика показывают одну и ту же
+    /// протягиваемую область — независимо от того, на каком из них начали.
+    /// </summary>
+    private void Chart_SelectionChanging(object? sender, ChartSelectionRangeEventArgs e)
+    {
+        Nirs1Chart740.ShowPendingSelection(e.StartValue, e.StopValue);
+        Nirs1Chart850.ShowPendingSelection(e.StartValue, e.StopValue);
+    }
+
+    private void Chart_SelectionCompleted(object? sender, ChartSelectionRangeEventArgs e)
+    {
+        Nirs1Chart740.HidePendingSelection();
+        Nirs1Chart850.HidePendingSelection();
+
+        // Без загруженного исследования выделять нечего.
+        if (NirsData == null || NirsData.Count == 0)
+            return;
+
+        ChartSelectionArea area = new ChartSelectionArea(e.StartValue, e.StopValue, NirsData);
+
+        if (area.IsEmpty)
+            return;
+
+        Nirs1Chart740.AddSelection(e.StartValue, e.StopValue);
+        Nirs1Chart850.AddSelection(e.StartValue, e.StopValue);
+
+        ViewModel.AddSelectionArea(area);
+    }
+
+    private void Chart_SelectionRemoveRequested(object? sender, int index)
+    {
+        ViewModel.RemoveSelectionArea(index);
+    }
+
+    private void ViewModel_SelectionCleared(object? sender, EventArgs e)
+    {
+        Nirs1Chart740.ClearSelections();
+        Nirs1Chart850.ClearSelections();
+    }
+
+    private void ViewModel_SelectionAreaRemoved(object? sender, int index)
+    {
+        Nirs1Chart740.RemoveSelectionAt(index);
+        Nirs1Chart850.RemoveSelectionAt(index);
+    }
+
     #endregion
 
 
@@ -238,6 +314,17 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 
         Nirs1Chart740.OnHorizontalScrollValueChanged += Nirs1Chart740_OnHorizontalScrollValueChanged;
         Nirs1Chart850.OnHorizontalScrollValueChanged += Nirs1Chart850_OnHorizontalScrollValueChanged;
+
+        // Выделение, начатое на любом из графиков, отображается на обоих.
+        Nirs1Chart740.SelectionChanging += Chart_SelectionChanging;
+        Nirs1Chart850.SelectionChanging += Chart_SelectionChanging;
+        Nirs1Chart740.SelectionCompleted += Chart_SelectionCompleted;
+        Nirs1Chart850.SelectionCompleted += Chart_SelectionCompleted;
+        Nirs1Chart740.SelectionRemoveRequested += Chart_SelectionRemoveRequested;
+        Nirs1Chart850.SelectionRemoveRequested += Chart_SelectionRemoveRequested;
+
+        ViewModel.SelectionCleared += ViewModel_SelectionCleared;
+        ViewModel.SelectionAreaRemoved += ViewModel_SelectionAreaRemoved;
 
         AppConfig.GetInstance().RegisterDisposableObject(this);
     }

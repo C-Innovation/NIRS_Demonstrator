@@ -59,6 +59,7 @@
 	<system:String x:Key="VieverOpenFileText">Открыть</system:String>
 	<system:String x:Key="VieverViewRawFileText">Просмотр сырых данных</system:String>
 	<system:String x:Key="VieverRunAiText">Запуск модели машинного обучения</system:String>
+	<system:String x:Key="VieverCancelSelectionText">Отменить выделение</system:String>
 
 	<!-- Dictionary texts -->
 	<system:String x:Key="DictionaryGroupText">Группа</system:String>

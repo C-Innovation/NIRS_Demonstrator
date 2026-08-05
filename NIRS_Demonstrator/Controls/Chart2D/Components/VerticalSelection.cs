@@ -118,10 +118,29 @@ namespace NIRS_Demonstrator
             this.Width = 0;
             this.StrokeThickness = 1;
             this.Opacity = 0.5;
+            // Прямоугольник выделения — декорация: он не должен перехватывать
+            // нажатия у области построения, иначе следующее выделение или
+            // отмена по ней не сработают.
+            this.IsHitTestVisible = false;
 
             //UpdateMarker();
 
             IsValid = true;
+        }
+
+        /// <summary>
+        /// Задаёт границы выделения и окно просмотра одной операцией, без
+        /// промежуточной перерисовки на каждое из свойств.
+        /// </summary>
+        internal void SetRange(double levelStart, double levelStop, Pair<double, double> pointsView)
+        {
+            if (levelStart > levelStop)
+                (levelStart, levelStop) = (levelStop, levelStart);
+
+            PointsView = pointsView;
+            LevelStart = levelStart;
+            LevelStop = levelStop;
+            Update();
         }
 
         internal void Update()
@@ -188,7 +207,7 @@ namespace NIRS_Demonstrator
             this.SetValue(Canvas.TopProperty, 0);
             this.Height = 0;
             this.Width = 0;
-            this.IsVisible = true;
+            this.IsVisible = false;
         }
         #endregion
 

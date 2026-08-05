@@ -359,6 +359,100 @@ namespace NIRS_Demonstrator
             VerticalMarkers.Add(marker);
         }
 
+        /// <summary>
+        /// Текущее преобразование «реальные значения &lt;-&gt; точки на области построения».
+        /// Снимок нужно брать в тот же момент, что и сами точки: после прокрутки
+        /// или изменения размера области преобразование меняется.
+        /// </summary>
+        public SeriesViewTransform GetViewTransform()
+        {
+            return new SeriesViewTransform(
+                _PointsViewHorizontalBorders.First,
+                _AxisX != null ? _AxisX.AxisSize : 0,
+                _ChartArea != null ? _ChartArea.Bounds.Width : 0,
+                _PointsViewVerticalBorders.First,
+                _PointsViewVerticalBorders.Second,
+                _AxisY != null ? _AxisY.AxisSize : 0,
+                _ChartArea != null ? _ChartArea.Bounds.Height : 0);
+        }
+
+        /// <summary>
+        /// Реальное значение -> точка на области построения.
+        /// </summary>
+        public Point ValueToCanvasPoint(Point value)
+        {
+            SeriesViewTransform transform = GetViewTransform();
+            return transform.IsValid ? transform.ToCanvas(value) : default;
+        }
+
+        /// <summary>
+        /// Точка на области построения -> реальное значение.
+        /// Обратный пересчёт для <see cref="ValueToCanvasPoint"/>.
+        /// </summary>
+        public Point CanvasPointToValue(Point canvasPoint)
+        {
+            SeriesViewTransform transform = GetViewTransform();
+            return transform.IsValid ? transform.ToValue(canvasPoint) : default;
+        }
+
+        /// <summary>
+        /// Обратный пересчёт набора экранных точек в реальные значения по текущему
+        /// преобразованию. Если точки были сохранены раньше, пересчитывать их
+        /// нужно сохранённым снимком (<see cref="SeriesViewTransform.ToValue"/>),
+        /// а не этим методом.
+        /// </summary>
+        public List<Point> CanvasPointsToValues(IReadOnlyList<Point> canvasPoints)
+        {
+            if (canvasPoints == null)
+                return new List<Point>();
+
+            SeriesViewTransform transform = GetViewTransform();
+            List<Point> values = new List<Point>(canvasPoints.Count);
+
+            if (!transform.IsValid)
+                return values;
+
+            for (int i = 0; i < canvasPoints.Count; i++)
+                values.Add(transform.ToValue(canvasPoints[i]));
+
+            return values;
+        }
+
+        /// <summary>
+        /// Отрисованные точки серии, попавшие в диапазон [<paramref name="canvasXFrom"/>;
+        /// <paramref name="canvasXTo"/>] по горизонтали области построения.
+        /// Диапазон по вертикали не ограничивается: выделение всегда захватывает
+        /// всю высоту оси Y.
+        /// </summary>
+        public List<Point> GetCanvasPointsInRange(double canvasXFrom, double canvasXTo)
+        {
+            if (canvasXFrom > canvasXTo)
+                (canvasXFrom, canvasXTo) = (canvasXTo, canvasXFrom);
+
+            List<Point> selected = new List<Point>();
+            IList<Point> points = this.Points;
+
+            if (points == null)
+                return selected;
+
+            // Точки уже упорядочены по X, поэтому достаточно одного прохода
+            // с выходом сразу после правой границы.
+            for (int i = 0; i < points.Count; i++)
+            {
+                double x = points[i].X;
+
+                if (x < canvasXFrom)
+                    continue;
+
+                if (x > canvasXTo)
+                    break;
+
+                selected.Add(points[i]);
+            }
+
+            return selected;
+        }
+
         #endregion
 
         #region Private Methods
@@ -395,33 +489,16 @@ namespace NIRS_Demonstrator
                 int from = _PointsTotal.LowerBound(_PointsViewHorizontalBorders.First);
                 int to = _PointsTotal.UpperBound(_PointsViewHorizontalBorders.Second);
 
-                double areaWidth = _ChartArea.Bounds.Width;
-                double areaHeight = _ChartArea.Bounds.Height;
-                double axisSizeX = _AxisX.AxisSize;
-                double axisSizeY = _AxisY.AxisSize;
-                double left = _PointsViewHorizontalBorders.First;
-                double bottom = _PointsViewVerticalBorders.First;
-                double top = _PointsViewVerticalBorders.Second;
+                // Прямое и обратное преобразования живут в одном месте, чтобы
+                // пересчёт выделенных точек в реальные значения не разошёлся
+                // с тем, как серия их рисует.
+                SeriesViewTransform transform = GetViewTransform();
 
                 if (target.Capacity < to - from)
                     target.Capacity = to - from;
 
                 for (int i = from; i < to; i++)
-                {
-                    Point point = _PointsTotal[i];
-
-                    double x = ((point.X - left) / axisSizeX) * areaWidth;
-                    double y;
-
-                    if (point.Y <= bottom)
-                        y = areaHeight;
-                    else if (point.Y >= top)
-                        y = 0;
-                    else
-                        y = areaHeight - (((point.Y - bottom) / axisSizeY) * areaHeight);
-
-                    target.Add(new Point(x, y));
-                }
+                    target.Add(transform.ToCanvas(_PointsTotal[i]));
             }
 
             this.Points = target;
