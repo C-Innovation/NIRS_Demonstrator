@@ -5,6 +5,7 @@ using NIRS_Demonstrator.Helpers.AI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Device.Gpio.Drivers;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -102,6 +103,8 @@ namespace NIRS_Demonstrator.ViewModels
         private volatile string _PendingValue850Ch4Text = string.Empty;
 
         private NirsContraction NIRSProcessor1;
+        private NirsLevelerConfig _NirsLevelerConfig1;
+        private NirsLeveler _NirsLeveler1;
         #endregion
 
         #region MVVM Properties
@@ -308,7 +311,9 @@ namespace NIRS_Demonstrator.ViewModels
 
             // Создание процессора с точными параметрами
             NIRSProcessor1 = new NirsContraction();
-
+            _NirsLevelerConfig1 = new NirsLevelerConfig { Fs = 1000f};
+            _NirsLevelerConfig1.Target = new float[]{ 4.0f, 4.0f, 2.0f, 1.5f, 4.0f, 4.0f, 2.0f, 1.5f};
+            _NirsLeveler1 = new NirsLeveler(_NirsLevelerConfig1);
             RefreshPorts();
 
             AppConfig.GetInstance().RegisterDisposableObject(this);
@@ -544,6 +549,9 @@ namespace NIRS_Demonstrator.ViewModels
                             await SendToAiDeviceAsync(serializer, signal, token);
 
                         //signal.TotalVal = HasTrigDetection(_Pipeline1.SignalProcessing, signal) ? 5.0 : 0.0;
+                        
+                        signal = ProcessLeveler(signal);
+
                         signal.TotalVal = NIRSProcessor1.Update(
                             new float[]
                             {
@@ -567,7 +575,7 @@ namespace NIRS_Demonstrator.ViewModels
                             modelInputs[6] = (float)signal.Led850Ch3_Flt / 5.0f;
                             modelInputs[7] = (float)signal.Led850Ch4_Flt / 5.0f;
 
-                            signal.AiVal = model.Predict(modelInputs) * 5.0;
+                            signal.AiValQwen = model.Predict(modelInputs) * 5.0;
                         }
 
                         //if (model != null)
@@ -731,14 +739,14 @@ namespace NIRS_Demonstrator.ViewModels
                 batch.Series740[NirsChartBatch.Channel3][i] = new Point(sample.Time, sample.Led740Ch3_Flt);
                 batch.Series740[NirsChartBatch.Channel4][i] = new Point(sample.Time, sample.Led740Ch4_Flt);
                 batch.Series740[NirsChartBatch.TotalVal][i] = new Point(sample.Time, sample.TotalVal);
-                batch.Series740[NirsChartBatch.AiVal][i] = new Point(sample.Time, sample.AiVal);
+                batch.Series740[NirsChartBatch.AiVal][i] = new Point(sample.Time, sample.AiValQwen);
 
                 batch.Series850[NirsChartBatch.Channel1][i] = new Point(sample.Time, sample.Led850Ch1_Flt);
                 batch.Series850[NirsChartBatch.Channel2][i] = new Point(sample.Time, sample.Led850Ch2_Flt);
                 batch.Series850[NirsChartBatch.Channel3][i] = new Point(sample.Time, sample.Led850Ch3_Flt);
                 batch.Series850[NirsChartBatch.Channel4][i] = new Point(sample.Time, sample.Led850Ch4_Flt);
                 batch.Series850[NirsChartBatch.TotalVal][i] = new Point(sample.Time, sample.TotalVal);
-                batch.Series850[NirsChartBatch.AiVal][i] = new Point(sample.Time, sample.AiVal);
+                batch.Series850[NirsChartBatch.AiVal][i] = new Point(sample.Time, sample.AiValQwen);
             }
 
             return batch;
@@ -836,6 +844,38 @@ namespace NIRS_Demonstrator.ViewModels
         {
             return Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath,
                                 DataHelpers.GetCurrentDateTimeStr() + suffix);
+        }
+
+        private NirsSignalData ProcessLeveler(NirsSignalData data)
+        {
+            float[] raw = new float[]
+            {
+                (float)data.Led740Ch1_Flt,
+                (float)data.Led740Ch2_Flt,
+                (float)data.Led740Ch3_Flt,
+                (float)data.Led740Ch4_Flt,
+                (float)data.Led850Ch1_Flt,
+                (float)data.Led850Ch2_Flt,
+                (float)data.Led850Ch3_Flt,
+                (float)data.Led850Ch4_Flt
+            };
+            float[] output = new float[raw.Length];
+
+            _NirsLeveler1.Process(raw, output);
+
+            NirsSignalData res = new NirsSignalData()
+            {
+                Led740Ch1_Flt = output[0],
+                Led740Ch2_Flt = output[1],
+                Led740Ch3_Flt = output[2],
+                Led740Ch4_Flt = output[3],
+                Led850Ch1_Flt = output[4],
+                Led850Ch2_Flt = output[5],
+                Led850Ch3_Flt = output[6],
+                Led850Ch4_Flt = output[7],
+                Time = data.Time
+            };
+            return res;
         }
 
         #endregion

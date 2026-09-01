@@ -344,7 +344,8 @@ namespace NIRS_Demonstrator
         public double Led850Ch4_Flt;
 
         public double TotalVal;
-        public double AiVal;
+        public double AiValQwen;
+        public double AiValClaude;
 
         public List<double> ToList()
         {

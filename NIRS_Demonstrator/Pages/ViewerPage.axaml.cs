@@ -15,7 +15,7 @@ namespace NIRS_Demonstrator;
 public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 {
     public List<List<double>> NirsData;
-    private double _AxisXSize = 1000;
+    private double _AxisXSize = 10000;
     private CsvEditWindow _CsvEditWindow;
     private string _OpenedFile;
 
@@ -307,8 +307,8 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 
     private void InitializeLocal()
     {
-        Nirs1Chart740.SetAxisXSize(1000);
-        Nirs1Chart850.SetAxisXSize(1000);
+        Nirs1Chart740.SetAxisXSize(10000);
+        Nirs1Chart850.SetAxisXSize(10000);
 
         Nirs1Chart740.HorizontalScroll.Value = 0;
 
