@@ -68,6 +68,7 @@ namespace NIRS_Demonstrator.ViewModels
         private const double X_STEP_PER_SAMPLE = 1.0 / 1000.0;
 
         private const string AI_MODEL_PATH = @"D:\workspace_PyCharm\NIRS_NeuroNet\model_exports\model.onnx";
+        //private const string AI_MODEL_PATH = @"D:\workspace_PyCharm\NIRS_NeuroNet\model_exports\gru_pre.onnx";
 
         private readonly NirsPipeline _Pipeline1 = new NirsPipeline();
         private readonly NirsPipeline _Pipeline2 = new NirsPipeline();
@@ -100,6 +101,7 @@ namespace NIRS_Demonstrator.ViewModels
         private volatile string _PendingValue850Ch3Text = string.Empty;
         private volatile string _PendingValue850Ch4Text = string.Empty;
 
+        private NirsContraction NIRSProcessor1;
         #endregion
 
         #region MVVM Properties
@@ -266,6 +268,8 @@ namespace NIRS_Demonstrator.ViewModels
         public ICommand ToggleRecordCommand { get; }
         public ICommand OpenSettingsCommand { get; }
 
+        public ICommand ResetFiltersCommand { get; }
+
         #endregion
 
         #region Public Events
@@ -292,7 +296,7 @@ namespace NIRS_Demonstrator.ViewModels
             RefreshPortsCommand = new RelayCommand(RefreshPorts);
             ToggleRecordCommand = new RelayCommand(ToggleRecordCommandAction);
             OpenSettingsCommand = new RelayCommand(() => SettingsRequested?.Invoke(this, EventArgs.Empty));
-
+            ResetFiltersCommand = new RelayCommand(ResetFiltersCommandAction);
             if (OperatingSystem.IsLinux())
             {
                 _GpioService = new GpioSeviseRpi();
@@ -302,10 +306,15 @@ namespace NIRS_Demonstrator.ViewModels
                 _GpioService.SetGpioState(12, true);
             }
 
+            // Создание процессора с точными параметрами
+            NIRSProcessor1 = new NirsContraction();
+
             RefreshPorts();
 
             AppConfig.GetInstance().RegisterDisposableObject(this);
         }
+
+
 
         #endregion
 
@@ -332,6 +341,12 @@ namespace NIRS_Demonstrator.ViewModels
                 StopRecording();
             else
                 StartRecording();
+        }
+
+        private void ResetFiltersCommandAction()
+        {
+            if(NIRSProcessor1 != null)
+                NIRSProcessor1.Reset();
         }
 
         #endregion
@@ -528,8 +543,19 @@ namespace NIRS_Demonstrator.ViewModels
                         if (_IsAiDevEnabled)
                             await SendToAiDeviceAsync(serializer, signal, token);
 
-                        signal.TotalVal = HasTrigDetection(_Pipeline1.SignalProcessing, signal) ? 5.0 : 0.0;
-
+                        //signal.TotalVal = HasTrigDetection(_Pipeline1.SignalProcessing, signal) ? 5.0 : 0.0;
+                        signal.TotalVal = NIRSProcessor1.Update(
+                            new float[]
+                            {
+                                (float)signal.Led740Ch1_Flt,
+                                (float)signal.Led740Ch2_Flt,
+                                (float)signal.Led740Ch3_Flt,
+                                (float)signal.Led740Ch4_Flt,
+                                (float)signal.Led850Ch1_Flt,
+                                (float)signal.Led850Ch2_Flt,
+                                (float)signal.Led850Ch3_Flt,
+                                (float)signal.Led850Ch4_Flt
+                            }) * 5.0f;
                         if (model != null)
                         {
                             modelInputs[0] = (float)signal.Led740Ch1_Flt / 5.0f;
@@ -544,6 +570,21 @@ namespace NIRS_Demonstrator.ViewModels
                             signal.AiVal = model.Predict(modelInputs) * 5.0;
                         }
 
+                        //if (model != null)
+                        //{
+                        //    modelInputs[0] = 0;
+                        //    modelInputs[1] = 0;
+                        //    modelInputs[2] = (float)signal.Led740Ch3_Flt / 5.0f;
+                        //    modelInputs[3] = (float)signal.Led740Ch4_Flt / 5.0f;
+                        //    modelInputs[4] = 0;
+                        //    modelInputs[5] = 0;
+                        //    modelInputs[6] = (float)signal.Led850Ch3_Flt / 5.0f;
+                        //    modelInputs[7] = (float)signal.Led850Ch4_Flt / 5.0f;
+
+                        //    signal.AiVal = model.Predict(modelInputs) * 5.0;
+                        //}
+
+
                         lock (_Pipeline1.Queue)
                         {
                             _Pipeline1.Queue.Enqueue(signal);
@@ -553,6 +594,7 @@ namespace NIRS_Demonstrator.ViewModels
                         // а не на каждом отсчёте «на всякий случай».
                         if (_Pipeline1.CsvStarted)
                             _Pipeline1.CsvStreamer.Write(signal.ToFltList());
+                            //_Pipeline1.CsvStreamer.Write(signal.ToFlt4ChList());
                     }
 
                     // Пробуждение по факту прихода данных вместо опроса раз в 5 мс.

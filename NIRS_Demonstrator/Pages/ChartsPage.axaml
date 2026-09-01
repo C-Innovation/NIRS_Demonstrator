@@ -332,6 +332,16 @@
 						   FontSize="{StaticResource FontSizeLarge}"
 						   Width="{Binding #ComPortControlGrid.Bounds.Width}"
 						   Value="{Binding LedCurrentPercent}"/>
+
+			<Button x:Name="ResetFiltersButton"
+					Classes="IconGrowButton"
+					Grid.Row="6"
+					Grid.Column="0"
+					Content="{StaticResource FA_ArrowsRotate}"
+
+					FontSize="{StaticResource FontSizeXXLarge}"
+					ToolTip.Tip="{DynamicResource NirsUpdatePortsText}"
+					Command="{Binding ResetFiltersCommand}"/>
 		</Grid>
 				
 	</Grid>

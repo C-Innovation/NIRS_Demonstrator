@@ -65,14 +65,14 @@ namespace NIRS_Demonstrator
 
             _SlipMidsSmart = new SlipMidSmart[8]
             {
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.15, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.15, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.3, 0.1),
-                new SlipMidSmart(100, 100, 10000, 0.4, 0.5),
-                new SlipMidSmart(100, 100, 10000, 0.4, 0.5)
+                new SlipMidSmart(100, 100, 10000, 2.0, 2.0),
+                new SlipMidSmart(100, 100, 10000, 2.0, 2.0),
+                new SlipMidSmart(100, 100, 10000, 0.4, 2.0),
+                new SlipMidSmart(100, 100, 10000, 0.5, 2.0),
+                new SlipMidSmart(100, 100, 10000, 2.3, 2.0),
+                new SlipMidSmart(100, 100, 10000, 2.3, 2.0),
+                new SlipMidSmart(100, 100, 10000, 0.4, 2.0),
+                new SlipMidSmart(100, 100, 10000, 0.4, 2.0)
             };
             if (OperatingSystem.IsLinux())
             {
@@ -383,6 +383,24 @@ namespace NIRS_Demonstrator
 
             vals.Add(Led850Ch1_Flt);
             vals.Add(Led850Ch2_Flt);
+            vals.Add(Led850Ch3_Flt);
+            vals.Add(Led850Ch4_Flt);
+
+            vals.Add(TotalVal);
+            return vals;
+        }
+
+        public List<double> ToFlt4ChList()
+        {
+            List<double> vals = new List<double>();
+
+            vals.Add(0);
+            vals.Add(0);
+            vals.Add(Led740Ch3_Flt);
+            vals.Add(Led740Ch4_Flt);
+
+            vals.Add(0);
+            vals.Add(0);
             vals.Add(Led850Ch3_Flt);
             vals.Add(Led850Ch4_Flt);
 
