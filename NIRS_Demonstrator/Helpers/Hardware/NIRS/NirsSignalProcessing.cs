@@ -388,6 +388,7 @@ namespace NIRS_Demonstrator
             vals.Add(Led850Ch4_Flt);
 
             vals.Add(TotalVal);
+            vals.Add(AiValQwen);
             return vals;
         }
 

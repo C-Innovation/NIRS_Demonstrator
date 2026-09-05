@@ -57,7 +57,7 @@ public partial class App : Application
             AppConfig.GetInstance().SettingsDirectoryPath = (Path.Combine(path, APP_SYS_SECTION, APP_CINNOVATION_ROOT, APP_NAME, APP_CONFIG_DIR_NAME));
             AppConfig.GetInstance().ReportsDirectoryPath = (Path.Combine(path, APP_SYS_SECTION, APP_CINNOVATION_ROOT, APP_NAME, APP_REPORTS_FOLDER_NAME));
             AppConfig.GetInstance().DictionariesDirectoryPath = (Path.Combine(path, APP_SYS_SECTION, APP_CINNOVATION_ROOT, APP_NAME, APP_DICTIONARIES_DIR_NAME));
-            AppConfig.GetInstance().AiDirectoryPath = (Path.Combine(AppDomain.CurrentDomain.BaseDirectory, APP_AI_FOLDER_NAME));
+            AppConfig.GetInstance().AiDirectoryPath = (Path.Combine(path, APP_SYS_SECTION, APP_CINNOVATION_ROOT, APP_NAME, APP_AI_FOLDER_NAME));
             //string path2 = path + "\\" + APP_SYS_SECTION + "\\" + APP_MEDICOM_ROOT + "\\" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "\\" + APP_CONFIG_DIR_NAME;
         }
 

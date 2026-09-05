@@ -69,6 +69,8 @@ namespace NIRS_Demonstrator.ViewModels
         private const double X_STEP_PER_SAMPLE = 1.0 / 1000.0;
 
         private const string AI_MODEL_PATH = @"D:\workspace_PyCharm\NIRS_NeuroNet\model_exports\model.onnx";
+        private const string AI_MODEL_PATH_CLAUDE = @"C:\Users\xwest\AppData\Local\C-Innovation\NIRS_Demonstrator\AI\gru_pre.onnx";
+
         //private const string AI_MODEL_PATH = @"D:\workspace_PyCharm\NIRS_NeuroNet\model_exports\gru_pre.onnx";
 
         private readonly NirsPipeline _Pipeline1 = new NirsPipeline();
@@ -105,6 +107,8 @@ namespace NIRS_Demonstrator.ViewModels
         private NirsContraction NIRSProcessor1;
         private NirsLevelerConfig _NirsLevelerConfig1;
         private NirsLeveler _NirsLeveler1;
+        private NirsRecorder _NirsRecorder1;
+        private NirsOnnxModel _NirsOnnxModel1;
         #endregion
 
         #region MVVM Properties
@@ -250,6 +254,41 @@ namespace NIRS_Demonstrator.ViewModels
             }
         }
 
+        private string _HumanIdText = "S00";
+
+        public string HumanIdText
+        {
+            get => _HumanIdText;
+            private set
+            {
+                if (value == _HumanIdText)
+                    return;
+
+                _HumanIdText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private decimal? _PlacementIdNum = 1m;
+
+        /// <summary>
+        /// Ток ИК-светодиодов, %. Тип совпадает с NumericUpDown.Value,
+        /// чтобы привязка обходилась без преобразования.
+        /// </summary>
+        public decimal? PlacementIdNum
+        {
+            get => _PlacementIdNum;
+            set
+            {
+                if (value == _PlacementIdNum)
+                    return;
+
+                _PlacementIdNum = value;
+                OnPropertyChanged();
+
+            }
+        }
+
         #endregion
 
         #region Public Properties
@@ -272,6 +311,7 @@ namespace NIRS_Demonstrator.ViewModels
         public ICommand OpenSettingsCommand { get; }
 
         public ICommand ResetFiltersCommand { get; }
+        public ICommand GenBuildDatasetCmdCommand { get; }
 
         #endregion
 
@@ -300,6 +340,7 @@ namespace NIRS_Demonstrator.ViewModels
             ToggleRecordCommand = new RelayCommand(ToggleRecordCommandAction);
             OpenSettingsCommand = new RelayCommand(() => SettingsRequested?.Invoke(this, EventArgs.Empty));
             ResetFiltersCommand = new RelayCommand(ResetFiltersCommandAction);
+            GenBuildDatasetCmdCommand = new RelayCommand(GenBuildDatasetCmdCommandCommandAction);
             if (OperatingSystem.IsLinux())
             {
                 _GpioService = new GpioSeviseRpi();
@@ -314,10 +355,13 @@ namespace NIRS_Demonstrator.ViewModels
             _NirsLevelerConfig1 = new NirsLevelerConfig { Fs = 1000f};
             _NirsLevelerConfig1.Target = new float[]{ 4.0f, 4.0f, 2.0f, 1.5f, 4.0f, 4.0f, 2.0f, 1.5f};
             _NirsLeveler1 = new NirsLeveler(_NirsLevelerConfig1);
+            _NirsOnnxModel1 = new NirsOnnxModel(Path.Combine(AppConfig.GetInstance().AiDirectoryPath, "gru_pre.onnx"));
             RefreshPorts();
 
             AppConfig.GetInstance().RegisterDisposableObject(this);
         }
+
+
 
 
 
@@ -328,6 +372,13 @@ namespace NIRS_Demonstrator.ViewModels
         private void ReturnToMainCommandAction()
         {
             IoC.Application.GoToPage(ApplicationPage.Main);
+        }
+
+        private void GenBuildDatasetCmdCommandCommandAction()
+        {
+            string path = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath, "_dataset");
+            string outPath = Path.Combine(path, "build_command.txt");
+            DatasetCommandGenerator.GenerateBuildCommand(path, outPath);
         }
 
         private void StartCommandAction()
@@ -352,6 +403,12 @@ namespace NIRS_Demonstrator.ViewModels
         {
             if(NIRSProcessor1 != null)
                 NIRSProcessor1.Reset();
+
+            if(_NirsLeveler1 != null)
+                _NirsLeveler1.Reset();
+
+            if(_NirsOnnxModel1 != null)
+                _NirsOnnxModel1.Reset();
         }
 
         #endregion
@@ -549,8 +606,12 @@ namespace NIRS_Demonstrator.ViewModels
                             await SendToAiDeviceAsync(serializer, signal, token);
 
                         //signal.TotalVal = HasTrigDetection(_Pipeline1.SignalProcessing, signal) ? 5.0 : 0.0;
+
+                        //signal = ProcessLeveler(signal);
+
+                        // Список значений строится только когда идёт запись,
+                        // а не на каждом отсчёте «на всякий случай».
                         
-                        signal = ProcessLeveler(signal);
 
                         signal.TotalVal = NIRSProcessor1.Update(
                             new float[]
@@ -564,6 +625,25 @@ namespace NIRS_Demonstrator.ViewModels
                                 (float)signal.Led850Ch3_Flt,
                                 (float)signal.Led850Ch4_Flt
                             }) * 5.0f;
+
+                        signal.AiValQwen = _NirsOnnxModel1.Predict(new float[]
+                            {
+                                (float)signal.Led740Ch1_Flt,
+                                (float)signal.Led740Ch2_Flt,
+                                (float)signal.Led740Ch3_Flt,
+                                (float)signal.Led740Ch4_Flt,
+                                (float)signal.Led850Ch1_Flt,
+                                (float)signal.Led850Ch2_Flt,
+                                (float)signal.Led850Ch3_Flt,
+                                (float)signal.Led850Ch4_Flt
+                            }) * 5.0;
+
+                        if (_Pipeline1.CsvStarted)
+                        {
+                            WriteDatasetLine(signal);
+                            _Pipeline1.CsvStreamer.Write(signal.ToFltList());
+                            //_Pipeline1.CsvStreamer.Write(signal.ToFlt4ChList());
+                        }
                         if (model != null)
                         {
                             modelInputs[0] = (float)signal.Led740Ch1_Flt / 5.0f;
@@ -575,7 +655,7 @@ namespace NIRS_Demonstrator.ViewModels
                             modelInputs[6] = (float)signal.Led850Ch3_Flt / 5.0f;
                             modelInputs[7] = (float)signal.Led850Ch4_Flt / 5.0f;
 
-                            signal.AiValQwen = model.Predict(modelInputs) * 5.0;
+                            //signal.AiValQwen = model.Predict(modelInputs) * 5.0;
                         }
 
                         //if (model != null)
@@ -598,11 +678,7 @@ namespace NIRS_Demonstrator.ViewModels
                             _Pipeline1.Queue.Enqueue(signal);
                         }
 
-                        // Список значений строится только когда идёт запись,
-                        // а не на каждом отсчёте «на всякий случай».
-                        if (_Pipeline1.CsvStarted)
-                            _Pipeline1.CsvStreamer.Write(signal.ToFltList());
-                            //_Pipeline1.CsvStreamer.Write(signal.ToFlt4ChList());
+                        
                     }
 
                     // Пробуждение по факту прихода данных вместо опроса раз в 5 мс.
@@ -804,11 +880,25 @@ namespace NIRS_Demonstrator.ViewModels
             return false;
         }
 
-        private void StartRecording()
+        private async void StartRecording()
         {
             if (_Pipeline1.Sensor is { IsStarted: true })
             {
                 _Pipeline1.CsvStreamer = new ReportsStreamerCsv(BuildReportPath("_Nirs1.csv"));
+                
+                string dPath = Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath,
+                                "_dataset");
+                var cfg = new RecorderConfig
+                {
+                    Subject = HumanIdText,          // обязательно: разбиение идёт по людям
+                    Muscle = "flexor",
+                    Placement = PlacementIdNum.ToString(),
+                    Source = TargetSource.Algorithm,   // или External — с динамометра
+                    TargetVmax = 5.00f,
+                    OutDir = dPath
+                };
+                _NirsRecorder1 = new NirsRecorder(cfg);
+                await Task.Delay(100);
                 _Pipeline1.CsvStarted = true;
             }
 
@@ -828,6 +918,7 @@ namespace NIRS_Demonstrator.ViewModels
                 _Pipeline1.CsvStarted = false;
                 _Pipeline1.CsvStreamer.Dispose();
                 _Pipeline1.CsvStreamer = null;
+                _NirsRecorder1.Finish();
             }
 
             if (_Pipeline2.CsvStarted)
@@ -844,6 +935,23 @@ namespace NIRS_Demonstrator.ViewModels
         {
             return Path.Combine(AppConfig.GetInstance().ReportsDirectoryPath,
                                 DataHelpers.GetCurrentDateTimeStr() + suffix);
+        }
+
+        private void WriteDatasetLine(NirsSignalData data)
+        {
+            float[] raw = new float[]
+            {
+                (float)data.Led740Ch1_Flt,
+                (float)data.Led740Ch2_Flt,
+                (float)data.Led740Ch3_Flt,
+                (float)data.Led740Ch4_Flt,
+                (float)data.Led850Ch1_Flt,
+                (float)data.Led850Ch2_Flt,
+                (float)data.Led850Ch3_Flt,
+                (float)data.Led850Ch4_Flt
+            };
+
+            _NirsRecorder1.Write(raw);
         }
 
         private NirsSignalData ProcessLeveler(NirsSignalData data)

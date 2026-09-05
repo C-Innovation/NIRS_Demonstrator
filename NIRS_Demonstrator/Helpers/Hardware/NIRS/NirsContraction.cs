@@ -42,6 +42,14 @@ namespace NIRS_Demonstrator
         public float TauBaseDn = 120f;
         public float FreezeK   = 4f;
 
+        // Медленный спуск базы защищает её от «съедания» сокращением, но он же
+        // мешает догонять дрейф уровня покоя. У канала обратной полярности это
+        // критично: дрейф и сокращение двигают ослабление в одну сторону.
+        // Различить их по самому каналу нельзя, зато можно по дальним: они
+        // возвращаются в покой всегда. Пока их согласие ниже BaseRestThr, база
+        // любого канала догоняет дрейф на быстрой постоянной в обе стороны.
+        public float BaseRestThr = 0.15f;
+
         public float TauSpanUp = 2f;
         public float TauSpanDn = 60f;
         public float MinSpan   = 0.010f;
@@ -72,6 +80,19 @@ namespace NIRS_Demonstrator
         public float GateLo   = 0.15f;
         public float OutVmax  = 3.30f;
         public float WarmupS  = 1.5f;
+
+        // --- автоматическая полярность каналов -------------------------------
+        // На малых разносах (5.5 мм) при сокращении света становится МЕНЬШЕ, а
+        // на больших (26.5 и 32 мм) — больше. Ядро меряет активность как
+        // «насколько ослабление ниже покоя», поэтому канал обратного знака без
+        // поправки даёт инвертированную активность: максимум в покое и ноль под
+        // нагрузкой. Один такой канал поднимает пол выхода, два — рушат выход.
+        // Полярность дальних каналов принимается опорной (+1); знак ближних
+        // оценивается по корреляции с дальними и при необходимости меняется.
+        public bool  AutoPolarity = true;
+        public float TauPol       = 5.0f;    // с, постоянная оценки корреляции
+        public float PolThr       = 0.35f;   // порог смены знака по корреляции
+        public float PolHoldS     = 10f;     // с, пауза между сменами знака
 
         public NirsConfig Clone()
         {
@@ -105,6 +126,14 @@ namespace NIRS_Demonstrator
         readonly float[] _w     = new float[MaxCh];
         // 0 — непригоден, 1 — ждёт покоя после возврата, 2 — работает нормально
         readonly byte[]  _chOk  = new byte[MaxCh];
+        readonly float[] _pol     = new float[MaxCh];
+        readonly float[] _polCov  = new float[MaxCh];
+        readonly float[] _polMdn  = new float[MaxCh];
+        readonly float[] _polVdn  = new float[MaxCh];
+        readonly uint[]  _polLock = new uint[MaxCh];
+        readonly float[] _dn      = new float[MaxCh];
+        float _polMref, _polVref, _aPol, _farAct, _farG;
+        uint  _polHoldN;
 
         uint  _n;
         float _uLp, _level, _mvc, _mvcLp, _spatial, _spectral, _uOd, _wsum;
@@ -125,6 +154,26 @@ namespace NIRS_Demonstrator
         public float[]   Od       => _od;
         public float[]   W        => _w;
         public float[]   Span     => _span;
+        public float[]   Pol      => _pol;      // +1 или -1 по каналам
+
+        /// <summary>
+        /// Признаки для нейросети: нормированная активность каждого канала,
+        /// od/span, с ограничением сверху на 4. Это то же самое, что раньше
+        /// считал отдельный предфильтр (NirsPrefilter), но здесь уже учтены
+        /// полярность канала и слежение базы за дрейфом, которых в предфильтре
+        /// не было. На записях 4 сентября замена дала MAE 0.109 против 0.136
+        /// и наклон регрессии амплитуд 0.32 против 0.19.
+        /// Вызывать после Update() того же шага.
+        /// </summary>
+        public void NnFeatures(float[] outv)
+        {
+            for (int k = 0; k < _nch; k++)
+            {
+                float sp = _span[k] < _c.MinSpan ? _c.MinSpan : _span[k];
+                float v = _w[k] > 0f ? _od[k] / sp : 0f;
+                outv[k] = v > 4f ? 4f : v;
+            }
+        }
         public float[]   Noise    => _noise;
         public NirsConfig Config  => _c;
 
@@ -146,7 +195,9 @@ namespace NIRS_Demonstrator
             _aMvcDn  = Coef(fs, _c.TauMvcDn);
             _aLead   = Coef(fs, _c.TauLeadLp);
             _leadGain = _c.TauLeadLp > 0f ? _c.LeadTau / _c.TauLeadLp : 0f;
-            _warmupN = (uint)(_c.WarmupS * fs);
+            _warmupN  = (uint)(_c.WarmupS * fs);
+            _aPol     = Coef(fs, _c.TauPol);
+            _polHoldN = (uint)(_c.PolHoldS * fs);
 
             float dmin = _c.DistMm[0], dmax = _c.DistMm[0];
             for (int k = 1; k < _nch; k++)
@@ -178,6 +229,8 @@ namespace NIRS_Demonstrator
             {
                 _base[k] = 0f; _span[k] = _c.MinSpan; _noise[k] = 1e-5f;
                 _prev[k] = 0f; _od[k] = 0f; _w[k] = 0f; _chOk[k] = 0;
+                _pol[k] = 1f; _polCov[k] = 0f; _polMdn[k] = 0f;
+                _polVdn[k] = 0f; _polLock[k] = 0;
             }
             _n = 0; _uLp = 0f; _level = 0f; _mvc = _c.MvcMin; _mvcLp = 0f;
             _spatial = 0f; _spectral = 0f; _uOd = 0f; _wsum = 0f;
@@ -189,7 +242,7 @@ namespace NIRS_Demonstrator
         {
             bool first = _n == 0;
             float wsum = 0f, acc = 0f, spanRef = 0f;
-            float farS = 0f, farW = 0f, nearS = 0f, nearW = 0f;
+            float farS = 0f, farW = 0f, nearS = 0f, nearW = 0f, farN = 0f;
             float s850 = 0f, w850 = 0f, s740 = 0f, w740 = 0f;
             NirsFlags fl = NirsFlags.None;
 
@@ -212,7 +265,7 @@ namespace NIRS_Demonstrator
                     continue;
                 }
 
-                float a = -(float)Math.Log(x);
+                float a = -(float)Math.Log(x) * _pol[k];   // ослабление со знаком
 
                 // База снимается «как есть», но если в этот момент остальные
                 // каналы показывают сокращение, снятый уровень покоем не
@@ -237,7 +290,13 @@ namespace NIRS_Demonstrator
                 {
                     float sp = _span[k] < _c.MinSpan ? _c.MinSpan : _span[k];
                     float rr = (_base[k] - a) / sp;
-                    _base[k] += (_aBaseDn / (1f + _c.FreezeK * rr * rr)) * (a - _base[k]);
+                    float rate = _aBaseDn / (1f + _c.FreezeK * rr * rr);
+                    // Плавный переход, а не порог: жёсткое переключение на
+                    // границе дребезжит и делает результат чувствительным к
+                    // последнему биту. _farG падает от 1 (дальние в покое)
+                    // до ~1e-6 при сокращении, так что защита базы цела.
+                    rate += _farG * (_aBaseUp - rate);
+                    _base[k] += rate * (a - _base[k]);
                 }
 
                 float d = _base[k] - a;
@@ -268,12 +327,14 @@ namespace NIRS_Demonstrator
                 if (w < _c.WMin) w = 0f;
                 _w[k] = w;
 
+                _dn[k] = 0f;
                 if (w > 0f)
                 {
-                    acc     += w * (d / _span[k]);
+                    _dn[k]   = d / _span[k];
+                    acc     += w * _dn[k];
                     spanRef += w * _span[k];
                     wsum    += w;
-                    if (_isFar[k]) { farS += w * d; farW += w; } else { nearS += w * d; nearW += w; }
+                    if (_isFar[k]) { farS += w * d; farW += w; farN += w * _dn[k]; } else { nearS += w * d; nearW += w; }
                     if (_is850[k]) { s850 += w * d; w850 += w; } else { s740 += w * d; w740 += w; }
                 }
             }
@@ -284,6 +345,49 @@ namespace NIRS_Demonstrator
             if (wsum > 1e-6f) { spanRef /= wsum; u = (acc / wsum) * spanRef; }
             else              { u = 0f; fl |= NirsFlags.NoChan; }
             _uOd = u;
+
+            // --- оценка полярности ближних каналов --------------------------
+            // Опорный сигнал — нормированный вклад дальних каналов, их знак
+            // принят за +1. Знак меняется только при уверенной ОТРИЦАТЕЛЬНОЙ
+            // корреляции: нормировка на дисперсии обязательна, иначе слабый
+            // шумный канал переключался бы туда-сюда.
+            // согласие дальних каналов: признак покоя для базовой линии на
+            // следующем шаге и опора для оценки полярности здесь
+            _farAct = farW > 0f ? farN / farW : 0f;
+            if (farW > 0f && _c.BaseRestThr > 0f)
+            {
+                float q = _farAct / _c.BaseRestThr;
+                q *= q; q *= q; q *= q;              // (farAct/thr)^8
+                _farG = 1f / (1f + q);
+            }
+            else _farG = 0f;                          // нет дальних каналов
+
+            if (_c.AutoPolarity && farW > 0f)
+            {
+                float refn = _farAct;
+                _polMref += _aPol * (refn - _polMref);
+                float er = refn - _polMref;
+                _polVref += _aPol * (er * er - _polVref);
+                for (int k = 0; k < _nch; k++)
+                {
+                    if (_isFar[k] || _w[k] <= 0f) continue;
+                    _polMdn[k] += _aPol * (_dn[k] - _polMdn[k]);
+                    float ec = _dn[k] - _polMdn[k];
+                    _polVdn[k] += _aPol * (ec * ec - _polVdn[k]);
+                    _polCov[k] += _aPol * (ec * er - _polCov[k]);
+                    float corr = _polCov[k] / (float)Math.Sqrt(_polVdn[k] * _polVref + 1e-20);
+                    if (_polVref > 1e-6f && corr < -_c.PolThr && _n >= _polLock[k])
+                    {
+                        _pol[k]     = -_pol[k];
+                        _polLock[k] = _n + _polHoldN;
+                        _polCov[k]  = 0f; _polMdn[k] = 0f; _polVdn[k] = 0f;
+                        _base[k]    = 0f;               // переучить базу и размах
+                        _span[k]    = _c.MinSpan;
+                        _od[k]      = 0f; _w[k] = 0f; _chOk[k] = 0;
+                        fl |= NirsFlags.LowSig;
+                    }
+                }
+            }
 
             _spatial  = (farW  > 0f ? farS  / farW  : 0f) - (nearW > 0f ? nearS / nearW : 0f);
             _spectral = (w850  > 0f ? s850  / w850  : 0f) - (w740  > 0f ? s740  / w740  : 0f);
