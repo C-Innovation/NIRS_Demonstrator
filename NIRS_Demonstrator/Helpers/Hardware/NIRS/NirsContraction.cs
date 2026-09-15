@@ -21,7 +21,8 @@ namespace NIRS_Demonstrator
         NoChan  = 0x0004,   // нет пригодных каналов
         Sat     = 0x0008,   // канал в насыщении
         LowSig  = 0x0010,   // канал без модуляции
-        Clipped = 0x0020    // выход упёрся в 1.0
+        Clipped = 0x0020,   // выход упёрся в 1.0
+        Stable  = 0x0040    // адаптация сошлась, выходу можно верить
     }
 
     /// <summary>Конфигурация. Все постоянные времени в секундах.</summary>
@@ -37,6 +38,9 @@ namespace NIRS_Demonstrator
 
         public float VMin = 0.02f;
         public float VMax = 4.30f;      // OPA2380 @5В насыщается около 4.4 В
+        // Гистерезис возврата канала в рабочий диапазон: выпавший канал снова
+        // считается пригодным только при VMin+VHyst < V < VMax-VHyst.
+        public float VHyst = 0.05f;
 
         public float TauBaseUp = 0.75f;
         public float TauBaseDn = 120f;
@@ -80,6 +84,18 @@ namespace NIRS_Demonstrator
         public float GateLo   = 0.15f;
         public float OutVmax  = 3.30f;
         public float WarmupS  = 1.5f;
+
+        // --- признак «адаптация сошлась» (NirsFlags.Stable) ------------------
+        // Ready закрывает только прогрев (WarmupS = 1.5 с) — после него выход
+        // уже считается, но база, размахи каналов и их полярность едут ещё
+        // десятки секунд, и абсолютный уровень выхода в это время занижен или
+        // завышен. Stable выставляется, когда с последнего «возмущения» прошло
+        // StableS спокойных секунд. Возмущением считается: канал вышел за
+        // рабочий диапазон, канал вернулся в него, канал переучивается заново,
+        // сменился знак канала, не осталось ни одного пригодного канала.
+        // Флаг снимается в тот же момент, когда возмущение произошло, поэтому
+        // снятие датчика на ходу видно без задержки.
+        public float StableS  = 20.0f;
 
         // --- автоматическая полярность каналов -------------------------------
         // На малых разносах (5.5 мм) при сокращении света становится МЕНЬШЕ, а
@@ -126,6 +142,8 @@ namespace NIRS_Demonstrator
         readonly float[] _w     = new float[MaxCh];
         // 0 — непригоден, 1 — ждёт покоя после возврата, 2 — работает нормально
         readonly byte[]  _chOk  = new byte[MaxCh];
+        // 1 — канал переучивает базу и ещё не вернулся в слияние
+        readonly byte[]  _rearm  = new byte[MaxCh];
         readonly float[] _pol     = new float[MaxCh];
         readonly float[] _polCov  = new float[MaxCh];
         readonly float[] _polMdn  = new float[MaxCh];
@@ -135,7 +153,8 @@ namespace NIRS_Demonstrator
         float _polMref, _polVref, _aPol, _farAct, _farG;
         uint  _polHoldN;
 
-        uint  _n;
+        uint  _n, _lastDisturb, _stableN;
+        float _stableProgress;
         float _uLp, _level, _mvc, _mvcLp, _spatial, _spectral, _uOd, _wsum;
         float _out01, _outV;
         NirsFlags _flags;
@@ -151,6 +170,18 @@ namespace NIRS_Demonstrator
         public float     Spectral => _spectral;              // 850 минус 740
         public float     WSum     => _wsum;
         public NirsFlags Flags    => _flags;
+
+        /// <summary>
+        /// Валидность данных: true — адаптация сошлась, выходу можно верить;
+        /// false — идёт стабилизация (первые секунды после старта, после
+        /// Reset(), после снятия или перестановки датчика, после смены знака
+        /// канала). Отслеживается непрерывно: если датчик снимут на ходу,
+        /// флаг упадёт на той же выборке.
+        /// </summary>
+        public bool  Stable         => (_flags & NirsFlags.Stable) != 0;
+
+        /// <summary>Ход стабилизации, 0..1 — для индикатора прогресса.</summary>
+        public float StableProgress => _stableProgress;
         public float[]   Od       => _od;
         public float[]   W        => _w;
         public float[]   Span     => _span;
@@ -165,6 +196,33 @@ namespace NIRS_Demonstrator
         /// и наклон регрессии амплитуд 0.32 против 0.19.
         /// Вызывать после Update() того же шага.
         /// </summary>
+        /// <summary>
+        /// Использовать тот же быстрый логарифм, что и прошивка, собранная с
+        /// -DNIRS_FAST_LOG. Нужно, когда признаки для обучения готовятся на ПК,
+        /// а работать модель будет на МК: обычный Math.Log считает в double и
+        /// даёт чуть другой результат, а решения внутри ядра дискретные (смена
+        /// полярности, переарм канала), поэтому «чуть другой» со временем
+        /// расходится в заметный. С этим флагом C и C# совпадают побитово.
+        /// </summary>
+        public static bool UseFastLog = false;
+
+        static float FastLog(float x)
+        {
+            // Копия nirs_logf() из nirs_contraction.c при NIRS_FAST_LOG.
+            int bits = BitConverter.ToInt32(BitConverter.GetBytes(x), 0);
+            int e = ((bits >> 23) & 0xFF) - 127;
+            int mb = (bits & 0x007FFFFF) | 0x3F800000;
+            float m = BitConverter.ToSingle(BitConverter.GetBytes(mb), 0);
+            if (m > 1.41421356f) { m *= 0.5f; e += 1; }
+            float t = (m - 1f) / (m + 1f);
+            float t2 = t * t;
+            return 2f * t * (1f + t2 * (0.33333333f + t2 * (0.2f
+                        + t2 * (0.14285714f + t2 * 0.11111111f))))
+                   + (float)e * 0.69314718f;
+        }
+
+        static float Log(float x) { return UseFastLog ? FastLog(x) : (float)Math.Log(x); }
+
         public void NnFeatures(float[] outv)
         {
             for (int k = 0; k < _nch; k++)
@@ -196,6 +254,7 @@ namespace NIRS_Demonstrator
             _aLead   = Coef(fs, _c.TauLeadLp);
             _leadGain = _c.TauLeadLp > 0f ? _c.LeadTau / _c.TauLeadLp : 0f;
             _warmupN  = (uint)(_c.WarmupS * fs);
+            _stableN  = (uint)(_c.StableS * fs);
             _aPol     = Coef(fs, _c.TauPol);
             _polHoldN = (uint)(_c.PolHoldS * fs);
 
@@ -228,12 +287,14 @@ namespace NIRS_Demonstrator
             for (int k = 0; k < MaxCh; k++)
             {
                 _base[k] = 0f; _span[k] = _c.MinSpan; _noise[k] = 1e-5f;
-                _prev[k] = 0f; _od[k] = 0f; _w[k] = 0f; _chOk[k] = 0;
+                _prev[k] = 0f; _od[k] = 0f; _w[k] = 0f; _chOk[k] = 0; _rearm[k] = 0;
                 _pol[k] = 1f; _polCov[k] = 0f; _polMdn[k] = 0f;
                 _polVdn[k] = 0f; _polLock[k] = 0;
             }
-            _n = 0; _uLp = 0f; _level = 0f; _mvc = _c.MvcMin; _mvcLp = 0f;
+            _n = 0; _lastDisturb = 0; _stableProgress = 0f;
+            _uLp = 0f; _level = 0f; _mvc = _c.MvcMin; _mvcLp = 0f;
             _spatial = 0f; _spectral = 0f; _uOd = 0f; _wsum = 0f;
+            _polMref = 0f; _polVref = 0f; _farAct = 0f; _farG = 0f;
             _flags = NirsFlags.None; _out01 = 0f; _outV = 0f;
         }
 
@@ -253,7 +314,13 @@ namespace NIRS_Demonstrator
                 float x = v[k];
                 // Сравнения с NaN дают false, поэтому это же условие
                 // отсеивает NaN, бесконечности и отрицательные значения.
-                bool ok = x > _c.VMin && x < _c.VMax;
+                // Гистерезис: выпавший канал возвращается не на самой границе,
+                // а на VHyst глубже. Канал, стоящий вплотную к пределу шкалы
+                // ОУ, иначе входит и выходит из диапазона на каждой пульсовой
+                // волне, а каждый возврат сбрасывает его базу.
+                bool ok = _chOk[k] != 0
+                    ? (x > _c.VMin && x < _c.VMax)
+                    : (x > _c.VMin + _c.VHyst && x < _c.VMax - _c.VHyst);
                 if (!ok)
                 {
                     // Состояние непригодного канала НЕ обновляем: иначе один
@@ -261,11 +328,17 @@ namespace NIRS_Demonstrator
                     fl |= NirsFlags.Sat;
                     _od[k] = 0f;
                     _w[k]  = 0f;
+                    // Возмущением считаем только выпадение канала, который
+                    // реально участвовал в слиянии и имел осмысленный размах.
+                    if (_chOk[k] != 0 && _w[k] > 0f && _span[k] > 2f * _c.MinSpan)
+                        _lastDisturb = _n;
+                    _w[k] = 0f;
+                    _rearm[k] = 0;
                     _chOk[k] = 0;
                     continue;
                 }
 
-                float a = -(float)Math.Log(x) * _pol[k];   // ослабление со знаком
+                float a = -Log(x) * _pol[k];               // ослабление со знаком
 
                 // База снимается «как есть», но если в этот момент остальные
                 // каналы показывают сокращение, снятый уровень покоем не
@@ -273,6 +346,12 @@ namespace NIRS_Demonstrator
                 if (first || _chOk[k] == 0)
                 {
                     _base[k] = a; _prev[k] = a;
+                    // Размах тоже сбрасывается: иначе вернувшийся канал получает
+                    // полный вес (span уцелел) при нулевой активности (база только
+                    // что снята) и разбавляет общий выход.
+                    _span[k] = _c.MinSpan;
+                    _rearm[k] = 1;   // возмущение засчитаем, когда канал снова
+                                     // начнёт что-то весить
                     _chOk[k] = (byte)(_out01 <= _c.GateLo ? 2 : 1);
                 }
                 else if (_chOk[k] == 1 && _out01 <= _c.GateLo)
@@ -325,6 +404,12 @@ namespace NIRS_Demonstrator
                     fl |= NirsFlags.LowSig;
                 }
                 if (w < _c.WMin) w = 0f;
+                // Канал, переучивавший базу, снова вошёл в слияние: состав
+                // выхода изменился — вот теперь это возмущение.
+                if (_rearm[k] != 0 && w > 0f && _span[k] > 2f * _c.MinSpan)
+                {
+                    _rearm[k] = 0; _lastDisturb = _n;
+                }
                 _w[k] = w;
 
                 _dn[k] = 0f;
@@ -343,7 +428,7 @@ namespace NIRS_Demonstrator
 
             float u;
             if (wsum > 1e-6f) { spanRef /= wsum; u = (acc / wsum) * spanRef; }
-            else              { u = 0f; fl |= NirsFlags.NoChan; }
+            else              { u = 0f; fl |= NirsFlags.NoChan; _lastDisturb = _n; }
             _uOd = u;
 
             // --- оценка полярности ближних каналов --------------------------
@@ -384,6 +469,7 @@ namespace NIRS_Demonstrator
                         _base[k]    = 0f;               // переучить базу и размах
                         _span[k]    = _c.MinSpan;
                         _od[k]      = 0f; _w[k] = 0f; _chOk[k] = 0;
+                        _rearm[k]   = 1;                // знак сменился, база с нуля
                         fl |= NirsFlags.LowSig;
                     }
                 }
@@ -439,6 +525,21 @@ namespace NIRS_Demonstrator
 
             fl |= _flags & NirsFlags.Active;
             if (_n >= _warmupN) fl |= NirsFlags.Ready;
+
+            // Признак «адаптация сошлась»: сколько выборок прошло с последнего
+            // возмущения (выпадение или возврат канала, смена знака, отсутствие
+            // каналов). Пока их меньше _stableN — выход есть, но база, размахи
+            // и полярность ещё едут, и верить уровню нельзя.
+            {
+                uint q = _n - _lastDisturb;              // беззнаковая разность
+                if (_stableN == 0u || q >= _stableN) _stableProgress = 1f;
+                else                                 _stableProgress = (float)q / _stableN;
+
+                if (_stableProgress >= 1f && (fl & NirsFlags.Ready)  != 0
+                                          && (fl & NirsFlags.NoChan) == 0)
+                    fl |= NirsFlags.Stable;
+            }
+
             _flags = fl;
 
             return o;

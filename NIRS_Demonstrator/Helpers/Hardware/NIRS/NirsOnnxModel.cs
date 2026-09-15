@@ -27,35 +27,36 @@
 //  на котором она училась: выход становится почти константой и перестаёт
 //  возвращаться в ноль.
 // ============================================================================
-using Microsoft.ML.OnnxRuntime;
-using Microsoft.ML.OnnxRuntime.Tensors;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
 
 namespace NIRS_Demonstrator
 {
     public sealed class NirsOnnxModel : IDisposable
     {
-        public const int NCh = 8;
+        public const int NCh   = 8;
         public const int NState = 16;   // должно совпадать с --units при обучении
-        public const int Decim = 10;   // должно совпадать с --decim при обучении
+        public const int Decim  = 10;   // должно совпадать с --decim при обучении
         public const float WarmupS = 3.0f;  // до готовности выход не использовать
 
         readonly InferenceSession _sess;
         readonly string _inX, _inH, _outY, _outH;
 
         readonly bool _useCore;
-        readonly NirsContraction _core;      // при _useCore
-        readonly NirsPrefilter _pre;       // иначе
+        readonly NirsContraction _core;      // считается всегда (см. ниже)
+        readonly NirsPrefilter   _pre;       // только при _useCore == false
         readonly float[] _feat = new float[NCh];
-        readonly float[] _acc = new float[NCh];
+        readonly float[] _acc  = new float[NCh];
         readonly float[] _state = new float[NState];
         int _accN, _sub;
         long _n;
         readonly long _warmupN;
+        readonly float _stableS;
         float _out;
 
         /// <summary>Последнее предсказание, 0..1. Между вызовами сети удерживается.</summary>
@@ -66,12 +67,44 @@ namespace NIRS_Demonstrator
         public bool Ready => _n >= _warmupN;
         public float OutVolts(float vmax = 3.30f) => _out * vmax;
 
-        /// <summary>Выход детерминированного ядра, 0..1. Считается всегда:
-        /// в режиме признаков ядра оно и так работает, а его флаги качества
-        /// сигнала сети взять неоткуда. null в режиме предфильтра.</summary>
-        public float AlgoOut01 => _useCore ? _core.Out01 : float.NaN;
-        /// <summary>Флаги ядра (насыщение, нет каналов и т. д.).</summary>
-        public NirsFlags AlgoFlags => _useCore ? _core.Flags : 0;
+        /// <summary>Выход детерминированного ядра, 0..1. Ядро считается всегда,
+        /// даже когда признаки для сети готовит предфильтр: оно стоит единицы
+        /// микросекунд, а его флаги качества сигнала сети взять неоткуда.</summary>
+        public float AlgoOut01 => _core.Out01;
+        /// <summary>Флаги ядра (насыщение, нет каналов, стабильность и т. д.).</summary>
+        public NirsFlags AlgoFlags => _core.Flags;
+
+        // ------------------------------------------------------------------
+        //  Валидность данных
+        // ------------------------------------------------------------------
+        /// <summary>
+        /// ГЛАВНЫЙ признак достоверности: true — стабилизация выполнена,
+        /// выходу можно верить; false — идёт стабилизация.
+        ///
+        /// Отличие от <see cref="Ready"/>: Ready закрывает только прогрев
+        /// (3 с — сходимость состояния GRU) и, один раз поднявшись, больше не
+        /// падает. Stable дополнительно требует, чтобы сошлась медленная
+        /// адаптация ядра (уровень покоя, размах и полярность каждого канала —
+        /// это десятки секунд), и ОТСЛЕЖИВАЕТСЯ НЕПРЕРЫВНО: если датчик снять,
+        /// сдвинуть или он потеряет контакт, флаг упадёт на той же выборке и
+        /// вернётся только через StableS спокойных секунд после того, как
+        /// сигнал восстановится. Reset() тоже сбрасывает его в false.
+        ///
+        /// Возмущением ядро считает: канал вышел за рабочий диапазон
+        /// (насыщение или темнота — именно это происходит при снятии датчика),
+        /// канал вернулся в диапазон, канал переучивается заново, сменился
+        /// знак канала, не осталось ни одного пригодного канала.
+        /// </summary>
+        public bool Stable => Ready && _core.Stable;
+
+        /// <summary>Ход стабилизации, 0..1 — для индикатора прогресса.
+        /// Достигает 1.0 одновременно со Stable (при Ready).</summary>
+        public float StableProgress => _core.StableProgress;
+
+        /// <summary>Сколько секунд осталось до Stable при текущем темпе
+        /// (0, если уже стабильно). Для подсказки оператору.</summary>
+        public float SecondsToStable =>
+            Stable ? 0f : _stableS * (1f - _core.StableProgress);
 
         /// <param name="useCoreFeatures">true (по умолчанию) — вход готовит ядро
         /// через NnFeatures(); так же, как 01_build_dataset.py --core-features.
@@ -80,21 +113,23 @@ namespace NIRS_Demonstrator
         {
             _sess = new InferenceSession(onnxPath);
             _useCore = useCoreFeatures;
-            if (_useCore)
-            {
-                var cfg = new NirsConfig { Fs = fs };
-                _core = new NirsContraction(cfg);
-            }
-            else _pre = new NirsPrefilter(fs);
+
+            // Ядро поднимаем в обоих режимах: в режиме признаков ядра оно даёт
+            // вход сети, а в режиме предфильтра — флаги качества сигнала и
+            // признак стабилизации (Stable), которых у предфильтра нет.
+            var cfg = new NirsConfig { Fs = fs };
+            _core   = new NirsContraction(cfg);
+            _stableS = cfg.StableS;
+            if (!_useCore) _pre = new NirsPrefilter(fs);
             _warmupN = (long)(WarmupS * fs);
 
             // Имена тензоров зависят от версии экспортёра, поэтому находим их
             // по размерности, а не по имени: 8 — признаки, 16 — состояние.
-            var ins = _sess.InputMetadata.ToList();
+            var ins  = _sess.InputMetadata.ToList();
             var outs = _sess.OutputMetadata.ToList();
 
-            _inX = ins.First(p => Last(p.Value.Dimensions) == NCh).Key;
-            _inH = ins.First(p => Last(p.Value.Dimensions) == NState).Key;
+            _inX  = ins.First(p => Last(p.Value.Dimensions)  == NCh).Key;
+            _inH  = ins.First(p => Last(p.Value.Dimensions)  == NState).Key;
             _outY = outs.First(p => Last(p.Value.Dimensions) == 1).Key;
             _outH = outs.First(p => Last(p.Value.Dimensions) == NState).Key;
 
@@ -107,7 +142,8 @@ namespace NIRS_Demonstrator
 
         public void Reset()
         {
-            if (_useCore) _core.Reset(); else _pre.Reset();
+            _core.Reset();
+            if (!_useCore) _pre.Reset();
             Array.Clear(_state, 0, _state.Length);
             Array.Clear(_acc, 0, _acc.Length);
             _accN = 0; _sub = 0; _out = 0f; _n = 0;
@@ -120,8 +156,9 @@ namespace NIRS_Demonstrator
             _n++;
             // признаки готовятся на ПОЛНОЙ частоте: их постоянные времени
             // рассчитаны именно под неё
-            if (_useCore) { _core.Update(volts); _core.NnFeatures(_feat); }
-            else _pre.Step(volts, _feat);
+            _core.Update(volts);                       // всегда: флаги и Stable
+            if (_useCore) _core.NnFeatures(_feat);
+            else          _pre.Step(volts, _feat);
             for (int k = 0; k < NCh; k++) _acc[k] += _feat[k];
             _accN++;
 
@@ -161,8 +198,8 @@ namespace NIRS_Demonstrator
         readonly NirsOnnxModel _m;
         public OnnxModelAdapter(string path, float fs = 1000f) { _m = new NirsOnnxModel(path, fs); }
         public float Predict(float[] volts) => _m.Predict(volts);
-        public void Reset() => _m.Reset();
-        public void Dispose() => _m.Dispose();
+        public void  Reset() => _m.Reset();
+        public void  Dispose() => _m.Dispose();
     }
 }
 
@@ -185,7 +222,7 @@ static class OnnxDemo
             }
         }
     }
- 
+
     // 2. Сеть и алгоритм рядом: считаем оба, пишем в файл, печатаем расхождение
     public static void CompareWithAlgorithm(string onnxPath, string csvPath)
     {
@@ -211,7 +248,7 @@ static class OnnxDemo
             Console.WriteLine($"сеть против алгоритма: MAE {sum / n:F4}, max|Δ| {max:F4}");
         }
     }
- 
+
     // 3. Живой поток: то же самое, но кадры приходят с прибора
     public static void LiveStream(string onnxPath, Func<float[]> readFrame)
     {
@@ -229,7 +266,7 @@ static class OnnxDemo
             }
         }
     }
- 
+
     static IEnumerable<float[]> ReadFrames(string path)
     {
         using (var sr = new StreamReader(path))
