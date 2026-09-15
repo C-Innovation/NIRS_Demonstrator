@@ -21,7 +21,7 @@ namespace NIRS_Demonstrator
         SlipMid[] _SlipMids;
         LowpassFilter[] _LowpassFilters;
         SlipMidSmart[] _SlipMidsSmart;
-        FilterSolutions[] _LpBessel;
+        //FilterSolutions[] _LpBessel;
         #endregion
 
         #region Public Properties
@@ -76,37 +76,37 @@ namespace NIRS_Demonstrator
             };
             if (OperatingSystem.IsLinux())
             {
-                _LpBessel = new FilterSolutions[8]
-                {
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
-                    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat")
+                //_LpBessel = new FilterSolutions[8]
+                //{
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat"),
+                //    new FilterSolutions("/home/rpi4/FilterSolutions/Bessel_LP_SR100_O5_F25.dat")
 
-                };
+                //};
             }
 
             if (OperatingSystem.IsWindows())
             {
             
 
-            _LpBessel = new FilterSolutions[8]
-            {
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-                new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
-            };
+            //_LpBessel = new FilterSolutions[8]
+            //{
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //    new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR1000_O5_F25.dat"),
+            //};
 
-            FilterSolutions filterSolutions = new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F3.dat");
+            //FilterSolutions filterSolutions = new FilterSolutions("D:\\FilterSolutions\\Bessel_LP_SR100_O5_F3.dat");
         }
     }
 
@@ -147,35 +147,35 @@ namespace NIRS_Demonstrator
             if (!OperatingSystem.IsLinux())
             {
                 //signalData.Led740Ch1_Flt = _SlipMids[0].Process(signalData.Led740Ch1);
-                signalData.Led740Ch1_Flt = _LpBessel[0].Process(signalData.Led740Ch1);
+                //signalData.Led740Ch1_Flt = _LpBessel[0].Process(signalData.Led740Ch1);
 
                 //signalData.Led740Ch1_Flt = _SlipMidsSmart[0].Process(signalData.Led740Ch1_Flt);
 
                 //signalData.Led740Ch2_Flt = _SlipMids[1].Process(signalData.Led740Ch2);
-                signalData.Led740Ch2_Flt = _LpBessel[1].Process(signalData.Led740Ch2);
+                //signalData.Led740Ch2_Flt = _LpBessel[1].Process(signalData.Led740Ch2);
                 //signalData.Led740Ch2_Flt = _SlipMidsSmart[1].Process(signalData.Led740Ch2_Flt);
 
-                signalData.Led740Ch3_Flt = _LpBessel[2].Process(signalData.Led740Ch3);
+                //signalData.Led740Ch3_Flt = _LpBessel[2].Process(signalData.Led740Ch3);
                 //signalData.Led740Ch3_Flt = _SlipMids[2].Process(signalData.Led740Ch3);
                 //signalData.Led740Ch3_Flt = _SlipMidsSmart[2].Process(signalData.Led740Ch3_Flt);
 
                 //signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
-                signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
+                //signalData.Led740Ch4_Flt = _LpBessel[3].Process(signalData.Led740Ch4);
                 //signalData.Led740Ch4_Flt = _SlipMids[3].Process(signalData.Led740Ch4);
                 //signalData.Led740Ch4_Flt = _SlipMidsSmart[3].Process(signalData.Led740Ch4_Flt);
 
                 //signalData.Led850Ch1_Flt = _SlipMids[4].Process(signalData.Led850Ch1);
-                signalData.Led850Ch1_Flt = _LpBessel[4].Process(signalData.Led850Ch1);
+                //signalData.Led850Ch1_Flt = _LpBessel[4].Process(signalData.Led850Ch1);
                 //signalData.Led850Ch1_Flt = _SlipMidsSmart[4].Process(signalData.Led850Ch1_Flt);
 
                 //signalData.Led850Ch2_Flt = _SlipMids[5].Process(signalData.Led850Ch2);
-                signalData.Led850Ch2_Flt = _LpBessel[5].Process(signalData.Led850Ch2);
+                //signalData.Led850Ch2_Flt = _LpBessel[5].Process(signalData.Led850Ch2);
                 //signalData.Led850Ch2_Flt = _SlipMidsSmart[5].Process(signalData.Led850Ch2_Flt);
-                signalData.Led850Ch3_Flt = _LpBessel[6].Process(signalData.Led850Ch3);
+                //signalData.Led850Ch3_Flt = _LpBessel[6].Process(signalData.Led850Ch3);
                 //signalData.Led850Ch3_Flt = _SlipMids[6].Process(signalData.Led850Ch3);
                 //signalData.Led850Ch3_Flt = _SlipMidsSmart[6].Process(signalData.Led850Ch3_Flt);
             }
-            signalData.Led850Ch4_Flt = _LpBessel[7].Process(signalData.Led850Ch4);
+            //signalData.Led850Ch4_Flt = _LpBessel[7].Process(signalData.Led850Ch4);
             //signalData.Led850Ch4_Flt = _SlipMids[7].Process(signalData.Led850Ch4);
             //signalData.Led850Ch4_Flt = _SlipMidsSmart[7].Process(signalData.Led850Ch4_Flt);
 

@@ -15,7 +15,7 @@ namespace NIRS_Demonstrator;
 public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
 {
     public List<List<double>> NirsData;
-    private double _AxisXSize = 10000;
+    private double _AxisXSize = 4000;
     private CsvEditWindow _CsvEditWindow;
     private string _OpenedFile;
 
@@ -95,7 +95,7 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
                 await Nirs1Series850_TotalVal.AddPointsRangeAsync(points);
                 break;
             case 9:
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
                 break;
             default: break;
         }
@@ -196,28 +196,22 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
         if(string.IsNullOrEmpty(_OpenedFile))
             return;
         await Nirs1Series740_AiVal.ClearPoints();
-        Point[] points = new Point[(NirsData[0].Count / 5) * 5];
+        Point[] points = new Point[NirsData[0].Count];
         int pcnt = 0;
-        string modelPath = "D:\\workspace_PyCharm\\NIRS_NeuroNetMult\\model_exports\\model.onnx";
-        using (var predictor = new SequenceOnnxPredictor(modelPath))
-        {
-            for(int i=0; i < NirsData[0].Count - 5; i += 5)
-            {
-                float[] input = new float[40];
-                for (int j = 0; j < 5; j++)
-                {
-                    for(int k = 0; k < NirsData.Count - 1; k++)
-                    {
-                        input[8 * j + k] = (float)(NirsData[k][i + j] / 5.0f);
-                    }
-                }
-                float[] output = predictor.Predict(input);
-                for(int j = 0;j < output.Length; j++)
-                {
-                    points[pcnt] = new Point(pcnt, output[j] * 5.0);
-                    pcnt++;
-                }
+        string modelPath = Path.Combine(AppConfig.GetInstance().AiDirectoryPath, "gru_pre.onnx");
 
+        using (var predictor = new NirsOnnxModel(modelPath))
+        {
+            for (int i = 0; i < NirsData[0].Count; i++)
+            {
+                float[] input = new float[8];
+                for (int j = 0; j < NirsData.Count - 2; j++)
+                {
+                    input[j] = (float)(NirsData[j][i] / 5.0f);
+                }
+                float output = predictor.Predict(input);
+                points[pcnt] = new Point(pcnt, output * 5.0);
+                pcnt++;
             }
         }
         await Nirs1Series740_AiVal.AddPointsRangeAsync(points);
@@ -225,13 +219,15 @@ public partial class ViewerPage : BasePage<ViewerPageViewModel>, IDisposable
         await Nirs1Series850_AiVal.ClearPoints();
         points = new Point[NirsData[0].Count];
         pcnt = 0;
-        modelPath = "D:\\workspace_PyCharm\\NIRS_NeuroNet\\model_exports\\model.onnx";
-        using (var predictor = new TestONNX(modelPath))
+        //_NirsOnnxModel1 = new NirsOnnxModel(Path.Combine(AppConfig.GetInstance().AiDirectoryPath, "gru_pre.onnx"));
+        modelPath = Path.Combine(AppConfig.GetInstance().AiDirectoryPath, "gru_pre.onnx");
+
+        using (var predictor = new NirsOnnxModel(modelPath))
         {
             for (int i = 0; i < NirsData[0].Count; i ++)
             {
                 float[] input = new float[8];
-                for (int j = 0; j < NirsData.Count - 1; j++)
+                for (int j = 0; j < NirsData.Count - 2; j++)
                 {
                     input[j] = (float)(NirsData[j][i] / 5.0f);
                 }
