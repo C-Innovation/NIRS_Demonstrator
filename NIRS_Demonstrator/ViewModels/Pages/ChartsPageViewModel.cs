@@ -31,6 +31,8 @@ namespace NIRS_Demonstrator.ViewModels
         public const int TotalVal = 4;
         public const int AiVal = 5;
 
+        
+
         public Point[][] Series740 { get; }
         public Point[][] Series850 { get; }
 
@@ -53,6 +55,12 @@ namespace NIRS_Demonstrator.ViewModels
     /// </summary>
     public class ChartsPageViewModel : ViewModelBase
     {
+        #region Public Constants
+
+        public const float VOLTS_FULL_SCALE = 5.0f;
+
+        #endregion
+
         #region Private Members
 
         private const string DISABLED_PORT = "Disabled";
@@ -605,13 +613,13 @@ namespace NIRS_Demonstrator.ViewModels
                         if (_IsAiDevEnabled)
                             await SendToAiDeviceAsync(serializer, signal, token);
 
-                        //signal.TotalVal = HasTrigDetection(_Pipeline1.SignalProcessing, signal) ? 5.0 : 0.0;
+                        //signal.TotalVal = HasTrigDetection(_Pipeline1.SignalProcessing, signal) ? VOLTS_FULL_SCALE : 0.0;
 
                         //signal = ProcessLeveler(signal);
 
                         // Список значений строится только когда идёт запись,
                         // а не на каждом отсчёте «на всякий случай».
-                        
+
 
                         signal.TotalVal = NIRSProcessor1.Update(
                             new float[]
@@ -624,7 +632,7 @@ namespace NIRS_Demonstrator.ViewModels
                                 (float)signal.Led850Ch2_Flt,
                                 (float)signal.Led850Ch3_Flt,
                                 (float)signal.Led850Ch4_Flt
-                            }) * 5.0f;
+                            }) * VOLTS_FULL_SCALE;
 
                         signal.AiValQwen = _NirsOnnxModel1.Predict(new float[]
                             {
@@ -636,7 +644,10 @@ namespace NIRS_Demonstrator.ViewModels
                                 (float)signal.Led850Ch2_Flt,
                                 (float)signal.Led850Ch3_Flt,
                                 (float)signal.Led850Ch4_Flt
-                            }) * 5.0;
+                            }) * VOLTS_FULL_SCALE;
+
+                        if (!_NirsOnnxModel1.Tracking || !_NirsOnnxModel1.Ready)
+                            signal.AiValQwen = 0.0f;
 
                         if (_Pipeline1.CsvStarted)
                         {
@@ -646,30 +657,30 @@ namespace NIRS_Demonstrator.ViewModels
                         }
                         if (model != null)
                         {
-                            modelInputs[0] = (float)signal.Led740Ch1_Flt / 5.0f;
-                            modelInputs[1] = (float)signal.Led740Ch2_Flt / 5.0f;
-                            modelInputs[2] = (float)signal.Led740Ch3_Flt / 5.0f;
-                            modelInputs[3] = (float)signal.Led740Ch4_Flt / 5.0f;
-                            modelInputs[4] = (float)signal.Led850Ch1_Flt / 5.0f;
-                            modelInputs[5] = (float)signal.Led850Ch2_Flt / 5.0f;
-                            modelInputs[6] = (float)signal.Led850Ch3_Flt / 5.0f;
-                            modelInputs[7] = (float)signal.Led850Ch4_Flt / 5.0f;
+                            modelInputs[0] = (float)signal.Led740Ch1_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[1] = (float)signal.Led740Ch2_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[2] = (float)signal.Led740Ch3_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[3] = (float)signal.Led740Ch4_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[4] = (float)signal.Led850Ch1_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[5] = (float)signal.Led850Ch2_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[6] = (float)signal.Led850Ch3_Flt / VOLTS_FULL_SCALE;
+                            modelInputs[7] = (float)signal.Led850Ch4_Flt / VOLTS_FULL_SCALE;
 
-                            //signal.AiValQwen = model.Predict(modelInputs) * 5.0;
+                            //signal.AiValQwen = model.Predict(modelInputs) * VOLTS_FULL_SCALE;
                         }
 
                         //if (model != null)
                         //{
                         //    modelInputs[0] = 0;
                         //    modelInputs[1] = 0;
-                        //    modelInputs[2] = (float)signal.Led740Ch3_Flt / 5.0f;
-                        //    modelInputs[3] = (float)signal.Led740Ch4_Flt / 5.0f;
+                        //    modelInputs[2] = (float)signal.Led740Ch3_Flt / VOLTS_FULL_SCALE;
+                        //    modelInputs[3] = (float)signal.Led740Ch4_Flt / VOLTS_FULL_SCALE;
                         //    modelInputs[4] = 0;
                         //    modelInputs[5] = 0;
-                        //    modelInputs[6] = (float)signal.Led850Ch3_Flt / 5.0f;
-                        //    modelInputs[7] = (float)signal.Led850Ch4_Flt / 5.0f;
+                        //    modelInputs[6] = (float)signal.Led850Ch3_Flt / VOLTS_FULL_SCALE;
+                        //    modelInputs[7] = (float)signal.Led850Ch4_Flt / VOLTS_FULL_SCALE;
 
-                        //    signal.AiVal = model.Predict(modelInputs) * 5.0;
+                        //    signal.AiVal = model.Predict(modelInputs) * VOLTS_FULL_SCALE;
                         //}
 
 
@@ -848,7 +859,7 @@ namespace NIRS_Demonstrator.ViewModels
 
         private static ushort ToRawCode(double voltage)
         {
-            return (ushort)((float)voltage / 5.0f * 4095.0f);
+            return (ushort)((float)voltage / VOLTS_FULL_SCALE * 4095.0f);
         }
 
         private static TestONNX TryLoadModel()
@@ -894,7 +905,7 @@ namespace NIRS_Demonstrator.ViewModels
                     Muscle = "flexor",
                     Placement = PlacementIdNum.ToString(),
                     Source = TargetSource.Algorithm,   // или External — с динамометра
-                    TargetVmax = 5.00f,
+                    TargetVmax = VOLTS_FULL_SCALE,
                     OutDir = dPath
                 };
                 _NirsRecorder1 = new NirsRecorder(cfg);

@@ -56,7 +56,6 @@ namespace NIRS_Demonstrator
         int _accN, _sub;
         long _n;
         readonly long _warmupN;
-        readonly float _stableS;
         float _out;
 
         /// <summary>Последнее предсказание, 0..1. Между вызовами сети удерживается.</summary>
@@ -78,33 +77,41 @@ namespace NIRS_Demonstrator
         //  Валидность данных
         // ------------------------------------------------------------------
         /// <summary>
-        /// ГЛАВНЫЙ признак достоверности: true — стабилизация выполнена,
-        /// выходу можно верить; false — идёт стабилизация.
+        /// РАБОЧИЙ признак: датчик на мышце, каналы набрали базу и знак, выход
+        /// правильно повторяет мышцу. Поднимается за единицы секунд (измерено
+        /// 1.5-10 с на записях S01-S04) и падает в ту же выборку, когда датчик
+        /// сняли. Именно этим гейтить выход и индикацию.
         ///
         /// Отличие от <see cref="Ready"/>: Ready закрывает только прогрев
-        /// (3 с — сходимость состояния GRU) и, один раз поднявшись, больше не
-        /// падает. Stable дополнительно требует, чтобы сошлась медленная
-        /// адаптация ядра (уровень покоя, размах и полярность каждого канала —
-        /// это десятки секунд), и ОТСЛЕЖИВАЕТСЯ НЕПРЕРЫВНО: если датчик снять,
-        /// сдвинуть или он потеряет контакт, флаг упадёт на той же выборке и
-        /// вернётся только через StableS спокойных секунд после того, как
-        /// сигнал восстановится. Reset() тоже сбрасывает его в false.
+        /// (3 с, сходимость состояния GRU) и, раз поднявшись, больше не падает.
+        /// Tracking отслеживается непрерывно.
         ///
-        /// Возмущением ядро считает: канал вышел за рабочий диапазон
-        /// (насыщение или темнота — именно это происходит при снятии датчика),
-        /// канал вернулся в диапазон, канал переучивается заново, сменился
-        /// знак канала, не осталось ни одного пригодного канала.
+        /// Выпад ОДНОГО канала (мигание на пределе шкалы ОУ, смена знака,
+        /// короткий клип на сильном сокращении) флаг не роняет — он отнимает
+        /// лишь долю этого канала от <see cref="Health"/>. Роняет его только
+        /// потеря большей части каналов, то есть настоящее снятие датчика.
+        /// </summary>
+        public bool Tracking => Ready && _core.Tracking;
+
+        /// <summary>
+        /// МЕДЛЕННЫЙ признак: вдобавок к Tracking устоялся масштаб
+        /// (автокалибровка максимума). Нужен там, где важна абсолютная
+        /// величина: разметка датасета, пороги в долях от максимума.
+        /// Измерено: 20-50 с, и раньше шкала просто неизвестна — это не
+        /// лечится уменьшением константы.
         /// </summary>
         public bool Stable => Ready && _core.Stable;
 
-        /// <summary>Ход стабилизации, 0..1 — для индикатора прогресса.
-        /// Достигает 1.0 одновременно со Stable (при Ready).</summary>
-        public float StableProgress => _core.StableProgress;
+        /// <summary>Здоровье установки, 0..1: доля веса работающих каналов
+        /// относительно того, сколько их тут обычно работает. 1.0 — все на
+        /// месте, ~0.8 — выпал один из пяти, 0 — датчик снят. Хорошая
+        /// величина для индикатора качества контакта.</summary>
+        public float Health => _core.Health;
 
-        /// <summary>Сколько секунд осталось до Stable при текущем темпе
-        /// (0, если уже стабильно). Для подсказки оператору.</summary>
-        public float SecondsToStable =>
-            Stable ? 0f : _stableS * (1f - _core.StableProgress);
+        /// <summary>Приблизительный ход адаптации, 0..1 — для полоски
+        /// прогресса. 0..0.5 — идёт поиск каналов, 0.5..1 — устаканивается
+        /// масштаб.</summary>
+        public float StableProgress => _core.StableProgress;
 
         /// <param name="useCoreFeatures">true (по умолчанию) — вход готовит ядро
         /// через NnFeatures(); так же, как 01_build_dataset.py --core-features.
@@ -119,7 +126,6 @@ namespace NIRS_Demonstrator
             // признак стабилизации (Stable), которых у предфильтра нет.
             var cfg = new NirsConfig { Fs = fs };
             _core   = new NirsContraction(cfg);
-            _stableS = cfg.StableS;
             if (!_useCore) _pre = new NirsPrefilter(fs);
             _warmupN = (long)(WarmupS * fs);
 
@@ -146,7 +152,7 @@ namespace NIRS_Demonstrator
             if (!_useCore) _pre.Reset();
             Array.Clear(_state, 0, _state.Length);
             Array.Clear(_acc, 0, _acc.Length);
-            _accN = 0; _sub = 0; _out = 0f; _n = 0;
+            _accN = 0; _sub = 0; _out = 0f; _n = 0; NanEvents = 0;
         }
 
         /// <summary>Одна выборка: 8 напряжений -> уровень 0..1.
@@ -159,7 +165,15 @@ namespace NIRS_Demonstrator
             _core.Update(volts);                       // всегда: флаги и Stable
             if (_useCore) _core.NnFeatures(_feat);
             else          _pre.Step(volts, _feat);
-            for (int k = 0; k < NCh; k++) _acc[k] += _feat[k];
+            // накопитель рекуррентный — одно нечисло испортило бы все
+            // последующие кадры, поэтому санируем здесь
+            for (int k = 0; k < NCh; k++)
+            {
+                float f = _feat[k];
+                if (!IsFinite(f) || f < 0f) f = 0f;
+                if (f > 4f) f = 4f;
+                _acc[k] += f;
+            }
             _accN++;
 
             if (++_sub < Decim) return _out;   // между вызовами сети держим прошлое
@@ -180,10 +194,39 @@ namespace NIRS_Demonstrator
                 var map = res.ToDictionary(v => v.Name, v => v.AsTensor<float>());
                 float y = map[_outY][0, 0];
                 var hn = map[_outH];
-                for (int k = 0; k < NState; k++) _state[k] = hn[0, k];
-                _out = y < 0f ? 0f : (y > 1f ? 1f : y);
+
+                // Скрытое состояние заводится само в себя: одно нечисло в нём
+                // отравляет выход навсегда. Проверяем ДО копирования обратно.
+                // Обычный ограничитель тут не спасает — все сравнения с NaN
+                // ложны, и «y > 1 ? 1 : y» пропускает NaN насквозь.
+                bool bad = !IsFinite(y);
+                for (int k = 0; k < NState && !bad; k++)
+                    if (!IsFinite(hn[0, k])) bad = true;
+
+                if (bad)
+                {
+                    Array.Clear(_state, 0, _state.Length);   // контекст наберётся заново
+                    NanEvents++;
+                }
+                else
+                {
+                    for (int k = 0; k < NState; k++) _state[k] = hn[0, k];
+                    _out = y < 0f ? 0f : (y > 1f ? 1f : y);
+                }
             }
             return _out;
+        }
+
+        /// <summary>Сколько раз скрытое состояние пришлось обнулить из-за
+        /// нечисла. В норме 0.</summary>
+        public int NanEvents { get; private set; }
+
+        // Проверка по битам, а не float.IsFinite: не зависит от режима
+        // вычислений и одинакова с C-версией (nirs_nn_runtime.c).
+        static bool IsFinite(float x)
+        {
+            uint u = (uint)BitConverter.SingleToInt32Bits(x);
+            return (u & 0x7F800000u) != 0x7F800000u;
         }
 
         public void Dispose() => _sess?.Dispose();

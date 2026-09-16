@@ -22,7 +22,8 @@ namespace NIRS_Demonstrator
         Sat     = 0x0008,   // канал в насыщении
         LowSig  = 0x0010,   // канал без модуляции
         Clipped = 0x0020,   // выход упёрся в 1.0
-        Stable  = 0x0040    // адаптация сошлась, выходу можно верить
+        Stable  = 0x0040,   // сошёлся и масштаб: уровню можно верить
+        Tracking= 0x0080    // датчик на мышце, форма сигнала верна
     }
 
     /// <summary>Конфигурация. Все постоянные времени в секундах.</summary>
@@ -85,17 +86,23 @@ namespace NIRS_Demonstrator
         public float OutVmax  = 3.30f;
         public float WarmupS  = 1.5f;
 
-        // --- признак «адаптация сошлась» (NirsFlags.Stable) ------------------
-        // Ready закрывает только прогрев (WarmupS = 1.5 с) — после него выход
-        // уже считается, но база, размахи каналов и их полярность едут ещё
-        // десятки секунд, и абсолютный уровень выхода в это время занижен или
-        // завышен. Stable выставляется, когда с последнего «возмущения» прошло
-        // StableS спокойных секунд. Возмущением считается: канал вышел за
-        // рабочий диапазон, канал вернулся в него, канал переучивается заново,
-        // сменился знак канала, не осталось ни одного пригодного канала.
-        // Флаг снимается в тот же момент, когда возмущение произошло, поэтому
-        // снятие датчика на ходу видно без задержки.
-        public float StableS  = 20.0f;
+        // --- признаки готовности: Tracking и Stable --------------------------
+        // Сходятся ДВЕ РАЗНЫЕ вещи. Измерено на записях S01-S04 (ядро с
+        // холодного старта против ядра, прогретого с начала записи):
+        //   форма выхода (корреляция > 0.95)     5-19 с, в среднем 10 с
+        //   уровень выхода (|dy| < 0.05)        23-61 с, в среднем 48 с
+        // Форму задают база, полярность и размахи каналов, уровень — авто-
+        // калибровка максимума (MVC). Поэтому флага два: Tracking (быстрый,
+        // «датчик на мышце, сигнал живой») и Stable (медленный, «масштаб
+        // устоялся»). Tracking считается по здоровью каналов, а не по
+        // времени: выпад одного канала отнимает лишь его долю и флаг не
+        // роняет, а снятие датчика роняет все каналы разом.
+        public float TrackS        = 1.5f;    // с, непрерывной пригодности канала
+        public float HealthHi      = 0.50f;   // порог подъёма Tracking
+        public float HealthLo      = 0.35f;   // порог падения Tracking
+        public float TauWRef       = 60.0f;   // с, спад опорной суммы весов
+        public float MvcSettleS    = 10.0f;   // с, окно проверки масштаба
+        public float MvcSettleThr  = 0.05f;   // допустимый дрейф масштаба за окно
 
         // --- автоматическая полярность каналов -------------------------------
         // На малых разносах (5.5 мм) при сокращении света становится МЕНЬШЕ, а
@@ -143,7 +150,9 @@ namespace NIRS_Demonstrator
         // 0 — непригоден, 1 — ждёт покоя после возврата, 2 — работает нормально
         readonly byte[]  _chOk  = new byte[MaxCh];
         // 1 — канал переучивает базу и ещё не вернулся в слияние
-        readonly byte[]  _rearm  = new byte[MaxCh];
+        readonly byte[]  _rearm   = new byte[MaxCh];
+        readonly byte[]  _chReady = new byte[MaxCh];
+        readonly uint[]  _chRun   = new uint[MaxCh];
         readonly float[] _pol     = new float[MaxCh];
         readonly float[] _polCov  = new float[MaxCh];
         readonly float[] _polMdn  = new float[MaxCh];
@@ -153,8 +162,9 @@ namespace NIRS_Demonstrator
         float _polMref, _polVref, _aPol, _farAct, _farG;
         uint  _polHoldN;
 
-        uint  _n, _lastDisturb, _stableN;
-        float _stableProgress;
+        uint  _n, _trackN, _mvcSettleN, _mvcMarkN;
+        float _aWRef, _wRef, _health, _mvcMark, _stableProgress;
+        bool  _tracking, _mvcSettled;
         float _uLp, _level, _mvc, _mvcLp, _spatial, _spectral, _uOd, _wsum;
         float _out01, _outV;
         NirsFlags _flags;
@@ -172,15 +182,26 @@ namespace NIRS_Demonstrator
         public NirsFlags Flags    => _flags;
 
         /// <summary>
-        /// Валидность данных: true — адаптация сошлась, выходу можно верить;
-        /// false — идёт стабилизация (первые секунды после старта, после
-        /// Reset(), после снятия или перестановки датчика, после смены знака
-        /// канала). Отслеживается непрерывно: если датчик снимут на ходу,
-        /// флаг упадёт на той же выборке.
+        /// БЫСТРЫЙ признак: датчик на мышце, каналы набрали базу и знак, выход
+        /// правильно повторяет мышцу. Поднимается за единицы секунд, падает
+        /// в ту же выборку, когда датчик сняли. Именно его брать для индикации
+        /// и для гейта выхода.
+        /// </summary>
+        public bool  Tracking       => (_flags & NirsFlags.Tracking) != 0;
+
+        /// <summary>
+        /// МЕДЛЕННЫЙ признак: вдобавок к Tracking устоялся масштаб
+        /// (автокалибровка максимума). Нужен там, где важна абсолютная
+        /// величина: разметка датасета, пороги в долях от максимума.
         /// </summary>
         public bool  Stable         => (_flags & NirsFlags.Stable) != 0;
 
-        /// <summary>Ход стабилизации, 0..1 — для индикатора прогресса.</summary>
+        /// <summary>Здоровье установки, 0..1: доля веса работающих каналов
+        /// относительно того, сколько их тут обычно работает. 1.0 — все на
+        /// месте, ~0.8 — выпал один из пяти, 0 — датчик снят.</summary>
+        public float Health         => _health;
+
+        /// <summary>Приблизительный ход адаптации, 0..1 — для полоски прогресса.</summary>
         public float StableProgress => _stableProgress;
         public float[]   Od       => _od;
         public float[]   W        => _w;
@@ -253,8 +274,10 @@ namespace NIRS_Demonstrator
             _aMvcDn  = Coef(fs, _c.TauMvcDn);
             _aLead   = Coef(fs, _c.TauLeadLp);
             _leadGain = _c.TauLeadLp > 0f ? _c.LeadTau / _c.TauLeadLp : 0f;
-            _warmupN  = (uint)(_c.WarmupS * fs);
-            _stableN  = (uint)(_c.StableS * fs);
+            _warmupN     = (uint)(_c.WarmupS * fs);
+            _trackN      = (uint)(_c.TrackS * fs);
+            _mvcSettleN  = (uint)(_c.MvcSettleS * fs);
+            _aWRef       = Coef(fs, _c.TauWRef);
             _aPol     = Coef(fs, _c.TauPol);
             _polHoldN = (uint)(_c.PolHoldS * fs);
 
@@ -288,10 +311,13 @@ namespace NIRS_Demonstrator
             {
                 _base[k] = 0f; _span[k] = _c.MinSpan; _noise[k] = 1e-5f;
                 _prev[k] = 0f; _od[k] = 0f; _w[k] = 0f; _chOk[k] = 0; _rearm[k] = 0;
+                _chReady[k] = 0; _chRun[k] = 0;
                 _pol[k] = 1f; _polCov[k] = 0f; _polMdn[k] = 0f;
                 _polVdn[k] = 0f; _polLock[k] = 0;
             }
-            _n = 0; _lastDisturb = 0; _stableProgress = 0f;
+            _n = 0; _stableProgress = 0f;
+            _wRef = 0f; _health = 0f; _tracking = false;
+            _mvcSettled = false; _mvcMark = 0f; _mvcMarkN = 0;
             _uLp = 0f; _level = 0f; _mvc = _c.MvcMin; _mvcLp = 0f;
             _spatial = 0f; _spectral = 0f; _uOd = 0f; _wsum = 0f;
             _polMref = 0f; _polVref = 0f; _farAct = 0f; _farG = 0f;
@@ -302,7 +328,7 @@ namespace NIRS_Demonstrator
         public float Update(float[] v)
         {
             bool first = _n == 0;
-            float wsum = 0f, acc = 0f, spanRef = 0f;
+            float wsum = 0f, acc = 0f, spanRef = 0f, wReady = 0f;
             float farS = 0f, farW = 0f, nearS = 0f, nearW = 0f, farN = 0f;
             float s850 = 0f, w850 = 0f, s740 = 0f, w740 = 0f;
             NirsFlags fl = NirsFlags.None;
@@ -328,13 +354,14 @@ namespace NIRS_Demonstrator
                     fl |= NirsFlags.Sat;
                     _od[k] = 0f;
                     _w[k]  = 0f;
-                    // Возмущением считаем только выпадение канала, который
-                    // реально участвовал в слиянии и имел осмысленный размах.
-                    if (_chOk[k] != 0 && _w[k] > 0f && _span[k] > 2f * _c.MinSpan)
-                        _lastDisturb = _n;
+                    // Канал выпал. Событие ЛОКАЛЬНОЕ: оно отнимает у общего
+                    // здоровья установки долю этого канала и глобальных флагов
+                    // само по себе не роняет. Снятый датчик роняет все каналы.
                     _w[k] = 0f;
-                    _rearm[k] = 0;
-                    _chOk[k] = 0;
+                    _rearm[k]   = 0;
+                    _chOk[k]    = 0;
+                    _chReady[k] = 0;
+                    _chRun[k]   = 0;
                     continue;
                 }
 
@@ -404,13 +431,18 @@ namespace NIRS_Demonstrator
                     fl |= NirsFlags.LowSig;
                 }
                 if (w < _c.WMin) w = 0f;
-                // Канал, переучивавший базу, снова вошёл в слияние: состав
-                // выхода изменился — вот теперь это возмущение.
                 if (_rearm[k] != 0 && w > 0f && _span[k] > 2f * _c.MinSpan)
-                {
-                    _rearm[k] = 0; _lastDisturb = _n;
-                }
+                    _rearm[k] = 0;          // канал доучился и снова в деле
                 _w[k] = w;
+
+                // готовность канала: непрерывно пригоден уже TrackS, прошёл
+                // фазу ожидания покоя, набрал размах, не менял знак
+                _chRun[k]++;
+                _chReady[k] = (byte)((_chOk[k] == 2 && _rearm[k] == 0 &&
+                                      _chRun[k] >= _trackN &&
+                                      _span[k] > 2f * _c.MinSpan &&
+                                      _n >= _polLock[k] && w > 0f) ? 1 : 0);
+                if (_chReady[k] != 0) wReady += w;
 
                 _dn[k] = 0f;
                 if (w > 0f)
@@ -428,7 +460,7 @@ namespace NIRS_Demonstrator
 
             float u;
             if (wsum > 1e-6f) { spanRef /= wsum; u = (acc / wsum) * spanRef; }
-            else              { u = 0f; fl |= NirsFlags.NoChan; _lastDisturb = _n; }
+            else              { u = 0f; fl |= NirsFlags.NoChan; }
             _uOd = u;
 
             // --- оценка полярности ближних каналов --------------------------
@@ -470,6 +502,7 @@ namespace NIRS_Demonstrator
                         _span[k]    = _c.MinSpan;
                         _od[k]      = 0f; _w[k] = 0f; _chOk[k] = 0;
                         _rearm[k]   = 1;                // знак сменился, база с нуля
+                        _chReady[k] = 0;                // и канал временно не в счёт
                         fl |= NirsFlags.LowSig;
                     }
                 }
@@ -526,19 +559,42 @@ namespace NIRS_Demonstrator
             fl |= _flags & NirsFlags.Active;
             if (_n >= _warmupN) fl |= NirsFlags.Ready;
 
-            // Признак «адаптация сошлась»: сколько выборок прошло с последнего
-            // возмущения (выпадение или возврат канала, смена знака, отсутствие
-            // каналов). Пока их меньше _stableN — выход есть, но база, размахи
-            // и полярность ещё едут, и верить уровню нельзя.
-            {
-                uint q = _n - _lastDisturb;              // беззнаковая разность
-                if (_stableN == 0u || q >= _stableN) _stableProgress = 1f;
-                else                                 _stableProgress = (float)q / _stableN;
+            // Tracking: здоровье = вес готовых каналов / «сколько их тут обычно».
+            // Опорная сумма помнит норму для этой установки, поэтому выпад
+            // одного канала порога не пробивает, а снятие датчика роняет всё.
+            if (wsum > _wRef) _wRef += _aBaseUp * (wsum - _wRef);
+            else              _wRef += _aWRef   * (wsum - _wRef);
 
-                if (_stableProgress >= 1f && (fl & NirsFlags.Ready)  != 0
-                                          && (fl & NirsFlags.NoChan) == 0)
-                    fl |= NirsFlags.Stable;
+            _health = _wRef > 1e-6f ? wReady / _wRef : 0f;
+            if (_health > 1f) _health = 1f;
+
+            if (_tracking) { if (_health < _c.HealthLo) _tracking = false; }
+            else           { if (_health > _c.HealthHi) _tracking = true;  }
+
+            if (_tracking && (fl & NirsFlags.Ready) != 0 && (fl & NirsFlags.NoChan) == 0)
+                fl |= NirsFlags.Tracking;
+
+            // Stable: устоялся ещё и масштаб — за окно MvcSettleS шкала
+            // сдвинулась меньше чем на MvcSettleThr и поднята настоящим
+            // сокращением, а не сидит на нижнем пределе.
+            if (_n - _mvcMarkN >= _mvcSettleN)
+            {
+                float rel = _mvc > 1e-6f ? (_mvc - _mvcMark) / _mvc : 1f;
+                if (rel < 0f) rel = -rel;
+                _mvcSettled = rel < _c.MvcSettleThr && _mvc > _c.MvcMin * 1.2f;
+                _mvcMark = _mvc; _mvcMarkN = _n;
             }
+            if (!_tracking) _mvcSettled = false;
+            if ((fl & NirsFlags.Tracking) != 0 && _mvcSettled) fl |= NirsFlags.Stable;
+
+            if ((fl & NirsFlags.Stable) != 0) _stableProgress = 1f;
+            else if ((fl & NirsFlags.Tracking) != 0)
+            {
+                float q = _mvcSettleN > 0u ? (float)(_n - _mvcMarkN) / _mvcSettleN : 1f;
+                if (q > 1f) q = 1f;
+                _stableProgress = 0.5f + 0.5f * q;
+            }
+            else _stableProgress = 0.5f * _health;
 
             _flags = fl;
 
