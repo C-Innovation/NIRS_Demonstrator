@@ -76,6 +76,16 @@ namespace NIRS_Demonstrator
         public float TauMvcUp = 0.30f;
         public float TauMvcDn = 300f;
         public float MvcMin   = 0.05f;
+        // Нижняя граница шкалы по размахам каналов: Mvc >= MvcSpanK*spanRef.
+        // Размах канала сходится за 2 с, поэтому шкала получает разумное
+        // значение сразу, а не через десятки секунд ожидания сильного
+        // сокращения. 0 — выключить.
+        public float MvcSpanK = 0.75f;
+        // Потолок нормированного вклада канала в слияние (d/span). Ближние
+        // каналы реагируют медленнее дальних, а их нормированный вклад
+        // доходит до 4 против 1.8 у дальних — в среднем это давало им
+        // двойной вес и затягивало задний фронт.
+        public float DnMax    = 2.0f;
         // Плато отображается линейно в 0..SoftKnee, выбросы плавно
         // сжимаются в остаток шкалы. 1.0 -> жёсткое ограничение.
         public float SoftKnee = 0.85f;
@@ -448,6 +458,7 @@ namespace NIRS_Demonstrator
                 if (w > 0f)
                 {
                     _dn[k]   = d / _span[k];
+                    if (_dn[k] > _c.DnMax) _dn[k] = _c.DnMax;
                     acc     += w * _dn[k];
                     spanRef += w * _span[k];
                     wsum    += w;
@@ -521,9 +532,23 @@ namespace NIRS_Demonstrator
             _level += aSm * (u - _level);
 
             // Шкалу задаёт устойчивый уровень, а не выброс на фронте.
-            _mvcLp += _aMvcLp * (_level - _mvcLp);
-            if (_mvcLp > _mvc) _mvc += _aMvcUp * (_mvcLp - _mvc);
-            else               _mvc += _aMvcDn * (_mvcLp - _mvc);
+            // Шкала НЕ обновляется, пока датчик не на мышце (нет Tracking).
+            // Снятие и переклейка дают на слитом сигнале выброс в 15-20 раз
+            // выше настоящего сокращения, и пиковый детектор поднимает шкалу
+            // так, что вся последующая запись идёт с амплитудой 0.02-0.1
+            // вместо 0.8. Ядро знает, что датчика нет, — этим и пользуемся.
+            if (_tracking)
+            {
+                _mvcLp += _aMvcLp * (_level - _mvcLp);
+                if (_mvcLp > _mvc) _mvc += _aMvcUp * (_mvcLp - _mvc);
+                else               _mvc += _aMvcDn * (_mvcLp - _mvc);
+            }
+            // Нижняя граница шкалы по размахам каналов — см. NirsConfig.MvcSpanK
+            if (_c.MvcSpanK > 0f && spanRef > 0f)
+            {
+                float lo = _c.MvcSpanK * spanRef;
+                if (_mvc < lo) _mvc = lo;
+            }
             if (_mvc < _c.MvcMin) _mvc = _c.MvcMin;
 
             float o = _level / _mvc;

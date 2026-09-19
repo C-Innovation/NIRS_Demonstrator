@@ -267,7 +267,7 @@ namespace NIRS_Demonstrator.ViewModels
         public string HumanIdText
         {
             get => _HumanIdText;
-            private set
+            set
             {
                 if (value == _HumanIdText)
                     return;
