@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>AvaloniaMvvmApp</RootNamespace>
+    <AssemblyName>AvaloniaMvvmApp</AssemblyName>
+    <!--
+      Компилируемые привязки проверяются на этапе сборки, а не в среде выполнения.
+      В Avalonia 12 это значение по умолчанию; оставлено явным, чтобы поведение
+      не зависело от версии пакета.
+    -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Платформенные пакеты (Avalonia.Desktop, .Android, .iOS, .Browser)
+      подключаются в точках входа, а не здесь: иначе голова Android тянула бы
+      настольные серверы вывода, которые под неё не собираются.
+    -->
+    <PackageReference Include="Avalonia" Version="12.1.5" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.5" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.5" />
+    <!-- Диалоги: AvaloniaDialogs тянет DialogHost.Avalonia как зависимость. -->
+    <PackageReference Include="AvaloniaDialogs" Version="3.7.1" />
+    <!-- Иконки Font Awesome: Optris — поддерживаемый преемник Projektanker. -->
+    <PackageReference Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+    <!-- Средства разработчика Avalonia подключаются только в отладочной сборке. -->
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AvaloniaMvvmApp.Core\AvaloniaMvvmApp.Core.csproj" />
+  </ItemGroup>
+
+</Project>

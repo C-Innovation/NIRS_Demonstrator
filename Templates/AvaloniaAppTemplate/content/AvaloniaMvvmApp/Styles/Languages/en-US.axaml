@@ -1,0 +1,50 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+	<!--
+		English interface strings.
+		In XAML use {DynamicResource KeyName} — DynamicResource re-reads the value,
+		so the interface updates when the language changes at run time.
+		From code use AppResources.GetString("KeyName").
+		Every language file must declare the same set of keys.
+	-->
+
+	<!-- Language and theme names (AppConfig registration refers to these keys) -->
+	<system:String x:Key="LanguageEnglishText">English</system:String>
+	<system:String x:Key="LanguageRussianText">Русский</system:String>
+	<system:String x:Key="ThemeLightText">Light</system:String>
+	<system:String x:Key="ThemeDarkText">Dark</system:String>
+
+	<!-- Pages -->
+	<system:String x:Key="MainPageText">Home</system:String>
+	<system:String x:Key="SettingsPageText">Settings</system:String>
+
+	<!-- Common actions -->
+	<system:String x:Key="OkText">OK</system:String>
+	<system:String x:Key="YesText">Yes</system:String>
+	<system:String x:Key="NoText">No</system:String>
+	<system:String x:Key="CancelText">Cancel</system:String>
+	<system:String x:Key="SaveText">Save</system:String>
+	<system:String x:Key="AddText">Add</system:String>
+	<system:String x:Key="RemoveText">Remove</system:String>
+	<system:String x:Key="BackText">Back</system:String>
+	<system:String x:Key="RefreshText">Refresh</system:String>
+	<system:String x:Key="CloseText">Close</system:String>
+
+	<!-- Status -->
+	<system:String x:Key="ReadyText">Ready</system:String>
+	<system:String x:Key="BusyText">Please wait…</system:String>
+	<system:String x:Key="ErrorText">Error</system:String>
+
+	<!-- Settings page -->
+	<system:String x:Key="AppearanceText">Appearance</system:String>
+	<system:String x:Key="InterfaceLanguageText">Interface language</system:String>
+	<system:String x:Key="ColorThemeText">Color theme</system:String>
+
+	<!-- Starter page content: replace with your own -->
+	<system:String x:Key="WelcomeText">The template is ready to use</system:String>
+	<system:String x:Key="WelcomeHintText">Pages, themes, languages, dialogs and logging are already wired up.</system:String>
+	<system:String x:Key="ShowDialogText">Show a dialog</system:String>
+	<system:String x:Key="DialogQuestionText">Dialogs work. Close this one?</system:String>
+</ResourceDictionary>

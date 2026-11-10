@@ -1,0 +1,33 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+             xmlns:local="clr-namespace:AvaloniaMvvmApp"
+             x:Class="AvaloniaMvvmApp.App"
+             RequestedThemeVariant="Default">
+
+	<!--
+		Цветовая тема приложения переключается не через RequestedThemeVariant,
+		а подменой словаря Styles/Themes/*.axaml в AppConfig: так одни и те же
+		ключи Theme_* работают и в своих стилях, и в пользовательской разметке.
+	-->
+
+	<Application.DataTemplates>
+		<local:ViewLocator />
+	</Application.DataTemplates>
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<!-- Палитра и шрифты доступны всем стилям ниже -->
+				<MergeResourceInclude Source="/Styles/Colors.axaml" />
+				<MergeResourceInclude Source="/Styles/Fonts.axaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+
+	<Application.Styles>
+		<dialogHost:DialogHostStyles />
+		<FluentTheme />
+		<StyleInclude Source="/Styles/Buttons.axaml" />
+	</Application.Styles>
+</Application>

@@ -1,0 +1,26 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+             x:Class="AvaloniaMvvmApp.Dialogs.MessageDialog">
+	<Grid Margin="20"
+		  MinWidth="260"
+		  MaxWidth="520"
+		  RowDefinitions="Auto,Auto">
+
+		<TextBlock x:Name="MessageTextBlock"
+				   Grid.Row="0"
+				   Margin="0 0 0 20"
+				   TextWrapping="Wrap"
+				   TextAlignment="Center"
+				   Foreground="{DynamicResource Theme_ForegroundMainBrush}"
+				   FontSize="{StaticResource FontSizeLarge}" />
+
+		<Button x:Name="OkButton"
+				Grid.Row="1"
+				Classes="Regular"
+				MinWidth="120"
+				HorizontalAlignment="Center" />
+	</Grid>
+</UserControl>

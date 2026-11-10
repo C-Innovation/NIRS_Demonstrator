@@ -1,0 +1,153 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="clr-namespace:Optris.Icons.Avalonia;assembly=Optris.Icons.Avalonia">
+
+	<Design.PreviewWith>
+		<Border Padding="20" Background="White">
+			<StackPanel Orientation="Horizontal" Spacing="10">
+				<Button Classes="Regular" Content="Regular" />
+				<Button Classes="IconButton" Content="fa-solid fa-gear" Width="48" />
+				<Button Classes="IconGrowButton" Content="fa-solid fa-play" Width="48" />
+			</StackPanel>
+		</Border>
+	</Design.PreviewWith>
+
+	<!--
+		Кнопка с текстом.
+		Цвета берутся через DynamicResource, поэтому кнопка сама
+		перекрашивается при смене темы.
+	-->
+	<Style Selector="Button.Regular">
+		<Setter Property="Margin" Value="5" />
+		<Setter Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+		<Setter Property="FontWeight" Value="Bold" />
+		<Setter Property="CornerRadius" Value="10" />
+		<Setter Property="Padding" Value="12 6" />
+		<Setter Property="Background" Value="{DynamicResource Theme_ForegroundMainBrush}" />
+		<Setter Property="Foreground" Value="{DynamicResource Theme_BackgroundMainBrush}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border x:Name="border"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Background="{TemplateBinding Background}">
+						<TextBlock Text="{TemplateBinding Content}"
+								   Focusable="False"
+								   FontFamily="{TemplateBinding FontFamily}"
+								   FontSize="{TemplateBinding FontSize}"
+								   FontWeight="{TemplateBinding FontWeight}"
+								   Foreground="{TemplateBinding Foreground}"
+								   Margin="{TemplateBinding Padding}"
+								   TextAlignment="Center"
+								   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+								   VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.2" />
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="Button.Regular:pointerover">
+		<Setter Property="Background" Value="{DynamicResource Theme_AccentBrush}" />
+	</Style>
+
+	<Style Selector="Button.Regular:disabled">
+		<Setter Property="Opacity" Value="0.5" />
+	</Style>
+
+	<!--
+		Кнопка-иконка: Content задаёт имя иконки Font Awesome.
+		Иконки объявлены в Styles/Fonts.axaml.
+	-->
+	<Style Selector="Button.IconButton">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+		<Setter Property="Foreground" Value="{DynamicResource Theme_ForegroundMainBrush}" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="10" />
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border x:Name="border"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Background="{TemplateBinding Background}">
+						<Viewbox>
+							<i:Icon Value="{TemplateBinding Content}"
+									FontSize="{TemplateBinding FontSize}"
+									Foreground="{TemplateBinding Foreground}"
+									Margin="{TemplateBinding Padding}"
+									Focusable="False"
+									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+									VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+						</Viewbox>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="0:0:0.2" />
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="Button.IconButton:pointerover">
+		<Setter Property="Background" Value="{StaticResource WordTransparentBlueBrush}" />
+	</Style>
+
+	<Style Selector="Button.IconButton:disabled">
+		<Setter Property="Opacity" Value="0.4" />
+	</Style>
+
+	<!-- Кнопка-иконка, увеличивающаяся при наведении -->
+	<Style Selector="Button.IconGrowButton">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="FontSize" Value="{StaticResource FontSizeLarge}" />
+		<Setter Property="Foreground" Value="{DynamicResource Theme_ForegroundMainBrush}" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Padding" Value="10" />
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate>
+					<Border x:Name="border"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Background="{TemplateBinding Background}">
+						<Viewbox>
+							<i:Icon Value="{TemplateBinding Content}"
+									FontSize="{TemplateBinding FontSize}"
+									Foreground="{TemplateBinding Foreground}"
+									Margin="{TemplateBinding Padding}"
+									Focusable="False"
+									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+									VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+						</Viewbox>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Transitions">
+			<Transitions>
+				<TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="Button.IconGrowButton:pointerover">
+		<Setter Property="RenderTransform" Value="scale(1.3, 1.3)" />
+	</Style>
+
+	<Style Selector="Button.IconGrowButton:disabled">
+		<Setter Property="Opacity" Value="0.4" />
+	</Style>
+</Styles>

@@ -1,0 +1,48 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+	<!--
+		Строки интерфейса на русском.
+		Набор ключей обязан совпадать с остальными языковыми файлами:
+		отсутствующий ключ приведёт к пустой подписи в интерфейсе.
+	-->
+
+	<!-- Названия языков и тем (на эти ключи ссылается регистрация в AppConfig) -->
+	<system:String x:Key="LanguageEnglishText">English</system:String>
+	<system:String x:Key="LanguageRussianText">Русский</system:String>
+	<system:String x:Key="ThemeLightText">Светлая</system:String>
+	<system:String x:Key="ThemeDarkText">Тёмная</system:String>
+
+	<!-- Страницы -->
+	<system:String x:Key="MainPageText">Главная</system:String>
+	<system:String x:Key="SettingsPageText">Настройки</system:String>
+
+	<!-- Общие действия -->
+	<system:String x:Key="OkText">ОК</system:String>
+	<system:String x:Key="YesText">Да</system:String>
+	<system:String x:Key="NoText">Нет</system:String>
+	<system:String x:Key="CancelText">Отмена</system:String>
+	<system:String x:Key="SaveText">Сохранить</system:String>
+	<system:String x:Key="AddText">Добавить</system:String>
+	<system:String x:Key="RemoveText">Удалить</system:String>
+	<system:String x:Key="BackText">Назад</system:String>
+	<system:String x:Key="RefreshText">Обновить</system:String>
+	<system:String x:Key="CloseText">Закрыть</system:String>
+
+	<!-- Состояние -->
+	<system:String x:Key="ReadyText">Готово</system:String>
+	<system:String x:Key="BusyText">Подождите…</system:String>
+	<system:String x:Key="ErrorText">Ошибка</system:String>
+
+	<!-- Страница настроек -->
+	<system:String x:Key="AppearanceText">Оформление</system:String>
+	<system:String x:Key="InterfaceLanguageText">Язык интерфейса</system:String>
+	<system:String x:Key="ColorThemeText">Цветовая тема</system:String>
+
+	<!-- Содержимое стартовой страницы: замените своим -->
+	<system:String x:Key="WelcomeText">Шаблон готов к работе</system:String>
+	<system:String x:Key="WelcomeHintText">Страницы, темы, языки, диалоги и журнал уже подключены.</system:String>
+	<system:String x:Key="ShowDialogText">Показать диалог</system:String>
+	<system:String x:Key="DialogQuestionText">Диалоги работают. Закрыть это окно?</system:String>
+</ResourceDictionary>

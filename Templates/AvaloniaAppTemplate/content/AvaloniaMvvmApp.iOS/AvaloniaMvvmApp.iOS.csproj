@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Avalonia 12 поддерживает на iOS только .NET 10. -->
+    <TargetFramework>net10.0-ios</TargetFramework>
+    <!--
+      Минимальная версия iOS. Не опускайте ниже значения
+      iOSMinSupportedOSPlatformVersion из установленного пакета SDK: в
+      Microsoft.iOS.Sdk.net10.0_27.1 это 15.0 (в 26.0 было 12.2). Более низкое
+      значение сборка под Windows пропускает молча, а полная сборка на macOS
+      отвергает при создании манифеста приложения.
+    -->
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AvaloniaMvvmApp.iOS</RootNamespace>
+    <AssemblyName>AvaloniaMvvmApp.iOS</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.iOS" Version="12.1.5" />
+    <PackageReference Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AvaloniaMvvmApp\AvaloniaMvvmApp.csproj" />
+  </ItemGroup>
+
+</Project>

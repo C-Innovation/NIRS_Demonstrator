@@ -1,0 +1,130 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "C-Innovation",
+  "classifications": [ "Avalonia", "Desktop", "Mobile", "Web", "MVVM", "Cross-platform" ],
+  "identity": "CInnovation.Avalonia.MvvmApp",
+  "name": "Avalonia MVVM App",
+  "description": "Кросс-платформенное приложение Avalonia 12 на .NET 10: многостраничность с анимацией Carousel, переключаемые темы и языки, диалоги, Font Awesome, свой MVVM, журнал и контейнер зависимостей.",
+  "shortName": "avalonia-mvvm-app",
+  "sourceName": "AvaloniaMvvmApp",
+  "defaultName": "AvaloniaMvvmApp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+
+  "guids": [
+    "973D5807-6314-48F4-8094-F4320D12F8ED",
+    "6F9C9435-163B-4BFA-9A50-A1D44D9B8360",
+    "409E3A44-F7B4-4409-83B3-1F7C015290A2",
+    "D6532FCC-69F0-411F-AD03-8FCC95244BD5",
+    "56BA4DDC-9D16-4F80-B243-67CFBC2E4EEB",
+    "CE42A89C-00AA-418B-9BEF-F75450029D21"
+  ],
+
+  "symbols": {
+    "Desktop": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "Платформа: Desktop",
+      "description": "Точка входа для Windows, Linux и macOS."
+    },
+    "Android": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Платформа: Android",
+      "description": "Точка входа для Android (net10.0-android36.0). Требует рабочую нагрузку android для .NET 10: dotnet workload install android."
+    },
+    "iOS": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Платформа: iOS",
+      "description": "Точка входа для iOS (net10.0-ios). Требует рабочую нагрузку ios для .NET 10; полная сборка возможна только на macOS."
+    },
+    "Browser": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Платформа: браузер (WebAssembly)",
+      "description": "Точка входа для браузера. Требует рабочую нагрузку wasm-tools."
+    },
+    "CompanyName": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "",
+      "replaces": "COMPANY_NAME_PLACEHOLDER",
+      "displayName": "Имя организации",
+      "description": "Добавляется в путь к каталогам настроек, журнала и отчётов. Можно оставить пустым."
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Не выполнять restore",
+      "description": "Пропустить автоматическое восстановление пакетов после создания."
+    }
+  },
+
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!Desktop)",
+          "exclude": [ "AvaloniaMvvmApp.Desktop/**" ]
+        },
+        {
+          "condition": "(!Android)",
+          "exclude": [ "AvaloniaMvvmApp.Android/**" ]
+        },
+        {
+          "condition": "(!iOS)",
+          "exclude": [ "AvaloniaMvvmApp.iOS/**" ]
+        },
+        {
+          "condition": "(!Browser)",
+          "exclude": [ "AvaloniaMvvmApp.Browser/**" ]
+        }
+      ]
+    }
+  ],
+
+  "specialCustomOperations": {
+    "**/*.sln": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "actionableIf": [ "#if" ],
+            "actionableElse": [ "#else" ],
+            "actionableElseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  },
+
+  "primaryOutputs": [
+    { "path": "AvaloniaMvvmApp.sln" },
+    { "condition": "(Desktop)", "path": "AvaloniaMvvmApp.Desktop/AvaloniaMvvmApp.Desktop.csproj" }
+  ],
+
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Восстановление пакетов NuGet",
+      "manualInstructions": [ { "text": "Выполните dotnet restore" } ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "args": { "files": [ "AvaloniaMvvmApp.sln" ] },
+      "continueOnError": true
+    }
+  ]
+}

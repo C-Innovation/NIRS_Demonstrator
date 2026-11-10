@@ -1,0 +1,64 @@
+﻿<local:BasePage x:TypeArguments="vm:MainPageViewModel"
+                xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:local="clr-namespace:AvaloniaMvvmApp"
+                xmlns:vm="clr-namespace:AvaloniaMvvmApp.ViewModels"
+                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                x:Class="AvaloniaMvvmApp.MainPage"
+                x:DataType="vm:MainPageViewModel">
+
+	<Grid RowDefinitions="Auto,*,Auto" Margin="20">
+
+		<!-- Кнопка настроек в заголовке -->
+		<Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+			<TextBlock Grid.Column="0"
+					   Text="{DynamicResource MainPageText}"
+					   FontSize="{StaticResource FontSizeXXLarge}"
+					   FontWeight="Bold"
+					   VerticalAlignment="Center"
+					   Foreground="{DynamicResource Theme_ForegroundMainBrush}" />
+
+			<Button Grid.Column="1"
+					Classes="IconGrowButton"
+					Width="42"
+					Height="42"
+					Content="{StaticResource FA_GearIcon}"
+					ToolTip.Tip="{DynamicResource SettingsPageText}"
+					Command="{Binding GoToSettingsCommand}" />
+		</Grid>
+
+		<!-- Содержимое страницы: замените своим -->
+		<StackPanel Grid.Row="1"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center"
+					Spacing="16"
+					MaxWidth="520">
+
+			<TextBlock Text="{DynamicResource WelcomeText}"
+					   FontSize="{StaticResource FontSizeXLarge}"
+					   FontWeight="Bold"
+					   TextAlignment="Center"
+					   TextWrapping="Wrap"
+					   Foreground="{DynamicResource Theme_ForegroundMainBrush}" />
+
+			<TextBlock Text="{DynamicResource WelcomeHintText}"
+					   FontSize="{StaticResource FontSizeRegular}"
+					   TextAlignment="Center"
+					   TextWrapping="Wrap"
+					   Foreground="{DynamicResource Theme_ForegroundSecondaryBrush}" />
+
+			<Button Classes="Regular"
+					HorizontalAlignment="Center"
+					Content="{DynamicResource ShowDialogText}"
+					Command="{Binding ShowDialogCommand}" />
+		</StackPanel>
+
+		<TextBlock Grid.Row="2"
+				   Text="{Binding StatusText}"
+				   FontSize="{StaticResource FontSizeRegular}"
+				   HorizontalAlignment="Center"
+				   Foreground="{DynamicResource Theme_ForegroundSecondaryBrush}" />
+	</Grid>
+</local:BasePage>

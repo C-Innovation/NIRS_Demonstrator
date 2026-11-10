@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!--
+      Avalonia 12 поддерживает на Android только .NET 10. Уровень 36 — тот,
+      под который собран сам пакет Avalonia.Android 12.1.5.
+    -->
+    <TargetFramework>net10.0-android36.0</TargetFramework>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AvaloniaMvvmApp.Android</RootNamespace>
+    <AssemblyName>AvaloniaMvvmApp.Android</AssemblyName>
+    <ApplicationId>com.companyname.AvaloniaMvvmApp</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AndroidResource Include="Icon.png">
+      <Link>Resources\drawable\Icon.png</Link>
+    </AndroidResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" Version="12.1.5" />
+    <PackageReference Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.7" />
+    <!-- 1.2.0.3 — первая версия со сборкой под net10.0-android36.0.
+         Нужна из-за атрибута postSplashScreenTheme в Resources/values-v31/styles.xml. -->
+    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.3" />
+  </ItemGroup>
+
+  <!--
+    Выравнивание семейства AndroidX.Lifecycle.
+    Без этих ссылок восстановление выдаёт по девять предупреждений NU1608:
+    SplashScreen 1.2.0.3 тянет AppCompat.AppCompatResources 1.7.1.4 -> Core 1.19.0.1
+    -> Lifecycle.Common 2.11.0.1, тогда как пакеты Lifecycle 2.10.0.2 (из AppCompat
+    1.7.1.3, который приходит с Avalonia.Android) требуют строго [2.10.0.2, 2.10.1).
+    Прямые ссылки поднимают всё семейство до согласованной 2.11.0.1.
+    Строки можно убрать, когда Avalonia.Android и SplashScreen сойдутся на одной
+    версии AndroidX.Core — проверяется обычным восстановлением.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.11.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.11.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.11.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.11.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AvaloniaMvvmApp\AvaloniaMvvmApp.csproj" />
+  </ItemGroup>
+
+</Project>

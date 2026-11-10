@@ -1,0 +1,72 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!--
+		Палитра приложения: цвета, не зависящие от темы.
+		Цвета, которые меняются вместе с темой, объявлены
+		в Styles/Themes/*.axaml с префиксом Theme_.
+	-->
+
+	<!-- Нейтральные тона -->
+	<Color x:Key="NeutralWhite">#ffffff</Color>
+	<SolidColorBrush x:Key="NeutralWhiteBrush" Color="{StaticResource NeutralWhite}" />
+
+	<Color x:Key="NeutralVeryLight">#fafafa</Color>
+	<SolidColorBrush x:Key="NeutralVeryLightBrush" Color="{StaticResource NeutralVeryLight}" />
+
+	<Color x:Key="NeutralLight">#efefef</Color>
+	<SolidColorBrush x:Key="NeutralLightBrush" Color="{StaticResource NeutralLight}" />
+
+	<Color x:Key="NeutralMid">#bdbdbd</Color>
+	<SolidColorBrush x:Key="NeutralMidBrush" Color="{StaticResource NeutralMid}" />
+
+	<Color x:Key="NeutralDark">#686868</Color>
+	<SolidColorBrush x:Key="NeutralDarkBrush" Color="{StaticResource NeutralDark}" />
+
+	<Color x:Key="NeutralVeryDark">#484848</Color>
+	<SolidColorBrush x:Key="NeutralVeryDarkBrush" Color="{StaticResource NeutralVeryDark}" />
+
+	<Color x:Key="NeutralBlack">#000000</Color>
+	<SolidColorBrush x:Key="NeutralBlackBrush" Color="{StaticResource NeutralBlack}" />
+
+	<!-- Смысловые цвета: состояние, предупреждение, ошибка -->
+	<Color x:Key="WordRed">#ff4747</Color>
+	<SolidColorBrush x:Key="WordRedBrush" Color="{StaticResource WordRed}" />
+
+	<Color x:Key="WordTransparentRed">#7fff4747</Color>
+	<SolidColorBrush x:Key="WordTransparentRedBrush" Color="{StaticResource WordTransparentRed}" />
+
+	<Color x:Key="WordOrange">#ffa800</Color>
+	<SolidColorBrush x:Key="WordOrangeBrush" Color="{StaticResource WordOrange}" />
+
+	<Color x:Key="WordTransparentOrange">#7fffa800</Color>
+	<SolidColorBrush x:Key="WordTransparentOrangeBrush" Color="{StaticResource WordTransparentOrange}" />
+
+	<Color x:Key="WordYellow">#ffff00</Color>
+	<SolidColorBrush x:Key="WordYellowBrush" Color="{StaticResource WordYellow}" />
+
+	<Color x:Key="WordGreen">#00c541</Color>
+	<SolidColorBrush x:Key="WordGreenBrush" Color="{StaticResource WordGreen}" />
+
+	<Color x:Key="WordTransparentGreen">#7f00c541</Color>
+	<SolidColorBrush x:Key="WordTransparentGreenBrush" Color="{StaticResource WordTransparentGreen}" />
+
+	<Color x:Key="WordBlue">#3099c5</Color>
+	<SolidColorBrush x:Key="WordBlueBrush" Color="{StaticResource WordBlue}" />
+
+	<Color x:Key="WordTransparentBlue">#003099c5</Color>
+	<SolidColorBrush x:Key="WordTransparentBlueBrush" Color="{StaticResource WordTransparentBlue}" />
+
+	<Color x:Key="WordPurple">#a800ff</Color>
+	<SolidColorBrush x:Key="WordPurpleBrush" Color="{StaticResource WordPurple}" />
+
+	<!-- Акцентные оттенки -->
+	<Color x:Key="AccentLight">#45b6e5</Color>
+	<SolidColorBrush x:Key="AccentLightBrush" Color="{StaticResource AccentLight}" />
+
+	<Color x:Key="AccentVeryLight">#c3e5f3</Color>
+	<SolidColorBrush x:Key="AccentVeryLightBrush" Color="{StaticResource AccentVeryLight}" />
+
+	<Color x:Key="AccentDark">#0c6991</Color>
+	<SolidColorBrush x:Key="AccentDarkBrush" Color="{StaticResource AccentDark}" />
+</ResourceDictionary>

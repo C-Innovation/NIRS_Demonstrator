@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>AvaloniaMvvmApp.Core</RootNamespace>
+    <AssemblyName>AvaloniaMvvmApp.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Единственный контейнер внедрения зависимостей в решении. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+  </ItemGroup>
+
+</Project>

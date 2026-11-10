@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json.schemastore.org/ide.host",
+  "order": 0,
+  "symbolInfo": [
+    {
+      "id": "Desktop",
+      "name": { "text": "Desktop (Windows, Linux, macOS)" },
+      "isVisible": true
+    },
+    {
+      "id": "Android",
+      "name": { "text": "Android" },
+      "isVisible": true
+    },
+    {
+      "id": "iOS",
+      "name": { "text": "iOS" },
+      "isVisible": true
+    },
+    {
+      "id": "Browser",
+      "name": { "text": "Браузер (WebAssembly)" },
+      "isVisible": true
+    },
+    {
+      "id": "CompanyName",
+      "name": { "text": "Имя организации (каталог данных)" },
+      "isVisible": true
+    },
+    {
+      "id": "skipRestore",
+      "isVisible": false
+    }
+  ]
+}

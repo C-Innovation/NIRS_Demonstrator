@@ -1,0 +1,30 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!--
+		Тёмная тема.
+		Набор ключей совпадает с LightTheme.axaml — при добавлении ресурса
+		дописывайте его в оба файла.
+	-->
+
+	<Color x:Key="Theme_BackgroundMain">#686868</Color>
+	<SolidColorBrush x:Key="Theme_BackgroundMainBrush" Color="{StaticResource Theme_BackgroundMain}" />
+
+	<Color x:Key="Theme_BackgroundSecondary">#484848</Color>
+	<SolidColorBrush x:Key="Theme_BackgroundSecondaryBrush" Color="{StaticResource Theme_BackgroundSecondary}" />
+
+	<Color x:Key="Theme_ForegroundMain">#efefef</Color>
+	<SolidColorBrush x:Key="Theme_ForegroundMainBrush" Color="{StaticResource Theme_ForegroundMain}" />
+
+	<Color x:Key="Theme_ForegroundSecondary">#bdbdbd</Color>
+	<SolidColorBrush x:Key="Theme_ForegroundSecondaryBrush" Color="{StaticResource Theme_ForegroundSecondary}" />
+
+	<Color x:Key="Theme_TitleBackground">#484848</Color>
+	<SolidColorBrush x:Key="Theme_TitleBackgroundBrush" Color="{StaticResource Theme_TitleBackground}" />
+
+	<Color x:Key="Theme_Border">#9a9a9a</Color>
+	<SolidColorBrush x:Key="Theme_BorderBrush" Color="{StaticResource Theme_Border}" />
+
+	<Color x:Key="Theme_Accent">#45b6e5</Color>
+	<SolidColorBrush x:Key="Theme_AccentBrush" Color="{StaticResource Theme_Accent}" />
+</ResourceDictionary>

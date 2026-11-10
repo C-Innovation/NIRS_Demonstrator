@@ -1,0 +1,36 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:dialogs="clr-namespace:AvaloniaDialogs.Views;assembly=AvaloniaDialogs"
+             xmlns:local="clr-namespace:AvaloniaMvvmApp"
+             xmlns:vm="clr-namespace:AvaloniaMvvmApp.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AvaloniaMvvmApp.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+	<Grid Background="{DynamicResource Theme_BackgroundMainBrush}">
+
+		<!--
+			DialogHost оборачивает содержимое: диалог перекрывает страницы,
+			не создавая отдельного окна. Поэтому диалоги одинаково работают
+			на настольных и однооконных платформах.
+			Клавиша Escape закрывает диалог без результата.
+		-->
+		<dialogs:ReactiveDialogHost CloseOnClickAway="False"
+									CloseKey="Escape"
+									BorderBrush="{DynamicResource Theme_BorderBrush}"
+									BorderThickness="2"
+									CornerRadius="10"
+									Background="{DynamicResource Theme_BackgroundMainBrush}">
+
+			<!--
+				PageHost получает текущую страницу из ApplicationViewModel.
+				Источник указан явно, потому что DataContext этого представления —
+				MainViewModel, а страница живёт в состоянии приложения.
+			-->
+			<local:PageHost CurrentPage="{Binding ApplicationViewModel.CurrentPage, Source={x:Static vm:ViewModelLocator.Instance}}"
+							CurrentPageViewModel="{Binding ApplicationViewModel.CurrentPageViewModel, Source={x:Static vm:ViewModelLocator.Instance}}" />
+		</dialogs:ReactiveDialogHost>
+	</Grid>
+</UserControl>

@@ -1,0 +1,72 @@
+﻿<local:BasePage x:TypeArguments="vm:SettingsPageViewModel"
+                xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:local="clr-namespace:AvaloniaMvvmApp"
+                xmlns:vm="clr-namespace:AvaloniaMvvmApp.ViewModels"
+                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                x:Class="AvaloniaMvvmApp.SettingsPage"
+                x:DataType="vm:SettingsPageViewModel">
+
+	<Grid RowDefinitions="Auto,*" Margin="20">
+
+		<Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+			<Button Grid.Column="0"
+					Classes="IconGrowButton"
+					Width="42"
+					Height="42"
+					Content="{StaticResource FA_LeftLongIcon}"
+					ToolTip.Tip="{DynamicResource BackText}"
+					Command="{Binding GoBackCommand}" />
+
+			<TextBlock Grid.Column="1"
+					   Margin="16 0 0 0"
+					   Text="{DynamicResource SettingsPageText}"
+					   FontSize="{StaticResource FontSizeXXLarge}"
+					   FontWeight="Bold"
+					   VerticalAlignment="Center"
+					   Foreground="{DynamicResource Theme_ForegroundMainBrush}" />
+		</Grid>
+
+		<ScrollViewer Grid.Row="1" Margin="0 20 0 0">
+			<StackPanel Spacing="20" MaxWidth="520" HorizontalAlignment="Left">
+
+				<TextBlock Text="{DynamicResource AppearanceText}"
+						   FontSize="{StaticResource FontSizeLarge}"
+						   FontWeight="Bold"
+						   Foreground="{DynamicResource Theme_ForegroundMainBrush}" />
+
+				<!-- Выбор темы: список заполняется из реестра AppConfig,
+				     поэтому новая тема появляется здесь без правки разметки. -->
+				<StackPanel Spacing="6">
+					<TextBlock Text="{DynamicResource ColorThemeText}"
+							   FontSize="{StaticResource FontSizeRegular}"
+							   Foreground="{DynamicResource Theme_ForegroundSecondaryBrush}" />
+
+					<ComboBox MinWidth="240"
+							  ItemsSource="{Binding Themes}"
+							  SelectedItem="{Binding SelectedTheme}"
+							  DisplayMemberBinding="{Binding DisplayName}"
+							  BorderBrush="{DynamicResource Theme_BorderBrush}"
+							  Foreground="{DynamicResource Theme_ForegroundMainBrush}"
+							  FontSize="{StaticResource FontSizeRegular}" />
+				</StackPanel>
+
+				<StackPanel Spacing="6">
+					<TextBlock Text="{DynamicResource InterfaceLanguageText}"
+							   FontSize="{StaticResource FontSizeRegular}"
+							   Foreground="{DynamicResource Theme_ForegroundSecondaryBrush}" />
+
+					<ComboBox MinWidth="240"
+							  ItemsSource="{Binding Languages}"
+							  SelectedItem="{Binding SelectedLanguage}"
+							  DisplayMemberBinding="{Binding DisplayName}"
+							  BorderBrush="{DynamicResource Theme_BorderBrush}"
+							  Foreground="{DynamicResource Theme_ForegroundMainBrush}"
+							  FontSize="{StaticResource FontSizeRegular}" />
+				</StackPanel>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</local:BasePage>
